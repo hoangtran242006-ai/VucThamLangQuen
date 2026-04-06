@@ -8,7 +8,8 @@ import { InputManager } from './input.js';
 import { Camera } from './camera.js';
 import { Menu } from './menu.js';
 import { SkinManager } from './skins.js';
-import { syncDataToCloud, loadDataFromCloud, getTopPlayers, checkAndPromptPlayerName, changePlayerName, getAllPlayersAdmin, updatePlayerAdmin, getPlayerName } from '../db.js';
+import { RaceManager } from './races.js';
+import { syncDataToCloud, loadDataFromCloud, getTopPlayers, checkAndPromptPlayerName, changePlayerName, getAllPlayersAdmin, updatePlayerAdmin, getPlayerName, isLoggedIn, registerAccount, loginAccount, logoutAccount } from '../db.js';
 import * as VFX from './vfx.js';
 import { UI } from './ui.js';
 import { RNG } from './rng.js';
@@ -117,7 +118,7 @@ window.addEventListener('beforeunload', () => { if (Network.isMultiplayer && Net
 
 let isGameOver = false, isGameStarted = false, isDataDirty = false;
 let gameState = 'MENU', bestWave = 0, waveNumber = 1, waveClearTimer = 1200, gameMode = 'solo';
-const GAME_VERSION = 'v3.8.51';
+const GAME_VERSION = 'v3.9.0';
 let loopId = null;
 window.isGodMode = false;
 
@@ -127,6 +128,85 @@ function enterFullscreen() {
 }
 
 let camera = new Camera();
+
+// --- HỆ THỐNG GIAO DIỆN TÀI KHOẢN ---
+function updateAuthUI() {
+    const unlogged = document.getElementById('auth-unlogged');
+    const logged = document.getElementById('auth-logged');
+    const floatingBtn = document.getElementById('floating-auth-btn');
+    
+    if (isLoggedIn()) {
+        if (unlogged) unlogged.style.display = 'none';
+        if (logged) { logged.style.display = 'flex'; document.getElementById('logged-username').textContent = getPlayerName(); }
+        if (floatingBtn) { floatingBtn.textContent = '👤 ' + getPlayerName(); floatingBtn.classList.remove('moss-btn-danger'); }
+    } else {
+        if (unlogged) unlogged.style.display = 'flex';
+        if (logged) logged.style.display = 'none';
+        if (floatingBtn) { floatingBtn.textContent = '👤 ĐĂNG NHẬP / ĐĂNG KÝ'; floatingBtn.classList.add('moss-btn-danger'); }
+    }
+}
+updateAuthUI();
+
+let authMode = 'login';
+function openAuthModal(mode) {
+    if (isLoggedIn() && mode !== 'logout') { alert("Bạn đã đăng nhập với tên: " + getPlayerName() + "\nNhấn ESC trong game để quản lý tài khoản."); return; }
+    authMode = mode;
+    document.getElementById('auth-screen').style.display = 'flex';
+    document.getElementById('auth-title').textContent = mode === 'login' ? 'ĐĂNG NHẬP' : 'ĐĂNG KÝ TÀI KHOẢN';
+    document.getElementById('auth-submit-btn').textContent = mode === 'login' ? 'ĐĂNG NHẬP' : 'TẠO TÀI KHOẢN';
+    const toggleLink = document.getElementById('auth-toggle-link');
+    if (toggleLink) toggleLink.textContent = mode === 'login' ? 'Đăng ký nè!' : 'Đăng nhập nè!';
+    document.getElementById('auth-error').textContent = '';
+}
+bindClick('btn-show-login', () => openAuthModal('login'));
+bindClick('btn-show-register', () => openAuthModal('register'));
+bindClick('floating-auth-btn', () => openAuthModal('login'));
+bindClick('close-auth-btn', () => document.getElementById('auth-screen').style.display = 'none');
+bindClick('btn-logout', () => { 
+    if (confirm("Bạn có chắc muốn đăng xuất? Trò chơi sẽ trở về trạng thái Khách (0 Vàng, 0 Linh hồn).")) { 
+        logoutAccount(); 
+        updateAuthUI(); 
+        alert("Đã đăng xuất. Bạn đang chơi dưới quyền Khách."); 
+        localStorage.removeItem('vucthamlangquen_best_wave');
+        localStorage.removeItem('vucthamlangquen_gold');
+        localStorage.removeItem('vucthamlangquen_souls');
+        localStorage.removeItem('vucthamlangquen_race');
+        localStorage.removeItem('vucthamlangquen_owned_skins');
+        localStorage.removeItem('vucthamlangquen_equipped_skin');
+        player.gold = 0; player.souls = 0; bestWave = 0; 
+        player.raceId = 'human';
+        SkinManager.ownedSkins = ['hoàng', 'bocchi'];
+        SkinManager.equippedSkin = 'hoàng';
+        player.setSkin('hoàng', SkinManager.skinImages);
+        loadSaveData(); 
+        UI.updateHud(player); 
+    } 
+});
+
+const authToggleBtn = document.getElementById('auth-toggle-link');
+if (authToggleBtn) authToggleBtn.addEventListener('click', () => { AudioManager.play('click'); openAuthModal(authMode === 'login' ? 'register' : 'login'); });
+
+const authSubmitBtn = document.getElementById('auth-submit-btn');
+if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
+    const u = document.getElementById('auth-username').value.trim(); const p = document.getElementById('auth-password').value;
+    const errEl = document.getElementById('auth-error');
+    if (!u || !p) { errEl.textContent = 'Vui lòng nhập đủ thông tin!'; return; }
+    AudioManager.play('click'); authSubmitBtn.disabled = true; authSubmitBtn.textContent = 'ĐANG XỬ LÝ...';
+    let res = authMode === 'login' ? await loginAccount(u, p) : await registerAccount(u, p);
+    if (res.success) {
+        document.getElementById('auth-screen').style.display = 'none'; updateAuthUI(); 
+        alert(authMode === 'login' ? "Đăng nhập thành công!" : "Tạo tài khoản thành công! Dữ liệu Khách của bạn đã được liên kết vào tài khoản này.");
+        if (authMode === 'login') {
+            localStorage.removeItem('vucthamlangquen_best_wave'); localStorage.removeItem('vucthamlangquen_gold'); localStorage.removeItem('vucthamlangquen_souls'); localStorage.removeItem('vucthamlangquen_race');
+            player.gold = 0; player.souls = 0; bestWave = 0; await loadSaveData();
+        } else {
+            saveGameData(); // Tự động upload dữ liệu đang chơi lên tài khoản mới tạo
+        }
+        UI.updateHud(player);
+        if (Network.socket) Network.socket.emit('registerName', getPlayerName());
+    } else { errEl.textContent = res.error; }
+    authSubmitBtn.disabled = false; authSubmitBtn.textContent = authMode === 'login' ? 'ĐĂNG NHẬP' : 'TẠO TÀI KHOẢN';
+});
 
 function playNextTrack() {
     if (!bgm) return;
@@ -251,25 +331,27 @@ window.onReviveReceived = () => {
 };
 
 async function loadSaveData() {
-    try { bestWave = parseInt(localStorage.getItem('vucthamlangquen_best_wave')) || 0; player.gold = parseInt(localStorage.getItem('vucthamlangquen_gold')) || 0; player.souls = parseInt(localStorage.getItem('vucthamlangquen_souls')) || 0; } catch (e) {}
+    try { bestWave = parseInt(localStorage.getItem('vucthamlangquen_best_wave')) || 0; player.gold = parseInt(localStorage.getItem('vucthamlangquen_gold')) || 0; player.souls = parseInt(localStorage.getItem('vucthamlangquen_souls')) || 0; player.raceId = localStorage.getItem('vucthamlangquen_race') || 'human'; } catch (e) {}
     const bsv = document.getElementById('best-score-value'); if (bsv) bsv.textContent = bestWave;
     const cloudData = await loadDataFromCloud();
     if (cloudData) {
         if (cloudData.bestWave) bestWave = Math.max(bestWave, cloudData.bestWave);
         if (cloudData.gold !== undefined) player.gold = cloudData.gold;
         if (cloudData.souls !== undefined) player.souls = cloudData.souls;
+        if (cloudData.raceId) player.raceId = cloudData.raceId;
         if (cloudData.ownedSkins) SkinManager.ownedSkins = cloudData.ownedSkins;
         if (cloudData.equippedSkin) SkinManager.equippedSkin = cloudData.equippedSkin;
         SkinManager.saveSkinData();
-        try { localStorage.setItem('vucthamlangquen_best_wave', bestWave); localStorage.setItem('vucthamlangquen_gold', player.gold); localStorage.setItem('vucthamlangquen_souls', player.souls); } catch (e) {}
+        player.recalculateStats();
+        try { localStorage.setItem('vucthamlangquen_best_wave', bestWave); localStorage.setItem('vucthamlangquen_gold', player.gold); localStorage.setItem('vucthamlangquen_souls', player.souls); localStorage.setItem('vucthamlangquen_race', player.raceId); } catch (e) {}
     }
     window.bestWave = bestWave; // Lưu vào biến toàn cục cho network truy cập
 }
 loadSaveData();
 
 function saveGameData() {
-    try { localStorage.setItem('vucthamlangquen_best_wave', bestWave); localStorage.setItem('vucthamlangquen_gold', player.gold); localStorage.setItem('vucthamlangquen_souls', player.souls); } catch (e) {}
-    clearTimeout(window.cloudSyncTimeout); window.cloudSyncTimeout = setTimeout(() => { syncDataToCloud({ bestWave, gold: player.gold, souls: player.souls, ownedSkins: SkinManager.ownedSkins, equippedSkin: SkinManager.equippedSkin, lastUpdated: new Date().toISOString() }); }, 2000);
+    try { localStorage.setItem('vucthamlangquen_best_wave', bestWave); localStorage.setItem('vucthamlangquen_gold', player.gold); localStorage.setItem('vucthamlangquen_souls', player.souls); localStorage.setItem('vucthamlangquen_race', player.raceId); } catch (e) {}
+    clearTimeout(window.cloudSyncTimeout); window.cloudSyncTimeout = setTimeout(() => { syncDataToCloud({ bestWave, gold: player.gold, souls: player.souls, raceId: player.raceId, ownedSkins: SkinManager.ownedSkins, equippedSkin: SkinManager.equippedSkin, lastUpdated: new Date().toISOString() }); }, 2000);
 }
 
 function setHudVisibility(visible) {
@@ -281,6 +363,9 @@ function setHudVisibility(visible) {
     if (devPanel) {
         devPanel.style.display = (visible && localStorage.getItem('vucthamlangquen_admin_token') === 'true') ? 'block' : 'none';
     }
+    
+    const floatingBtn = document.getElementById('floating-auth-container');
+    if (floatingBtn) floatingBtn.style.display = (!visible && gameState === 'MENU') ? 'block' : 'none';
 }
 
 function findSpawnPosition(map, avoid = null) {
@@ -489,7 +574,7 @@ function gameLoop(time) {
 
     if (['UPDATE_LOG', 'LEADERBOARD', 'ADMIN'].includes(gameState)) {
         menu.draw(ctx, GAME_VERSION, player.gold, isMusicPlaying ? playlist[currentTrackIndex].name : 'Chưa phát');
-        if (inputManager.isActionJustPressed('escape')) { Object.values(elements).forEach(el => { if(el) el.style.display = 'none'; }); gameState = 'MENU'; }
+        if (inputManager.isActionJustPressed('escape')) { Object.values(elements).forEach(el => { if(el) el.style.display = 'none'; }); document.getElementById('auth-screen').style.display = 'none'; gameState = 'MENU'; }
         inputManager.update(); if (loopId) cancelAnimationFrame(loopId); loopId = requestAnimationFrame(gameLoop); return;
     }
 

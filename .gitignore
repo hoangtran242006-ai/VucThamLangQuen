@@ -1,0 +1,5 @@
+# Bỏ qua thư viện thư viện nặng
+node_modules/
+
+# BẢO VỆ DỮ LIỆU NGƯỜI CHƠI (Cực kỳ quan trọng)
+database.json

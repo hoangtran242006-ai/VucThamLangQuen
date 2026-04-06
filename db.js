@@ -2,6 +2,48 @@
 // Tự động nhận diện domain/IP hiện tại (Hỗ trợ Localhost, LAN, và Web Link)
 const SERVER_URL = window.location.origin;
 
+// --- HỆ THỐNG TÀI KHOẢN ---
+export function isLoggedIn() {
+    return localStorage.getItem('vucthamlangquen_logged_in') === 'true';
+}
+
+export async function registerAccount(username, password) {
+    try {
+        const res = await fetch(`${SERVER_URL}/api/register`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (data.success) {
+            localStorage.setItem('vucthamlangquen_device_id', data.id);
+            localStorage.setItem('vucthamlangquen_player_name', data.username);
+            localStorage.setItem('vucthamlangquen_logged_in', 'true');
+            return { success: true };
+        }
+        return { success: false, error: data.error };
+    } catch (e) { return { success: false, error: "Lỗi kết nối máy chủ" }; }
+}
+
+export async function loginAccount(username, password) {
+    try {
+        const res = await fetch(`${SERVER_URL}/api/login`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (data.success) {
+            localStorage.setItem('vucthamlangquen_device_id', data.id);
+            localStorage.setItem('vucthamlangquen_player_name', data.username);
+            localStorage.setItem('vucthamlangquen_logged_in', 'true');
+            return { success: true };
+        }
+        return { success: false, error: data.error };
+    } catch (e) { return { success: false, error: "Lỗi kết nối máy chủ" }; }
+}
+
+export function logoutAccount() {
+    localStorage.removeItem('vucthamlangquen_device_id');
+    localStorage.removeItem('vucthamlangquen_logged_in');
+}
+
 // Lấy hoặc tạo ID thiết bị duy nhất
 export function getDeviceId() {
     let id = localStorage.getItem('vucthamlangquen_device_id');

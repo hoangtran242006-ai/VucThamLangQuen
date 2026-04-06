@@ -31,6 +31,7 @@
                 <div id="player-portrait">
                     <canvas id="hud-avatar-canvas" width="50" height="50" style="position:absolute; top:0; left:0; border-radius:6px; pointer-events:none;"></canvas>
                     <div id="level-badge">Lv.<span id="levelValue">1</span></div>
+                    <div id="race-badge" style="position: absolute; top: -10px; right: -10px; background: #2c3e50; border: 2px solid #bdc3c7; border-radius: 50%; width: 24px; height: 24px; display: flex; justify-content: center; align-items: center; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.5); z-index: 10; cursor: pointer;">👤</div>
                 </div>
                 <div id="player-stats">
                     <div id="shield-bar" style="display: none;">
@@ -193,8 +194,39 @@
                     <input type="range" id="pause-volume" min="0" max="1" step="0.01" style="width: 100%; margin-bottom: 12px; cursor: pointer;">
                     <button id="pause-mute-btn" class="menu-btn" style="margin-bottom: 0; background: #2c3e50; border-width: 2px;">🔊 Đang Bật</button>
                 </div>
+                <div class="pause-settings account-settings" style="margin-bottom: 20px; text-align: left; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid #34495e;">
+                    <label style="color: #55efc4; font-weight: bold; display: block; margin-bottom: 8px;">Tài Khoản Đám Mây:</label>
+                    <div id="auth-unlogged" style="display: flex; gap: 10px;">
+                        <button id="btn-show-login" class="moss-btn">ĐĂNG NHẬP</button>
+                        <button id="btn-show-register" class="moss-btn">ĐĂNG KÝ</button>
+                    </div>
+                    <div id="auth-logged" style="display: none; align-items: center; justify-content: space-between;">
+                        <span style="color: #ecf0f1;">Hiệp sĩ: <strong id="logged-username" style="color:#f1c40f">Name</strong></span>
+                        <button id="btn-logout" class="moss-btn moss-btn-danger" style="flex: 0 0 auto;">ĐĂNG XUẤT</button>
+                    </div>
+                </div>
                 <button id="resume-button" class="menu-btn">Tiếp tục chơi</button>
                 <button id="quit-button" class="menu-btn" style="background: #c0392b; border-color: #e74c3c;">Thoát ra Menu</button>
+            </div>
+        </div>
+
+        <!-- Màn hình Đăng nhập / Đăng ký (Auth Modal) -->
+        <div id="auth-screen" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999; justify-content:center; align-items:center; backdrop-filter:blur(4px);">
+            <div class="auth-panel" style="background:#2d3436; border:6px solid #00b894; border-radius:16px; padding:30px; width:350px; text-align:center; position:relative; box-shadow:0 10px 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,184,148,0.2);">
+                <button class="close-btn" id="close-auth-btn">X</button>
+                <div class="moss-decoration top-left"></div>
+                <div class="moss-decoration top-right"></div>
+                <div class="moss-decoration bottom-left"></div>
+                <div class="moss-decoration bottom-right"></div>
+                
+                <h2 id="auth-title" style="color:#55efc4; margin-top:0; text-shadow:2px 2px 0 #00b894;">ĐĂNG NHẬP NÀ BRO</h2>
+                <p id="auth-error" style="color:#ff7675; font-size:14px; min-height:20px; margin-bottom:15px; font-weight: bold;"></p>
+                
+                <input type="text" id="auth-username" placeholder="Tên tài khoản (Viết liền không dấu)" style="width:90%; padding:12px; margin-bottom:15px; background:#1e272e; border:2px solid #57606f; color:white; border-radius:8px; font-size:16px; outline:none; text-align:center;">
+                <input type="password" id="auth-password" placeholder="Mật khẩu" style="width:90%; padding:12px; margin-bottom:20px; background:#1e272e; border:2px solid #57606f; color:white; border-radius:8px; font-size:16px; outline:none; text-align:center;">
+                
+                <button id="auth-submit-btn" class="moss-btn" style="width:100%; padding:12px; font-size:18px;">XÁC NHẬN</button>
+                <div id="auth-toggle-link" style="margin-top:15px; color:#55efc4; font-size:14px; cursor:pointer;">Đăng ký nè!</div>
             </div>
         </div>
 
@@ -239,6 +271,11 @@
                 <button id="restart-button">Chơi Lại</button>
             </div>
         </div>
+    </div>
+    
+    <!-- Floating Auth Button (Sảnh Chờ) -->
+    <div id="floating-auth-container" style="position: fixed; top: 15px; left: 15px; z-index: 100;">
+        <button id="floating-auth-btn" class="moss-btn" style="padding: 8px 16px; font-size: 14px; letter-spacing: 1px;">👤 ĐĂNG NHẬP / ĐĂNG KÝ</button>
     </div>
 
     <!-- Mini map (Ngoài màn hình Game) -->

@@ -1,6 +1,7 @@
 // js/menu.js
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from './constants.js';
 import { SkinManager } from './skins.js';
+import { RaceManager } from './races.js';
 import { SpriteRenderer } from './sprite.js';
 import { AudioManager } from './audio.js';
 
@@ -9,7 +10,7 @@ export class Menu {
         this.buttons = [
             { id: 'start', text: 'BẮT ĐẦU CHƠI', width: 260, height: 50, active: true },
             { id: 'characters', text: 'NHÂN VẬT', width: 260, height: 50, active: true },
-            { id: 'update_log', text: 'BẢN CẬP NHẬT', width: 260, height: 50, active: true },
+            { id: 'races', text: 'CHỦNG TỘC', width: 260, height: 50, active: true },
             { id: 'leaderboard', text: 'BẢNG XẾP HẠNG', width: 260, height: 50, active: true },
             { id: 'settings', text: 'CÀI ĐẶT', width: 260, height: 50, active: true }
         ];
@@ -30,6 +31,7 @@ export class Menu {
         // Khởi tạo thư viện trang phục mới
         SkinManager.init();
         this.skinPage = 0;
+        this.rollAnimation = 0;
 
         let savedVol = localStorage.getItem('vucthamlangquen_volume');
         let savedMuted = localStorage.getItem('vucthamlangquen_muted');
@@ -70,14 +72,14 @@ export class Menu {
                     if (inputManager.mouse.leftJustPressed && btn.active) {
                         if (btn.id === 'start') this.currentScreen = 'MODE_SELECTION';
                         else if (btn.id === 'characters') this.currentScreen = 'CHARACTERS';
-                        else if (btn.id === 'update_log') { if(onShowUpdateLog) onShowUpdateLog(); }
+                        else if (btn.id === 'races') this.currentScreen = 'RACES';
                         else if (btn.id === 'leaderboard') { if(onShowLeaderboard) onShowLeaderboard(); }
                         else if (btn.id === 'admin') { if(onAdmin) onAdmin(); }
                         else if (btn.id === 'settings') this.currentScreen = 'SETTINGS';
                     }
                 }
             }
-            
+
             if (mx >= CANVAS_WIDTH - 150 && mx <= CANVAS_WIDTH && my >= CANVAS_HEIGHT - 40 && my <= CANVAS_HEIGHT) {
                 if (inputManager.mouse.leftJustPressed) {
                     const now = performance.now();
@@ -100,6 +102,28 @@ export class Menu {
 
             if (inputManager.isActionJustPressed('attack')) {
                 this.currentScreen = 'MODE_SELECTION';
+            }
+        } else if (this.currentScreen === 'RACES') {
+            if (mx >= 20 && mx <= 140 && my >= 20 && my <= 60) {
+                this.hoveredButton = 'back';
+                if (inputManager.mouse.leftJustPressed) this.currentScreen = 'MAIN';
+            }
+            
+            const rollBtnX = CANVAS_WIDTH / 2 - 120;
+            const rollBtnY = CANVAS_HEIGHT / 2 + 80;
+            if (mx >= rollBtnX && mx <= rollBtnX + 240 && my >= rollBtnY && my <= rollBtnY + 50) {
+                this.hoveredButton = 'roll_race';
+                if (inputManager.mouse.leftJustPressed) {
+                    if (player.gold >= 1000) {
+                        player.gold -= 1000;
+                        const newRace = RaceManager.rollRace();
+                        player.raceId = newRace.id;
+                        player.recalculateStats();
+                        saveGameData();
+                        AudioManager.play('chest');
+                        this.rollAnimation = 60; 
+                    } else { AudioManager.play('error'); }
+                }
             }
         } else if (this.currentScreen === 'MODE_SELECTION') {
             if (mx >= 20 && mx <= 140 && my >= 20 && my <= 60) {
@@ -226,12 +250,17 @@ export class Menu {
         }
         
         if (inputManager.mouse.leftJustPressed && this.hoveredButton) {
+            if (this.hoveredButton === 'roll_race' && player.gold < 1000) return; // Tránh phát tiếng cạch khi không đủ tiền
             AudioManager.play('click');
         }
     }
+    
+    updateRollAnim() { if (this.rollAnimation > 0) this.rollAnimation--; }
 
     draw(ctx, version, playerGold, currentTrackName) {
         const skyGradient = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
+        this.updateRollAnim();
+        
         skyGradient.addColorStop(0, '#53a8d8'); 
         skyGradient.addColorStop(1, '#9ae0ff'); 
         ctx.fillStyle = skyGradient;
@@ -474,6 +503,52 @@ export class Menu {
                     ctx.fillText('TIẾP THEO ▶', CANVAS_WIDTH / 2 + 100, CANVAS_HEIGHT - 30);
                 }
             }
+
+            ctx.restore();
+        } else if (this.currentScreen === 'RACES') {
+            ctx.save();
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+            const isBackHovered = this.hoveredButton === 'back';
+            ctx.fillStyle = isBackHovered ? '#c0392b' : '#e74c3c';
+            ctx.beginPath(); ctx.roundRect(20, 20, 140, 45, 8); ctx.fill();
+            ctx.fillStyle = '#fff'; ctx.font = 'bold 18px "Segoe UI"'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText('◀ QUAY LẠI', 90, 42.5);
+
+            ctx.fillStyle = '#f1c40f'; ctx.font = 'bold 36px "Segoe UI"';
+            ctx.shadowBlur = 10; ctx.shadowColor = '#e67e22';
+            ctx.fillText('TẾ ĐÀN CHỦNG TỘC', CANVAS_WIDTH / 2, 80);
+            ctx.shadowBlur = 0;
+
+            const currentRace = RaceManager.getRace(window.playerRef.raceId);
+            let displayRace = currentRace;
+            if (this.rollAnimation > 0) { const keys = Object.keys(RaceManager.getRaces()); displayRace = RaceManager.getRace(keys[Math.floor(Math.random() * keys.length)]); }
+
+            const cardX = CANVAS_WIDTH / 2 - 175; const cardY = CANVAS_HEIGHT / 2 - 120;
+            ctx.fillStyle = 'rgba(30, 40, 50, 0.9)'; ctx.strokeStyle = displayRace.rarity.color; ctx.lineWidth = 4;
+            ctx.shadowBlur = this.rollAnimation > 0 ? 30 : 15; ctx.shadowColor = displayRace.rarity.color;
+            ctx.beginPath(); ctx.roundRect(cardX, cardY, 350, 170, 16); ctx.fill(); ctx.stroke(); ctx.shadowBlur = 0;
+
+            if (displayRace.imageObj && displayRace.imageObj.complete && displayRace.imageObj.naturalWidth > 0) {
+                const imgW = 60; const imgH = 60 * (displayRace.imageObj.naturalHeight / displayRace.imageObj.naturalWidth);
+                ctx.drawImage(displayRace.imageObj, CANVAS_WIDTH / 2 - imgW / 2, cardY + 50 - imgH / 2, imgW, imgH);
+            } else {
+                ctx.font = '60px Arial'; ctx.fillText(displayRace.icon, CANVAS_WIDTH / 2, cardY + 50);
+            }
+            ctx.font = 'bold 26px "Segoe UI"'; ctx.fillStyle = displayRace.rarity.color; ctx.fillText(displayRace.name, CANVAS_WIDTH / 2, cardY + 105);
+            ctx.font = '14px "Segoe UI"'; ctx.fillStyle = '#bdc3c7'; ctx.fillText(displayRace.desc, CANVAS_WIDTH / 2, cardY + 135);
+            ctx.font = 'bold 12px "Segoe UI"'; ctx.fillStyle = displayRace.rarity.color; ctx.fillText(`(${displayRace.rarity.name})`, CANVAS_WIDTH / 2, cardY + 155);
+
+            const rollBtnX = CANVAS_WIDTH / 2 - 120; const rollBtnY = CANVAS_HEIGHT / 2 + 80;
+            const isRollHovered = this.hoveredButton === 'roll_race'; const canAfford = playerGold >= 1000;
+            
+            ctx.fillStyle = canAfford ? (isRollHovered ? '#f39c12' : '#f1c40f') : '#7f8c8d';
+            ctx.strokeStyle = '#000'; ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.roundRect(rollBtnX, rollBtnY, 240, 50, 12); ctx.fill(); ctx.stroke();
+            
+            ctx.fillStyle = canAfford ? '#000' : '#2c3e50'; ctx.font = 'bold 18px "Segoe UI"';
+            ctx.fillText(this.rollAnimation > 0 ? 'ĐANG QUAY...' : 'QUAY TỘC MỚI (1000 💰)', CANVAS_WIDTH / 2, rollBtnY + 25);
 
             ctx.restore();
         } else if (this.currentScreen === 'SETTINGS') {

@@ -1,5 +1,37 @@
 === VỰC THẲM LÃNG QUÊN - UPDATE LOG ===
 
+Phiên bản v3.9.0 (OFFICIAL LAUNCH CANDIDATE)
+- Tối ưu hóa Máy chủ: Ổn định toàn bộ hệ thống Database JSON cục bộ và Kênh Chat Socket.IO.
+- Tối ưu FPS: Vá lỗi rò rỉ bộ nhớ (Memory/DOM Leak) gây nóng máy do gọi lệnh render giao diện Tộc liên tục. Trò chơi giờ đây chạy mượt mà 60 FPS trên mọi thiết bị.
+- Sẵn sàng cho bạn bè cùng trải nghiệm!
+
+Phiên bản v3.8.57
+- Thay thế biểu tượng Tộc (Emoji) bằng hình ảnh Pixel Art tự vẽ trong phần Gacha, Giao diện chính (HUD) và trên đầu nhân vật.
+
+Phiên bản v3.8.56 (Hotfix)
+- Sửa lỗi Menu: Khắc phục lỗi Crash Game (ReferenceError) khi truy cập Tế Đàn Chủng Tộc.
+- Sửa phím tắt Sảnh chờ: Khôi phục lại tính năng bấm phím [Space] để vào game nhanh.
+- Trả lại Nút ẩn Admin (Nhấp 5 lần vào số Phiên bản) về đúng vị trí ở màn hình Menu chính.
+
+Phiên bản v3.8.55 (Hotfix)
+- Vá lỗi tải game: Sửa lỗi màn hình bị kẹt ở chữ "Đang tải tài nguyên..." do UI lấy thông tin Tộc trước khi nhân vật được tạo ra.
+- Vá lỗi Tế Đàn: Sửa lỗi văng game khi bấm nút quay Tộc.
+
+Phiên bản v3.8.54
+- Hệ thống Chủng Tộc (Races): Ra mắt Tế Đàn Chủng Tộc! Người chơi có thể dùng Vàng để quay các Tộc với chỉ số riêng biệt.
+- Các Tộc mới: Người (Thường), Người Cá, Thỏ (Hiếm), Thiên Thần, Ác Quỷ (Huyền Thoại).
+- Giao diện: Thay nút Bản cập nhật thành Chủng Tộc, thêm biểu tượng Tộc vào khung Avatar HUD.
+
+Phiên bản v3.8.53 (Hotfix)
+- Sửa Giao diện Đăng nhập: Thêm nút chuyển đổi qua lại giữa Đăng nhập và Đăng ký ngay trong bảng xác thực.
+- Bảo toàn dữ liệu: Khi tạo tài khoản mới, toàn bộ dữ liệu cày cuốc (Vàng, Linh hồn, Trang phục) từ lúc chơi dạng Khách sẽ tự động được liên kết vào tài khoản mới mà không bị mất.
+- Tối ưu Đăng xuất: Reset sạch sẽ nhân vật và túi đồ về mặc định khi đăng xuất để bảo mật thông tin.
+
+Phiên bản v3.8.52
+- Tài Khoản Đám Mây: Thêm Hệ thống Đăng ký / Đăng nhập sử dụng trực tiếp Server Node.js (An toàn, siêu tốc, không giới hạn truy cập như Firebase).
+- Thiết kế UI Rong Rêu (Mossy Pixel) cho các nút xác thực trong Cài đặt và Sảnh chờ.
+- Hỗ trợ Đăng xuất và bảo vệ quyền sở hữu dữ liệu người chơi theo Tên tài khoản.
+
 Phiên bản v3.8.51
 - Tinh chỉnh Vật lý: Tiếp tục tăng thêm chiều cao Hitbox của Bàn Dung Hợp để đảm bảo che chắn không gian và chặn người chơi hoàn hảo nhất.
 

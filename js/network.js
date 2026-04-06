@@ -3,6 +3,7 @@ import { getPlayerName, getDeviceId } from '../db.js';
 import { Player } from './entities.js';
 import { SkinManager } from './skins.js';
 import * as VFX from './vfx.js';
+import { RaceManager } from './races.js';
 
 export const Network = {
     isMultiplayer: false,
@@ -114,6 +115,7 @@ export const Network = {
         if (Math.abs(op.x - p.x) > 100 || Math.abs(op.y - p.y) > 100) { op.x = p.x; op.y = p.y; } 
         op.hp = p.hp; op.maxHp = p.maxHp; op.facing = p.facing || {x:0, y:1};
         op.shield = p.sh || 0; op.maxShield = p.mSh || 0;
+        op.raceId = p.raceId || 'human';
         
         if (p.skin) {
             op.skin = p.skin; 
@@ -167,7 +169,7 @@ export const Network = {
             color: player.color, skin: player.skin,
             facing: { x: parseFloat(player.facing.x.toFixed(1)), y: parseFloat(player.facing.y.toFixed(1)) }, 
             atk: isAttacking, dead: player.isDead, w: waveNumber, 
-            ch: this.localOpenedChests, en: this.localKilledEnemies,
+            ch: this.localOpenedChests, en: this.localKilledEnemies, raceId: player.raceId,
             weapon: player.currentWeapon, playerName: getPlayerName()
         };
         const currentString = JSON.stringify(checkData);
@@ -248,8 +250,18 @@ export const Network = {
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'; ctx.lineWidth = 1.5;
                 ctx.beginPath(); ctx.roundRect(hpX, hpY, hpWidth, hpHeight, 3); ctx.stroke();
                 // Tên người chơi
+                const race = RaceManager.getRace(op.raceId);
                 const nameY = op.maxShield > 0 ? hpY - 11 : hpY - 6;
-                ctx.fillStyle = '#fff'; ctx.font = 'bold 12px "Segoe UI"'; ctx.textAlign = 'center'; ctx.fillText(op.playerName || 'Hiệp sĩ', op.x + op.width/2, nameY);
+                ctx.fillStyle = '#fff'; ctx.font = 'bold 12px "Segoe UI"';
+                if (race.imageObj && race.imageObj.complete && race.imageObj.naturalWidth > 0) {
+                    const textW = ctx.measureText(op.playerName || 'Hiệp sĩ').width;
+                    const totalW = 18 + 4 + textW; // 18px image + gap + text
+                    const startX = op.x + op.width/2 - totalW/2;
+                    ctx.drawImage(race.imageObj, startX, nameY - 14, 18, 18);
+                    ctx.textAlign = 'left'; ctx.fillText(op.playerName || 'Hiệp sĩ', startX + 22, nameY);
+                } else {
+                    ctx.textAlign = 'center'; ctx.fillText(`${race.icon} ${op.playerName || 'Hiệp sĩ'}`, op.x + op.width/2, nameY);
+                }
                 ctx.restore();
             } else {
                 // Trạng thái đã chết: Chỉ vẽ tên dịch xuống dưới bia mộ

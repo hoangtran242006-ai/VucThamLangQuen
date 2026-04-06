@@ -427,6 +427,27 @@ body.touch-device #interaction-prompt { display: none !important; } /* Ẩn ch�
 .menu-btn:hover { background: #f1c40f; color: #000; border-color: #f39c12; transform: scale(1.05); }
 .menu-btn:active { transform: scale(0.95); }
 
+/* --- MOSSY PIXEL BUTTONS & AUTH --- */
+.moss-btn {
+    background: #2d3436; color: #55efc4; border: 3px solid #00b894;
+    padding: 8px 16px; font-family: 'Segoe UI', Tahoma, sans-serif; font-weight: bold; font-size: 14px;
+    border-radius: 8px; cursor: pointer; text-shadow: 1px 1px 0 #000;
+    box-shadow: 0 4px 0 #00b894, 0 5px 10px rgba(0,0,0,0.5); transition: all 0.1s ease;
+    flex: 1; text-align: center; display: inline-block; position: relative;
+    overflow: hidden;
+}
+.moss-btn::after {
+    content: ''; position: absolute; bottom: 0; right: 0; width: 16px; height: 16px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%2300b894' d='M0 100 L100 0 L100 100 Z'/%3E%3C/svg%3E");
+    opacity: 0.7; pointer-events: none;
+}
+.moss-btn:hover { background: #00b894; color: #fff; border-color: #55efc4; box-shadow: 0 4px 0 #00b894, 0 5px 15px rgba(0,0,0,0.5); }
+.moss-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #00b894, 0 2px 5px rgba(0,0,0,0.5); }
+.moss-btn-danger { color: #ff7675; border-color: #d63031; box-shadow: 0 4px 0 #d63031, 0 5px 10px rgba(0,0,0,0.5); }
+.moss-btn-danger::after { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23d63031' d='M0 100 L100 0 L100 100 Z'/%3E%3C/svg%3E"); }
+.moss-btn-danger:hover { background: #d63031; color: #fff; border-color: #ff7675; box-shadow: 0 4px 0 #d63031, 0 5px 15px rgba(0,0,0,0.5); }
+.moss-btn-danger:active { transform: translateY(4px); box-shadow: 0 0 0 #d63031, 0 2px 5px rgba(0,0,0,0.5); }
+
 /* --- BẢNG UPDATE LOG --- */
 #update-log-screen {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;

@@ -30,6 +30,7 @@ app.use(express.static(__dirname));
 // --- HỆ THỐNG DATABASE CỤC BỘ ---
 const dbFile = path.join(__dirname, 'database.json'); // Đưa file data ra thư mục gốc
 let dbData = { players: {} };
+if (!dbData.accounts) dbData.accounts = {};
 
 // Tải dữ liệu từ file lên RAM khi khởi động Server
 if (fs.existsSync(dbFile)) {
@@ -167,6 +168,28 @@ app.get('/api/admin/players', (req, res) => {
         .sort((a, b) => (b.bestWave || 0) - (a.bestWave || 0))
         .slice(0, 50);
     res.json(allPlayers);
+});
+
+// --- HỆ THỐNG ĐĂNG KÝ / ĐĂNG NHẬP CỤC BỘ ---
+app.post('/api/register', (req, res) => {
+    const { username, password } = req.body;
+    if (!username || !password) return res.status(400).json({ error: "Thiếu thông tin đăng ký!" });
+    if (dbData.accounts[username]) return res.status(400).json({ error: "Tên tài khoản này đã có người sử dụng!" });
+    
+    const id = 'player_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+    dbData.accounts[username] = { password, id };
+    dbData.players[id] = { id, playerName: username, bestWave: 0, gold: 0, souls: 0 };
+    saveDatabase();
+    
+    res.json({ success: true, id, username });
+});
+
+app.post('/api/login', (req, res) => {
+    const { username, password } = req.body;
+    const acc = dbData.accounts[username];
+    if (!acc || acc.password !== password) return res.status(400).json({ error: "Sai tên tài khoản hoặc mật khẩu!" });
+    
+    res.json({ success: true, id: acc.id, username });
 });
 
 server.listen(3000, '0.0.0.0', () => {

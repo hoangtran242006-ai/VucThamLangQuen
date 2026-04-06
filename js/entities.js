@@ -3,6 +3,7 @@ import { MAP_WIDTH, MAP_HEIGHT } from './constants.js';
 import { Weapon, Projectile, RARITY } from './weapons.js';
 import { SpriteRenderer } from './sprite.js';
 import { AudioManager } from './audio.js';
+import { RaceManager } from './races.js';
 
 export class Entity {
     constructor(x, y, width, height, maxHp, speed) {
@@ -49,6 +50,8 @@ export class Player extends Entity {
         this.equipment = { helmet: null, armor: null, gloves: null, boots: null };
         this.currentWeapon = new Weapon({ name: 'Cung Gỗ Tập Sự', baseName: 'Cung Gỗ', type: 'ranged', rarity: RARITY.COMMON, baseDmg: 10, baseSpeed: 350, fireRate: 400, range: 300, color: '#f1c40f', imgSrc: 'img/weapon/wodden-bow.png' });
         this.activeChat = null;
+        this.raceId = 'human';
+        this.damageMult = 1.0;
         this.chatExpiry = 0;
         this.animFrame = 0; // Khung hình hiện tại
         this.animTimer = 0; // Bộ đếm thời gian lật frame
@@ -61,6 +64,12 @@ export class Player extends Entity {
         let baseMaxHp = isHoang ? 200 + (this.level - 1) * 40 : 100 + (this.level - 1) * 20;
         let baseMaxShield = isHoang ? 100 + (this.level - 1) * 10 : 0;
         let baseSpeed = 200 + (this.level * 5); 
+
+        const race = RaceManager.getRace(this.raceId);
+        baseMaxHp += race.stats.hp;
+        baseMaxShield += race.stats.shield;
+        baseSpeed += race.stats.speed;
+        this.damageMult = race.stats.dmgMult;
 
         let bonusHp = 0, bonusShield = 0, bonusSpeed = 0;
         for (let key in this.equipment) {
@@ -242,6 +251,7 @@ export class Player extends Entity {
                 if (count > 1 && this.currentWeapon.effectType === 'fire') angleOffset = (Math.random() - 0.5) * spread;
                 const finalAngle = baseAngle + angleOffset;
                 const proj = new Projectile(this.x + this.width / 2, this.y + this.height / 2, Math.cos(finalAngle), Math.sin(finalAngle), this.currentWeapon, isEnemy);
+                proj.damage = Math.floor(proj.damage * this.damageMult);
                 
                 // Hoàng đánh cận chiến: Đạn vô hình, tầm cực ngắn, hitbox cực to
                 if (isHoang) {

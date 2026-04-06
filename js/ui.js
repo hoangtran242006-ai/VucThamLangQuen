@@ -1,16 +1,19 @@
 import { MAP_WIDTH, MAP_COLS, MAP_ROWS } from './constants.js';
 import { SpriteRenderer } from './sprite.js';
+import { RaceManager } from './races.js';
 
 export const UI = {
     els: {},
     cb: {},
     lootTimer: 0,
     lastAvatarSkinId: null,
+    lastRaceId: null,
 
     init(callbacks) {
         this.cb = callbacks;
         this.els = {
             hudAvatar: document.getElementById('hud-avatar-canvas'),
+            raceBadge: document.getElementById('race-badge'),
             levelValue: document.getElementById('levelValue'),
             hpValue: document.getElementById('hpValue'),
             maxHpValue: document.getElementById('maxHpValue'),
@@ -57,6 +60,19 @@ export const UI = {
         if(this.els.weaponName) this.els.weaponName.textContent = player.currentWeapon.name;
         if(this.els.goldValue) this.els.goldValue.textContent = player.gold;
         if(this.els.soulValue) this.els.soulValue.textContent = player.souls;
+
+        // Chỉ render lại DOM của Race Badge nếu người chơi đổi tộc (Tránh tụt FPS do gọi innerHTML 60 lần/giây)
+        if (this.els.raceBadge && this.lastRaceId !== player.raceId) {
+            this.lastRaceId = player.raceId;
+            const race = RaceManager.getRace(player.raceId);
+            if (race.imgSrc) {
+                this.els.raceBadge.innerHTML = `<img src="${race.imgSrc}" style="width:16px; height:16px; object-fit:contain; filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));">`;
+            } else {
+                this.els.raceBadge.textContent = race.icon;
+            }
+            this.els.raceBadge.style.borderColor = race.rarity.color;
+            this.els.raceBadge.title = `Tộc: ${race.name}\n${race.desc}`;
+        }
 
         if (player.maxShield > 0) {
             if (this.els.shieldBar) this.els.shieldBar.style.display = 'block';
