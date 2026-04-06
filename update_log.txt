@@ -1,0 +1,741 @@
+=== VỰC THẲM LÃNG QUÊN - UPDATE LOG ===
+
+Phiên bản v3.8.51
+- Tinh chỉnh Vật lý: Tiếp tục tăng thêm chiều cao Hitbox của Bàn Dung Hợp để đảm bảo che chắn không gian và chặn người chơi hoàn hảo nhất.
+
+Phiên bản v3.8.50
+- Tinh chỉnh Vật lý: Tăng chiều cao vùng va chạm (Hitbox) của Bàn Dung Hợp lên gấp đôi để chặn đạn và người chơi hiệu quả hơn.
+
+Phiên bản v3.8.49
+- Tương tác Vật lý: Biến Bàn Dung Hợp và Thương Gia thành các vật cản vật lý thực thụ trên bản đồ.
+- Người chơi, quái vật và đạn dược giờ đây sẽ va chạm và bị chặn lại bởi các NPC này thay vì bay xuyên qua một cách vô lý.
+
+Phiên bản v3.8.48
+- Cập nhật Phím tắt: Đổi phím mở Bản đồ lớn từ [Ctrl] sang [Tab] để tránh xung đột hệ thống. Phím mở túi đồ giờ rút gọn thành [E].
+
+Phiên bản v3.8.47 (Hotfix)
+- Sửa phím tắt: Sửa lỗi phím Ctrl vô tình mở Kho đồ do file cấu hình phím chưa được cập nhật đầy đủ. Phím Ctrl giờ chỉ dùng để mở bản đồ.
+
+Phiên bản v3.8.46
+- Phóng to Bản đồ: Thêm cơ chế Giữ phím [Ctrl] để phóng to Minimap ra chính giữa màn hình, giúp quan sát toàn cục dễ dàng hơn.
+- Cập nhật Phím tắt: Chuyển phím mở Kho Đồ thành [E] (thay cho I) và phím Tương tác (Nhặt đồ, Luyện kim) thành [F] (thay cho E) để thao tác tay tự nhiên hơn.
+
+Phiên bản v3.8.45
+- Sửa lỗi Giao diện (UI Fix): Thêm Z-Index cho thanh Máu và Giao diện người chơi để chúng không bị che khuất bởi lớp hiển thị Không gian (Layering).
+- Nâng cấp Bản đồ nhỏ (Minimap): Tách Minimap ra khỏi khung trò chơi và neo cố định ở góc dưới bên phải màn hình để tối ưu hóa không gian quan sát.
+
+Phiên bản v3.8.44
+- Sửa lỗi Hiển thị Không gian (Y-Sorting): Khắc phục lỗi Bàn Dung Hợp bay lơ lửng và đè lên nhân vật.
+- Áp dụng thuật toán sắp xếp chiều sâu (Z-Index / Y-Sort) kết hợp Canvas Layering, giúp các vật thể gần camera sẽ che khuất vật thể ở xa một cách chân thực nhất!
+
+Phiên bản v3.8.43
+- Hỗ trợ Texture động (GIF): Áp dụng thủ thuật Overlay để hiển thị file `.gif` làm hình ảnh động cho Bàn Dung Hợp thay vì các nét vẽ lập trình.
+
+Phiên bản v3.8.42
+- Sửa lỗi hiển thị Kho đồ: Cập nhật thuật toán vẽ xem trước nhân vật (Preview). Giờ đây, tất cả các nhân vật bất kể định dạng (Chibi, Sprite cơ bản hay Đa hoạt ảnh) đều sẽ hiển thị đúng tỷ lệ và nằm ngay ngắn ở giữa bục đứng trong Kho Đồ.
+
+Phiên bản v3.8.41 (Hotfix)
+- Vá lỗi Tải Game (Crash): Sửa lỗi Syntax Error nghiêm trọng do thiếu từ khóa export ở danh sách vũ khí khiến trò chơi không thể khởi động.
+
+Phiên bản v3.8.40
+- Tối ưu Test Mode: Di dời bảng điều khiển Dev Mode ra ngoài không gian chơi (góc trái màn hình) để không cản trở tầm nhìn.
+- Nâng cấp nút "Full Set Thần Thoại": Thay vì sinh ngẫu nhiên, hệ thống sẽ thêm chính xác mỗi loại vũ khí và trang bị 1 chiếc (phẩm chất Đỏ) vào túi đồ để dễ dàng kiểm thử toàn bộ vật phẩm.
+
+Phiên bản v3.8.39
+- Cập nhật Test Mode: Sửa lỗi nút "Full Vũ Khí Đỏ" chỉ sinh ra Thương Sét. Bây giờ nút này sẽ sinh ra ngẫu nhiên tất cả các loại vũ khí và trang bị trong game ở phẩm chất Thần Thoại (Mythic).
+
+Phiên bản v3.8.38
+- Nâng cấp Quản Trị Viên: Tích hợp bảng công cụ kiểm thử (Test Mode) vào quyền Quản trị viên (Admin). 
+- Chỉ những ai đăng nhập bằng Mật mã Dev ở Sảnh chờ mới có thể gọi bảng này ra khi vào game để kiểm tra tài nguyên và logic trò chơi.
+
+Phiên bản v3.8.37
+- Ra mắt Test Mode (Developer Mode): Ẩn một bảng công cụ quyền lực dành riêng cho Nhà phát triển (Thêm Vàng, Linh hồn, Qua ải, Bất tử, Buff Vũ khí).
+- Kích hoạt bằng cách nhấp liên tục 5 lần vào số Vàng ở Sảnh chờ để kiểm thử game dễ dàng hơn!
+
+Phiên bản v3.8.36
+- Thay áo Vũ khí (Custom Weapon Sprites): Áp dụng loạt thiết kế đồ họa (Pixel Art) độc quyền tự vẽ cho toàn bộ kho vũ khí.
+- Đồ họa Vũ khí giờ đây hiển thị sắc nét, sống động trong cả Kho đồ (Inventory), Bàn Dung Hợp (Alchemy) và cầm trực tiếp trên tay nhân vật thay vì các nét vẽ lập trình đơn điệu!
+
+Phiên bản v3.8.35
+- Hệ thống Luyện Kim (Alchemy): Thêm Bàn Dung Hợp trên bản đồ. Giờ đây bạn có thể ghép 3 trang bị giống nhau (cùng loại, cùng phẩm chất) để nâng cấp lên bậc cao hơn!
+- Cấp bậc Thần Thoại (Mythic): Bổ sung phẩm chất Thần Thoại tối thượng với sức mạnh hủy diệt, chỉ có thể đạt được thông qua Luyện Kim.
+
+Phiên bản v3.8.34 (Hotfix)
+- Vá lỗi Autoplay: Sửa lỗi logic khiến nhạc không thể phát lên ngay cả khi người chơi đã nhấp chuột do xung đột với chính sách chặn Autoplay của trình duyệt.
+
+Phiên bản v3.8.33
+- Nhạc nền Tự động (Autoplay BGM): Khôi phục tính năng tự động phát bản nhạc Lo-fi cực chill ngay khi vừa mở game. Nếu bị trình duyệt chặn, nhạc sẽ tự động vang lên ngay ở lần nhấp chuột đầu tiên của bạn vào màn hình.
+
+Phiên bản v3.8.32
+- Lột xác Cửa hàng Nhân Vật: Áp dụng hệ thống Phân Bậc Độ Hiếm (Normal, Legendary, Limited, Secret).
+- Nâng cấp Đồ họa UI: Thêm hiệu ứng viền phát sáng (Glow), làm nổi bật tên nhân vật và huy hiệu (Tag) độ hiếm cực kỳ sang trọng để thể hiện đẳng cấp của Hiệp sĩ.
+
+Phiên bản v3.8.31
+- Dọn dẹp Cửa hàng: Loại bỏ hoàn toàn nhân vật "Chiến Binh" khỏi Cửa hàng trang phục và cơ sở dữ liệu của trò chơi.
+
+Phiên bản v3.8.30
+- Nhân vật mới: Bảo. Thêm nhân vật Bảo vào Cửa hàng trang phục với bộ hoạt ảnh (Sprite Sheet) kích thước 6x3 di chuyển mượt mà 4 hướng.
+
+Phiên bản v3.8.29
+- Tinh chỉnh Giao diện: Hạ thấp cụm nút bấm ở màn hình Sảnh Chờ (Menu) xuống một chút để không còn tình trạng che khuất tên của trò chơi.
+
+Phiên bản v3.8.28
+- Căn chỉnh UI Thông minh: Thanh máu, giáp, tên và bong bóng chat của người chơi (đặc biệt là các nhân vật to lớn như Hoàng) giờ đây sẽ tự động nổi lên cao hơn để không bao giờ bị che khuất bởi hình ảnh nhân vật.
+
+Phiên bản v3.8.27 (Hotfix)
+- Sửa lỗi Chuộc mạng Đồng đội: Khắc phục sự cố Máy chủ bỏ qua tín hiệu Hồi sinh khiến người chơi đã chết không thể sống lại dù đồng đội đã trả đủ Linh hồn tại Lò rèn.
+
+Phiên bản v3.8.26
+- Đồng bộ Hoạt ảnh Đa người chơi (Multiplayer Animation Sync): Khắc phục triệt để lỗi "Trượt băng" của các người chơi khác. Giờ đây bạn có thể thấy đồng đội cử động tay chân, vung kiếm và chạy nhảy mượt mà như đang chơi Offline!
+
+Phiên bản v3.8.25
+- Nhân vật mới: Ami. Đã thêm Ami vào Cửa hàng trang phục với hệ thống hoạt ảnh 10x4 mượt mà. Khung avatar sẽ tự động trích xuất khung hình đầu tiên để làm chân dung đại diện!
+
+Phiên bản v3.8.24
+- Đồng bộ Avatar HUD: Khung Avatar cạnh thanh máu trong trận đấu giờ đây đã hiển thị chính xác hình ảnh chân dung, Hoạt ảnh (Sprite) hoặc nhân vật Chibi mà người chơi đang sử dụng thay vì chỉ hiển thị màu sắc đơn điệu.
+
+Phiên bản v3.8.23
+- Sửa lỗi khung hình Bocchi: Chỉnh xác nhận thông số Sprite Sheet của Bocchi thành 9 cột 4 hàng để loại bỏ hiện tượng giật khung hình.
+
+Phiên bản v3.8.22
+- Chỉnh sửa khung hình Bocchi: Cập nhật lại thông số Sprite Sheet của Bocchi thành 10 cột 4 hàng để hoạt ảnh di chuyển mượt mà và chính xác.
+
+Phiên bản v3.8.21
+- Nâng cấp Bocchi: Nhân vật Bocchi giờ đây đã hỗ trợ Hệ thống Hoạt ảnh (Sprite Sheet) 4 hướng, có thể mượt mà bước đi thay vì hình tĩnh như trước đây.
+
+Phiên bản v3.8.20
+- Đại tu Kho Đồ (Inventory Overhaul): Thiết kế lại hoàn toàn giao diện túi đồ theo phong cách Minecraft/RPG hiện đại.
+- Hệ thống Trang Bị (Armor System): Bổ sung 4 khe cắm trang bị bao gồm: Mũ, Áo Giáp, Bao Tay và Giáp Chân. Các trang bị này có thể nhặt từ rương và cung cấp lượng lớn Máu, Giáp ảo và Tốc độ di chuyển!
+
+Phiên bản v3.8.19
+- Dọn dẹp Rương báu: Rương sau khi được mở sẽ tự động biến mất sau 20 giây để làm sạch bản đồ.
+
+Phiên bản v3.8.18 (Hotfix)
+- Vá lỗi Đóng Băng Game (Crash): Khắc phục lỗi nghiêm trọng khiến game bị đứng hình (Freeze) khi Boss Tinh Anh sử dụng kỹ năng Triệu Hồi đệ tử do sai sót trong việc kế thừa Cấp độ (Level).
+
+Phiên bản v3.8.17
+- Căn chỉnh Hitbox: Điều chỉnh lại tọa độ vẽ của các nhân vật sử dụng Hoạt ảnh (Sprite Sheet). Tâm của hình ảnh giờ đây sẽ khớp chính xác với tâm của Hitbox thay vì căn theo chân như trước, giúp nhân vật không còn bị lệch lên trên.
+
+Phiên bản v3.8.16
+- Tinh chỉnh Cân bằng (Balance): Tăng lượng Giáp cơ bản của Hoàng từ 50 lên 100. Giảm tốc độ tự động hồi phục xuống còn 10 Giáp/giây (Kích hoạt sau 5s không nhận sát thương) để duy trì tính thử thách của game.
+
+Phiên bản v3.8.15
+- Cân bằng sinh tồn Hoàng: Nhân đôi Máu (HP) cơ bản và tăng lượng máu nhận được mỗi khi lên cấp. 
+- Cơ chế Lá Chắn (Shield): Bổ sung thanh Giáp màu xanh độc quyền cho Hoàng. Giáp sẽ hứng sát thương thay cho Máu và tự động hồi phục rất nhanh nếu Hoàng không chịu sát thương trong vòng 5 giây!
+
+Phiên bản v3.8.14
+- Cân bằng sức mạnh Hoàng: Tăng gấp đôi (x2) sát thương cơ bản cho các đòn đánh cận chiến của Hoàng để bù đắp cho việc tầm đánh bị giới hạn ở cự ly gần!
+
+Phiên bản v3.8.13
+- Thức tỉnh sức mạnh Hoàng: Phóng to kích thước nhân vật Hoàng để thể hiện rõ uy lực của một chiến binh thực thụ.
+- Cận chiến tuyệt đối: Hoàng giờ đây không còn bắn ra các viên đạn vật lý. Thay vào đó, mỗi đòn tấn công của anh là những cú vung vũ khí vô hình với sát thương diện rộng ở cự ly gần!
+
+Phiên bản v3.8.12
+- Sửa lỗi Animation: Khắc phục sự cố nhân vật Hoàng bị tàng hình trong game do hệ thống từ chối nạp ảnh của bộ Đa Hoạt Ảnh (Advanced Sprite).
+- Nội tại Độc quyền - Hoàng: Hoàng là một nhân vật Hardcore, anh ta tin vào sức mạnh bản thân nên TỪ CHỐI mở rương báu. Người chơi dùng Hoàng chỉ có thể đánh thường và phải nâng cấp vũ khí gốc tại Lò Rèn.
+
+Phiên bản v3.8.11
+- Nhân vật Hoàng (Thức Tỉnh): Ra mắt hệ thống nhân vật Đa hoạt ảnh (Advanced Sprite System) siêu phức tạp.
+- Cỗ máy Render mới hỗ trợ load riêng biệt các thư mục hành động (ATTACK, IDLE, RUN) và 4 hướng di chuyển khác nhau để đem lại trải nghiệm mượt mà và chi tiết nhất!
+
+Phiên bản v3.8.10
+- Phóng to Rương báu: Tăng kích thước hiển thị của Rương trên bản đồ giúp người chơi dễ dàng quan sát và nhận biết hơn.
+- Mở rộng vùng tương tác giúp thao tác nhặt đồ trở nên mượt mà và dễ chịu.
+
+Phiên bản v3.8.9
+- Tùy chỉnh hiển thị Nhân vật (Sprite Sheet): Ẩn vũ khí và bóng râm mặc định đối với các nhân vật sử dụng Gói Hoạt Ảnh tùy chỉnh (Tiên, Chiến Binh) để không làm che khuất đồ họa gốc của nhân vật.
+- Tối ưu hình ảnh chiến đấu: Giúp nhân vật nhập vai trông tự nhiên hơn mà không bị gậy vũ khí thô sơ đè lên người.
+
+Phiên bản v3.8.8
+- Nhân vật mới: Bổ sung "Chiến Binh" vào Cửa hàng trang phục (`img/character-2.png`).
+- Nâng cấp Trình xử lý Hoạt ảnh: Hỗ trợ loại Sprite Sheet 3 hàng (Xuống, Lên, Ngang) và tự động lật mặt thông minh khi đi sang trái để tiết kiệm tài nguyên.
+
+Phiên bản v3.8.7
+- Cải tiến Giao diện Rương báu: Hình ảnh rương báu giờ đây sẽ giữ nguyên tỷ lệ gốc, không còn bị bóp méo.
+- Tương tác mở rương: Yêu cầu người chơi lại gần và nhấn phím [E] để mở thay vì tự động nhặt như trước đây.
+- Cơ chế Gacha/Loot đồ: Khi mở rương, một giao diện sẽ xuất hiện cho phép bạn xem trước chỉ số món đồ. Bạn có thể kéo thả icon vào ô "TRANG BỊ" hoặc "CẤT VÀO TÚI" y hệt các game RPG sinh tồn hiện đại!
+
+Phiên bản v3.8.6
+- Cập nhật Đồ họa Rương (Chest Sprite): Thay thế khối vuông mặc định bằng hình ảnh Rương báu thực tế (`img/chest.png`).
+- Hiệu ứng Mở rương chân thực: Rương giờ đây sẽ giữ lại trạng thái mở nắp trên mặt đất sau khi bị loot thay vì biến mất ngay lập tức.
+- Tối ưu dọn dẹp: Tự động xóa rương đã mở khi có rương mới xuất hiện để đảm bảo game luôn mượt mà.
+
+Phiên bản v3.8.5
+- Tối ưu cấu trúc mã: Trích xuất toàn bộ thuật toán cắt khung hình (Sprite Sheet Slicer) sang file độc lập `sprite.js` giúp mã nguồn gọn gàng và dễ bảo trì hơn.
+- Vá lỗi Tỷ lệ khung hình (Aspect Ratio): Khắc phục lỗi nhân vật bị lùn/mập do bị bóp méo. Chiều cao vẽ sẽ tự động tính toán tỷ lệ thuận với chiều rộng gốc để giữ nguyên vóc dáng!
+
+Phiên bản v3.8.4
+- Tinh chỉnh Hoạt ảnh Nhân vật (Animation): Cập nhật thông số Sprite Sheet của nhân vật "Tiên" sang chuẩn 10 khung hình di chuyển (10x4).
+- Tự động điều chỉnh tốc độ khung hình (Frame Rate) mượt mà hơn đối với những Sprite Sheet có nhiều khung hình.
+
+Phiên bản v3.8.3
+- Trình Cắt Hoạt Ảnh (Sprite Sheet Slicer): Nâng cấp Hệ thống Nhân vật để hỗ trợ các gói Đồ họa dạng chuỗi (Sprite Sheet).
+- Các nhân vật dạng này (như "Tiên") giờ đây sẽ tự động phát hoạt ảnh bước đi (Walk Animation) và tự quay mặt theo 4 hướng dựa trên hướng ngắm bắn của chuột.
+
+Phiên bản v3.8.2
+- Thêm nhân vật mới: Bổ sung nhân vật "Tiên" vào Cửa hàng, sử dụng gói đồ họa tùy chỉnh (`img/character-1.png`) từ người chơi.
+
+Phiên bản v3.8.1 (Art Rework)
+- Lột xác Nữ Sinh Huyền Thoại: Thiết kế lại toàn bộ ngoại hình nhân vật Nữ Sinh sang chuẩn Anime Chibi siêu dễ thương (Đầu to, mắt long lanh, má hồng, tóc bồng bềnh).
+- Tối ưu chi tiết: Thêm hoạt ảnh váy đung đưa mượt mà hơn, tất trắng và giày học sinh.
+- Cảm xúc chân thực: Nâng cấp biểu cảm nhắm tịt mắt (>_<) mỗi khi xả đạn!
+
+Phiên bản v3.8.0
+- Nhân vật Huyền thoại (Legendary Character): Bổ sung nhân vật "Nữ Sinh Anime" vào Cửa hàng với giá 999.000 Vàng.
+- Đột phá Đồ họa: Đây là nhân vật đầu tiên sở hữu Hệ thống Hoạt ảnh Động (Dynamic Animations) bao gồm: Bước đi, Đung đưa váy/tóc, Chớp mắt và Giật lùi (Recoil) khi xả súng!
+- Hệ thống vẽ nhân vật Procedural Canvas được tinh chỉnh lại để hỗ trợ các hình dáng phức tạp ngoài Chibi cơ bản.
+
+Phiên bản v3.7.0
+- Hồi sinh an toàn (Revive System Rework): Khi tử nạn, người chơi sẽ biến thành Hồn Ma dễ thương bay lượn trên bản đồ (có thể đi xuyên tường) thay vì nằm im một chỗ.
+- Tính năng Chuộc mạng: Đồng đội có thể chạy đến Lò Rèn Bí Ẩn và trả 50 Linh hồn để mua lại mạng cho người đã chết.
+- Đảm bảo tính ổn định tuyệt đối, loại bỏ hoàn toàn các lỗi đóng băng (freeze) khi hồi sinh trước đây.
+
+Phiên bản v3.6.1 (Hotfix)
+- Sửa lỗi Trắng màn hình/Không vào được game: Khắc phục sự cố ReferenceError do gọi hàm đồng bộ Âm thanh trước khi Menu được khởi tạo.
+- Sửa lỗi Kỷ lục: Đảm bảo số Tầng cao nhất (Best Wave) luôn được đồng bộ và lưu trữ chính xác khi nhận tín hiệu từ Server Node.js.
+- Sửa lỗi Chơi lại (Restart): Khắc phục tình trạng bấm "Chơi lại" bị sai chế độ (Nhảy nhầm từ Solo sang Multiplayer).
+
+Phiên bản v3.6.0
+- Cài đặt Nhanh (Quick Settings): Bổ sung thanh điều chỉnh Âm lượng và nút Bật/Tắt âm thanh trực tiếp vào Menu Tạm dừng (Pause) khi nhấn [ESC] trong game.
+- Đồng bộ trạng thái: Cài đặt âm thanh trong trận sẽ tự động lưu và áp dụng luôn cho giao diện Cài đặt ngoài Sảnh chờ.
+- Xác nhận hoàn thiện hệ thống Âm thanh: Đã có đủ tiếng Click khi bấm mọi nút, tiếng "Bloop" khi nhặt Hạt kinh nghiệm và tiếng "Leng keng" khi nhặt Vàng.
+
+Phiên bản v3.5.0
+- Hệ thống Âm thanh Chuyên nghiệp (SFX): Tích hợp Web Audio API Synthesizer tạo ra các âm ứng retro đặc trưng (8-bit) cho game.
+- Trải nghiệm mọi hành động: Cảm nhận rõ ràng từng tiếng "bíp" khi chọn menu, tiếng "pew" khi bắn súng, và âm thanh "leng keng" sướng tai khi nhặt Vàng/EXP.
+- Hoàn thiện nút Tắt/Bật Âm thanh: Bây giờ nút tắt nhạc trong Cài đặt sẽ tắt luôn cả tiếng hiệu ứng (SFX).
+
+Phiên bản v3.4.0 - HELL MODE UPDATE
+- Cơn ác mộng bắt đầu: Gia tăng mạnh mẽ số lượng quái vật sinh ra ở mỗi Tầng.
+- Đa dạng hóa kẻ thù: Bổ sung thêm các loại quái mới (Nhện độc, Golem, Vampire) với lượng Máu, Tốc độ và Sát thương được cường hóa liên tục theo cấp độ.
+- Kỹ năng Tinh Anh (Boss Skills): Boss giờ đây sẽ tung kỹ năng liên tục mỗi 4 giây: Cuồng nộ (Lao sấm sét), Hút máu diện rộng (AoE) và Triệu hồi tay sai vây hãm người chơi!
+
+Phiên bản v3.3.4
+- Lột xác Kho Đồ (Inventory Overhaul): Chuyển đổi giao diện hiển thị vũ khí từ danh sách dọc sang dạng Lưới ô vuông (Grid Slots) chuẩn RPG.
+- Cải thiện trải nghiệm thị giác (UI/UX) với viền phát sáng theo độ hiếm, hiệu ứng di chuột (Hover) mượt mà và thẻ đánh dấu "Đang Dùng".
+- Thiết kế lại Bảng Chi tiết vũ khí với các thanh chỉ số Gradient rực rỡ và khung mô tả kỹ năng sang trọng hơn.
+
+Phiên bản v3.3.3
+- Tối giản hóa Hệ thống Nhân vật: Xóa bỏ Demon Girl và cấu trúc thư mục rườm rà.
+- Khôi phục nhân vật Bocchi độc quyền (`img/bocchi.png`) giúp việc tự chỉnh sửa ảnh nhân vật của bạn trở nên đơn giản và trực quan hơn.
+
+Phiên bản v3.3.2
+- Đồng bộ dữ liệu Live (Real-time Sync): Game giờ đây tự động cập nhật dữ liệu (Vàng, Linh hồn, Trang phục) và Bảng xếp hạng trực tiếp từ máy chủ Node.js mà không cần tải lại trang.
+- Dọn dẹp Cửa hàng: Loại bỏ các nhân vật thừa không sử dụng, chỉ giữ lại nhân vật cơ bản và Demon Girl (`character/demon-girl.png`).
+- Sửa lỗi đồng bộ dữ liệu Trang phục (Skins) lên đám mây.
+
+Phiên bản v3.3.1
+- Chia nhỏ mã nguồn: Trích xuất toàn bộ hệ thống Trang phục/Nhân vật sang file độc lập `skins.js` để dễ dàng quản lý.
+- Tối ưu tải ảnh: Sửa lỗi màn hình cửa hàng trống không do ảnh tải chậm, tự động vẽ Avatar mặc định nếu ảnh bị lỗi hoặc chưa tải xong (Chống Crash).
+- Thêm nhân vật mới: Bổ sung Demon Girl (`character/demon-girl.png`) vào Cửa hàng nhân vật.
+
+Phiên bản v3.3.0
+- Tích hợp Pack Nhân Vật: Đưa hàng loạt nhân vật mới từ thư mục `character/` vào Cửa hàng Phòng thay đồ.
+- Hệ thống Phân trang (Pagination): Nâng cấp Cửa hàng nhân vật để có thể cuộn trang (Trang 1, Trang 2...), giúp bạn thoải mái thêm hàng trăm nhân vật vào game mà không sợ bị tràn màn hình.
+- Hỗ trợ hiển thị tối ưu (Responsive) đối với danh sách nhân vật dài trên cả máy tính và điện thoại.
+
+Phiên bản v3.2.5
+- Khắc phục xung đột Live Server: Nâng cấp máy chủ Node.js để tự động phân phối file tĩnh (HTML, CSS, JS) cho người chơi.
+- Giải quyết triệt để tình trạng "Đang chơi bị F5 văng ra Menu" do tiện ích Live Server của VS Code tự động làm mới trang mỗi khi Database được cập nhật.
+- Tính năng mới: Người chơi khác chỉ cần truy cập vào IP máy chủ thông qua trình duyệt là có thể chơi ngay mà không cần tải source game về máy!
+
+Phiên bản v3.2.4
+- Tiêu diệt "Bóng ma" văng game: Vô hiệu hóa các nút phụ trên chuột (Chuột hông Tiến/Lùi) để ngăn chặn việc người chơi bóp nhầm làm trình duyệt tải lại trang.
+- Khiên bảo vệ Trình duyệt: Bổ sung cảnh báo an toàn (Trình duyệt sẽ hỏi lại) nếu bạn lỡ tay F5 hoặc quay lại trang (Go Back) khi đang ở trong trận đấu.
+- Xóa Focus tự động: Các nút bấm trên màn hình (Shop, Inventory, Pause) sẽ tự động nhả vùng chọn sau khi nhấp, loại bỏ triệt để tình trạng dính phím Space đánh quái thành nhấp nút.
+
+Phiên bản v3.2.3
+- Sửa lỗi "Văng ra màn hình chính": Khắc phục tình trạng người chơi vô tình bấm phím `Tab` làm trình duyệt nhảy Focus vào nút Thoát, dẫn đến việc bấm Space/Enter bị văng game oan uổng.
+- Chặn phím tắt rác: Khóa các phím `Tab`, `Backspace`, `Enter` để tránh trình duyệt tải lại trang ngoài ý muốn.
+- Thêm hộp thoại xác nhận an toàn (Confirm) khi bạn bấm nút "Thoát ra Menu" để chống click nhầm khi đang chiến đấu căng thẳng.
+
+Phiên bản v3.2.2 (Hotfix)
+- Sửa lỗi Đơ Game khi Bắt đầu: Khắc phục sự cố gọi sai tên hàm (Function Not Found) liên quan đến hệ thống Trang phục (Skin) mới.
+- Trò chơi giờ đây đã khởi động mượt mà và tự động tải đúng hình ảnh / màu sắc của nhân vật bạn đã chọn từ Cửa hàng.
+
+Phiên bản v3.2.1
+- Vá lỗi khởi động game (Crash): Khắc phục lỗi sai tên hàm Import `getTopPlayers` khiến mã nguồn JavaScript bị sập.
+- Xóa sổ hoàn toàn mã nguồn Firebase cũ khỏi `db.js`, chính thức chuyển 100% dữ liệu sang máy chủ cục bộ (Node.js).
+
+Phiên bản v3.2.0 - DATA MIGRATION
+- Tự do Hệ thống Dữ liệu: Chuyển đổi toàn bộ hệ thống Lưu trữ Kỷ lục, Vàng, Linh hồn từ Firebase sang máy chủ Node.js cục bộ.
+- Trải nghiệm lưu game mượt mà, siêu tốc độ và không bao giờ gặp lỗi giới hạn truy cập của bên thứ 3.
+- Vá các lỗi logic tồn đọng trong quá trình tải Bảng xếp hạng và tải dữ liệu Admin.
+
+Phiên bản v3.1.2
+- Hiển thị Danh sách Người chơi: Bảng Thông tin Máy chủ giờ đây cho phép bạn nhấp vào để xem chi tiết tên của tất cả mọi người đang Online trên Server.
+- Máy chủ Node.js đã được nâng cấp để liên tục theo dõi và đồng bộ tên người chơi ngay từ khi họ bước vào Sảnh Chờ.
+
+Phiên bản v3.1.1
+- Tối ưu Bảng Thông tin Máy chủ (Server Info): Dời bảng Ping và trạng thái ra ngoài màn hình game (position: fixed) để không che khuất tầm nhìn.
+- Cập nhật logic hiển thị số lượng người chơi: Bảng sẽ luôn hiện Tổng số người đang Online trên toàn Server kể cả khi bạn đang ở Sảnh Chờ (Menu).
+
+Phiên bản v3.1.0
+- Bảng Thông tin Máy chủ (Server Info Panel): Thêm bảng hiển thị ngay góc trên bên phải màn hình để theo dõi tình trạng Mạng (Ping), Số người chơi trong phòng và Chế độ hiện tại.
+- Đo lường Ping (Độ trễ): Tự động đổi màu Xanh/Vàng/Đỏ tùy theo chất lượng kết nối tới máy chủ.
+- Tối ưu hóa & Chia nhỏ mã nguồn: Trích xuất toàn bộ hệ thống Kênh Chat (Chat System) sang file độc lập `chat.js`, giúp `main.js` gọn gàng và dễ bảo trì hơn.
+
+Phiên bản v3.0.5
+- Phân luồng Máy chủ (Server Rooms): Tách biệt hoàn toàn người chơi giữa chế độ Co-op và Đấu trường PvP.
+- Những Hiệp sĩ chọn PvP sẽ được đưa vào một Không gian riêng, không còn nhìn thấy hay bị can thiệp bởi những người đang đánh quái ở chế độ Co-op.
+
+Phiên bản v3.0.4
+- Tối ưu Trải nghiệm (UX): Dời Khung Chat Thế Giới ra ngoài khu vực chơi game (Game Container).
+- Việc di dời này giúp trả lại 100% không gian hiển thị của trò chơi, giải quyết dứt điểm vấn đề khung chat che khuất tầm nhìn khi đang di chuyển và chiến đấu.
+
+Phiên bản v3.0.3
+- Chat Kiểu Hiện Đại (Floating Chat): Khi có tin nhắn mới, dòng chữ sẽ tự động nổi lên trên màn hình và mờ dần sau 6 giây mà không cần mở bảng Chat.
+- Khung Chat Thông Minh: Khi mở khung Chat, nền kính mờ (Glassmorphism) sẽ hiện ra; khi đóng, nền sẽ biến mất, trả lại tầm nhìn bao quát cho bạn.
+- Tối ưu hóa UI: Tin nhắn mới đẩy tin nhắn cũ lên mượt mà, tự động ẩn thanh cuộn khi không sử dụng.
+
+Phiên bản v3.0.2
+- Đại tu Giao diện Chat: Lột xác kênh chat với phong cách "Kính mờ" (Glassmorphism) cực kỳ hiện đại.
+- Phần đỉnh của vùng chat sẽ được áp mặt nạ làm mờ dần (Fade-out mask), giúp tin nhắn trôi lên biến mất một cách tự nhiên mà không bị cắt cụt.
+- Thêm hiệu ứng hoạt ảnh mượt mà (Trượt và Hiện mờ) khi bật/tắt khung Chat thay vì chớp tắt đột ngột.
+
+Phiên bản v3.0.1
+- Giao diện Chibi Sinh Tồn: Bổ sung Thanh máu (HP Bar) nhỏ gọn, bo góc mềm mại trên đầu các người chơi khác trong Multiplayer.
+- Thanh máu tự động đổi màu (Xanh -> Vàng -> Đỏ) tùy theo tình trạng sức khỏe, giúp bạn dễ dàng theo dõi đồng đội hoặc kẻ địch trong PvP.
+
+Phiên bản v3.0.0 - BATTLE ARENA UPDATE
+- Đấu Trường Sinh Tử (PvP Mode): Ra mắt chế độ thứ 3 cho phép các Hiệp sĩ so tài cao thấp với nhau.
+- Bản đồ Đấu trường: Thiết kế riêng một bản đồ thu nhỏ phong cách Đấu trường La Mã (Colosseum) chuyên biệt cho việc giao tranh.
+- Rương báu sẽ liên tục xuất hiện giữa Đấu trường mỗi 15 giây để cung cấp vũ khí cho người chơi.
+
+Phiên bản v2.9.5
+- Hệ thống Định vị Đồng đội (Teammate Tracker): Thêm mũi tên chỉ hướng ở lề màn hình giúp bạn dễ dàng tìm thấy đồng đội đang ở xa.
+- Nâng cấp Bản đồ nhỏ (Minimap): Hiện rõ vị trí các thành viên trong đội bằng các chấm màu trên Minimap.
+
+Phiên bản v2.9.4
+- Hủy bỏ tính năng Hồi Sinh Đồng Đội: Lối chơi trở lại nguyên bản khắc nghiệt, mỗi người chỉ có 1 mạng.
+- Chế độ Khán giả: Nếu một người chơi chết, họ vẫn có thể xem đồng đội bắn. Tuy nhiên nếu toàn bộ đội hình đều tử nạn, game sẽ kết thúc lập tức!
+
+Phiên bản v2.9.3
+- Lột xác Màn hình Game Over: Thiết kế giao diện bóng tối Cinematic ngầu hơn, loại bỏ nền đỏ chói mắt.
+- Hoàn thiện Spectator Mode: Cập nhật dòng thông báo "Đang theo dõi đồng đội" nhấp nháy khi bạn đang chờ được hồi sinh.
+- Fix Tận Gốc Lỗi Hồi Sinh: Khắc phục sự cố ngắt Vòng lặp (Game Loop) ở cuối chu kỳ khiến trò chơi bị Đóng Băng hoàn toàn sau khi bảng Game Over ẩn đi.
+
+Phiên bản v2.9.2
+- Sửa lỗi Trôi Cảm Biến (Deadzone Fix): Nới lỏng điều kiện đứng yên khi niệm chú cứu đồng đội để tránh việc Joystick hoặc bàn phím trả về số ảo làm hủy thao tác cứu.
+- Sửa lỗi Double Game Loop: Khắc phục tình trạng "cứu thành công nhưng không sống lại" do vòng lặp thời gian bị nhân đôi, gây treo logic game.
+- Bổ sung hiệu ứng Sấm sét lóe sáng (VFX) cực ngầu mỗi khi đồng đội thức dậy từ cõi chết.
+
+Phiên bản v2.9.1
+- Hoàn thiện Cơ chế Hồi sinh (Revive Fix): Khắc phục lỗi vòng lặp game bị đóng băng khi tử nạn khiến tín hiệu cứu sống không thể kích hoạt.
+- Chế độ Khán giả (Spectator Mode): Khi chết trong Multiplayer, bạn vẫn có thể tiếp tục quan sát đồng đội chiến đấu qua màn hình mờ.
+- Giảm thời gian niệm chú hồi sinh từ 5 giây xuống 3 giây, tăng khoảng cách tương tác giúp thao tác mượt mà hơn.
+
+Phiên bản v2.9.0
+- Hồi Sinh Đồng Đội (Revive System): Bạn có thể đến gần Bia mộ của đồng đội, giữ phím [E] và đứng yên trong 5 giây để cứu họ sống lại với 10 HP.
+- Kéo cao tinh thần đồng đội trong chế độ Multiplayer, giúp những trận chiến Boss Tinh Anh trở nên kịch tính và có cơ hội lật kèo.
+
+Phiên bản v2.8.2
+- Giao tiếp sống động (Chat Bubble): Thêm hiệu ứng "Bong bóng Chat" dễ thương hiện trực tiếp trên đầu nhân vật mỗi khi nhắn tin.
+- Bong bóng chat tự động hiển thị cho cả bản thân và đồng đội trong chế độ Multiplayer, tạo cảm giác kết nối tuyệt vời hơn.
+
+Phiên bản v2.8.1
+- Vá lỗi "Nghẹn đạn" Multiplayer: Khắc phục sự cố đồng đội lúc bắn lúc không do xung đột bộ đếm thời gian (Cooldown Mismatch) giữa các máy tính khác nhau.
+- Tối ưu Cảm biến Nhấp chuột: Thao tác nhấp chuột cực nhanh (1 frame) giờ đây cũng được ghi nhận và đẩy lên Server chính xác.
+
+Phiên bản v2.8.0 - THE SMOOTH MULTIPLAYER UPDATE
+- Tối ưu hóa Netcode: Tăng tần số gửi dữ liệu mạng (Tick-rate) từ 5 lên 25 lần/giây tận dụng sức mạnh máy chủ Node.js.
+- Tích hợp Thuật toán Dead Reckoning (Dự đoán chuyển động): Các máy khách (Client) sẽ tự suy đoán hướng đi của đồng đội để bù đắp độ trễ mạng (Ping).
+- Kết quả: Chuyển động của người chơi khác giờ đây mượt mà, trơn tru 100% như đang chơi Offline, không còn hiện tượng dịch chuyển tức thời (giật cục).
+
+Phiên bản v2.7.2
+- Vá lỗi màn hình đen: Khôi phục lại phần mã đuôi của file `network.js` bị cắt xén do quá trình sao chép bị lỗi.
+- Hệ thống Server Node.js (Socket.io) đã được kết nối hoàn chỉnh 100% và sẵn sàng hoạt động.
+
+Phiên bản v2.7.1
+- Vá lỗi màn hình đen (Crash game): Khắc phục lỗi Syntax Error do file `network.js` chưa được cập nhật đồng bộ với Server Node.js.
+- Cấu hình lại chuẩn kết nối Socket.io để Chat và Multiplayer hoạt động trơn tru.
+
+Phiên bản v2.7.0 - THE SERVER UPDATE
+- Di dời Máy chủ: Chuyển toàn bộ hệ thống Multiplayer và Chat sang máy chủ Node.js cục bộ (Socket.io).
+- Tốc độ phản hồi thời gian thực (Ping siêu thấp), không còn nỗi lo bị giới hạn Quota từ Firebase.
+- Hỗ trợ chơi mạng LAN / Radmin VPN thông qua kết nối IP trực tiếp. Kỷ lục vẫn được lưu trên Đám mây.
+
+Phiên bản v2.6.1 (Rollback Firebase)
+- Tạm gác Máy chủ Node.js: Phục hồi hoàn toàn lại hệ thống Firebase ổn định do thao tác sao chép Server Node.js bị thiếu file gây xung đột.
+- Lời giải cho lỗi "Tab Phụ tàng hình": Do trình duyệt (Chrome/Edge) tự động "Ngủ đông" tab ẩn (Tab Throttling) để tiết kiệm pin, dẫn đến việc Tab Phụ không đẩy được dữ liệu lên Firebase.
+- Khuyến nghị Test Multiplayer: Hãy sử dụng 2 trình duyệt khác nhau (VD: Chrome và Edge) hoặc 1 PC 1 Điện thoại để có trải nghiệm mượt mà không bị giới hạn.
+
+Phiên bản v2.6.0 - THE SERVER UPDATE
+- Di dời Máy chủ: Chuyển toàn bộ hệ thống Đa người chơi (Multiplayer) và Kênh Chat sang máy chủ Node.js (Socket.io) tự lưu trữ.
+- Trải nghiệm Tốc độ ánh sáng: Tốc độ phản hồi cực nhanh, không còn phụ thuộc và giới hạn của Firebase.
+- Kênh Chat hoạt động mượt mà, lưu trữ 15 tin nhắn nội bộ trên RAM Server.
+- Bảng Xếp Hạng vẫn được lưu trữ vĩnh viễn trên Firebase để bảo toàn kỷ lục thế giới.
+
+Phiên bản v2.5.3
+- Đơn giản hóa Kênh Chat: Áp dụng lại thủ thuật đồng bộ cơ bản giống như Bảng Xếp Hạng để đảm bảo Chat hoạt động 100%.
+- Chuyển sang kênh `global_chat_v4` với cấu trúc tải dữ liệu trực tiếp và đảo ngược mảng (Reverse) thay vì sắp xếp phức tạp.
+
+Phiên bản v2.5.2
+- Vá lỗi Kẹt Chat (Ẩn tin nhắn): Khắc phục xung đột kiểu dữ liệu giữa Timestamp và Number trong bộ máy sắp xếp của Firebase.
+- Đổi tên bộ lưu trữ Chat sang `global_chat_v3` để dọn sạch dữ liệu gây lỗi. Kênh Chat hiện tại đã hoạt động ổn định và tức thời trên mọi tab.
+
+Phiên bản v2.5.1
+- Fix lỗi Multiplayer: Phân tách Session ID để 2 tab trên cùng 1 trình duyệt vẫn có thể nhìn thấy và tương tác với nhau.
+- Ổn định kênh Chat: Loại bỏ serverTimestamp() gây xung đột giữa các tab, thay bằng Date.now() để chat mượt mà 100%.
+
+Phiên bản v2.5.0
+- Kỷ Nguyên Thời Gian Thực (Live Sync): Bảng Xếp Hạng nay đã được đồng bộ liên tục. Bạn có thể mở bảng xếp hạng và tận mắt nhìn thấy các Hiệp sĩ khác đua top giành Vương miện!
+- Sửa lỗi kẹt Chat: Chuyển kênh Chat sang cấu trúc `global_chat_v2` để dọn sạch dữ liệu cũ gây lỗi.
+- Áp dụng kỹ thuật `estimate timestamp` giúp tin nhắn của bạn hiện lên ngay lập tức mà không bị delay do độ trễ mạng.
+
+Phiên bản v2.4.9
+- Khắc phục lỗi Tin nhắn bị ngược: Đồng bộ lại kiểu dữ liệu thời gian (`serverTimestamp`) và áp dụng thuật toán sắp xếp cục bộ thông minh.
+- Xác nhận Firebase đã hoạt động ổn định ở Test Mode (Chế độ Thử nghiệm).
+
+Phiên bản v2.4.8
+- Khắc phục lỗi Mất kết nối máy chủ: Hạ cấp (Downgrade) thư viện Firebase SDK về bản ổn định (v10.12.2) để tránh lỗi 404 Not Found từ Google.
+- Cập nhật quyền Firestore Rules để cho phép Chat và Multiplayer hoạt động trở lại.
+
+Phiên bản v2.4.7
+- Nâng cấp Firebase SDK lên phiên bản 12.11.0 mới nhất.
+- Cập nhật cấu hình Firebase (App ID mới) để khôi phục kết nối máy chủ Multiplayer và Chat Thế giới.
+
+Phiên bản v2.4.6
+- Vá lỗi Sập Server (Quota Exceeded): Tích hợp cơ chế "Smart Sync", giảm 90% truy vấn Firebase để không bao giờ bị khóa tài khoản miễn phí.
+- Khắc phục lỗi Tin nhắn Chat: Fix lỗi mất/chặn tin nhắn do xung đột Dấu thời gian (Timestamp) trên máy chủ.
+- Xử lý lỗi Lệch Đồng Hồ (Clock Skew): Khắc phục tình trạng 2 người chơi không nhìn thấy nhau do đồng hồ máy tính cài đặt sai giờ.
+
+Phiên bản v2.4.5
+- Vá lỗi Chat Thế Giới: Sửa lỗi không thể nhấn vào khung chat trên điện thoại (do xung đột user-select của iOS Safari).
+- Vá lỗi Kẹt phím: Khắc phục tình trạng nhân vật bị kẹt đi bộ mãi mãi hoặc bắn đạn lung tung khi người chơi nhấn vào giao diện.
+- Tự động thoát focus (Blur) khỏi ô nhập tin nhắn sau khi gửi để người chơi có thể lập tức dùng phím WASD di chuyển bình thường.
+
+Phiên bản v2.4.4
+- Đồng bộ Trạng thái Hoàn hảo (Perfect Sync): Quái vật bị tiêu diệt và Rương báu bị mở giờ đây sẽ biến mất ngay lập tức trên máy của đồng đội.
+- Cơ chế Bắt kịp Tầng (Wave Catch-up): Người chơi vào sau hoặc rớt mạng sẽ tự động được đồng bộ Số Tầng và Bản đồ hiện tại của Host.
+- Cố định Hạt giống Bản đồ (Deterministic Seed): Đảm bảo 100% cấu trúc hầm ngục luôn giống nhau cho tất cả mọi người ở cùng một Tầng.
+
+Phiên bản v2.4.3
+- Hoàn thiện Cơ chế Multiplayer: Quái vật giờ đây sẽ thông minh hơn, tự động chuyển mục tiêu sang người chơi ở gần nhất.
+- Đồng bộ Đạn dược: Bạn đã có thể nhìn thấy đạn/kỹ năng do người chơi khác bắn ra theo thời gian thực.
+- Tối ưu hóa Mạng: Áp dụng kỹ thuật "Đồng bộ mô phỏng" giúp kẻ địch mất máu đồng thời trên cả 2 màn hình mà không gây giật lag server.
+
+Phiên bản v2.4.2
+- Sửa lỗi Trắng màn hình/Không đồng bộ Map: Tách biệt hoàn toàn thuật toán Hạt giống (RNG) để đảm bảo 2 máy tính sinh ra bản đồ và quái vật giống nhau 100%.
+- Cập nhật Bia Mộ (Tombstone): Vẽ lại bia mộ an toàn, tương thích với mọi loại trình duyệt cũ và mới.
+- Tối ưu hóa mã nguồn: Trích xuất toàn bộ Quái Vật, Boss và NPC sang file `enemies.js`, giúp `entities.js` và `main.js` cực kỳ dễ quản lý.
+
+Phiên bản v2.4.1
+- Đồng bộ Bản đồ Đa người chơi: Áp dụng thuật toán Seeded RNG.
+- Trải nghiệm Hiệu ứng Tử nạn (Death VFX).
+
+Phiên bản v2.4.2
+- Sửa lỗi Trắng màn hình/Không đồng bộ Map: Tách biệt hoàn toàn thuật toán Hạt giống (RNG) để đảm bảo 2 máy tính sinh ra bản đồ và quái vật giống nhau 100%.
+- Cập nhật Bia Mộ (Tombstone): Khi người chơi chết sẽ để lại một bia mộ trên bản đồ thay vì biến mất.
+- Tối ưu hóa mã nguồn: Trích xuất hệ thống Mạng (Multiplayer) sang file `network.js` và `rng.js`, giúp file chính dễ quản lý hơn bao giờ hết.
+
+Phiên bản v2.4.1
+- Đồng bộ Bản đồ Đa người chơi: Áp dụng thuật toán Seeded RNG.
+- Trải nghiệm Hiệu ứng Tử nạn (Death VFX).
+
+Phiên bản v2.4.1
+- Đồng bộ Bản đồ Đa người chơi: Áp dụng thuật toán Seeded RNG (Sinh ngẫu nhiên Hạt giống). Mọi người chơi cùng thời điểm sẽ nhìn thấy chung một cấu trúc bản đồ, rương báu và quái vật!
+- Trải nghiệm Hiệu ứng Tử nạn (Death VFX): Khi bạn hoặc đồng đội tử nạn, cơ thể sẽ nổ tung và để lại một Bia Mộ (Tombstone) trên bản đồ.
+- Vá lỗi hiển thị Multiplayer: Người chơi 2 giờ đây có thể nhìn thấy cái chết của Người chơi 1 một cách rõ ràng.
+
+Phiên bản v2.4.0
+- Kỷ Nguyên Đa Người Chơi (Multiplayer Mode): Bổ sung chế độ chơi Multiplayer cho phép bạn nhìn thấy các hiệp sĩ khác đang chơi theo thời gian thực!
+- Đồng bộ vị trí, trang phục và trạng thái sinh tồn qua đám mây Firebase với thuật toán nội suy (Interpolation) mượt mà.
+- Cập nhật Menu khởi động với màn hình Chọn chế độ chơi (Solo / Multiplayer).
+
+Phiên bản v2.3.1
+- Bảo mật quyền Quản trị (Admin): Loại bỏ việc nhận quyền bằng cách đổi tên thành "admin123".
+- Mật mã ẩn: Nhấn liên tục 5 lần vào dòng chữ "Phiên bản..." ở góc dưới phải Menu để gọi hộp thoại Mật mã.
+- Nhập đúng mật mã (mặc định: "dev123") để mở khóa hoặc tắt nút QUẢN TRỊ VIÊN an toàn hơn.
+
+Phiên bản v2.3.0
+- Đột phá Tương Tác: Thêm Kênh Chat Thế Giới (Global Chat) sử dụng cơ sở dữ liệu Firebase theo thời gian thực.
+- Hiển thị khung Chat dạng thu gọn ở góc dưới bên trái màn hình, hỗ trợ nhắn tin cả lúc đang chơi và lúc ở Menu.
+- Lưu trữ 10 tin nhắn gần nhất để mọi hiệp sĩ có thể dễ dàng giao tiếp và khoe Kỷ lục của mình.
+- Tự động bỏ qua các thao tác di chuyển/bắn súng khi người chơi đang gõ phím trong khung chat.
+
+Phiên bản v2.2.1
+- Tinh chỉnh lại Menu: Tăng khoảng cách và sắp xếp lại các nút bấm ở Menu chính để không bị lấn lên phần Logo.
+- Cải thiện Giao diện Lò Rèn (Shop): Bổ sung CSS bị thiếu, thu nhỏ kích thước bảng Shop lại vừa vặn hơn.
+- Giao diện nâng cấp vũ khí giờ đây hiển thị dạng lưới 2 cột với màu nền và nút bấm Gradient 3D sắc nét.
+
+Phiên bản v2.2.0
+- Thêm tính năng Đổi Tên (Change Name) trong Menu Cài Đặt.
+
+Phiên bản v2.1.5
+- Đổi chỉ số Bảng xếp hạng: Ghi nhận kỷ lục thành tích bằng "Số Tầng" (Wave) thay vì Cấp độ (Level).
+- Thêm Hệ thống Thông báo qua màn (Wave Announcement) hiện đại: Mỗi khi qua tầng mới, một dòng chữ 3D siêu ngầu sẽ bay ra giữa màn hình.
+- Hiệu ứng hoạt ảnh Fade-in/Fade-out chuyên nghiệp giúp người chơi dễ dàng nhận biết khi nào Boss Tinh Anh xuất hiện.
+
+Phiên bản v2.1.4
+- Vá lỗi giao diện (CSS): Ẩn đi dòng chữ "Vui lòng xoay ngang điện thoại" bị dư thừa trên máy tính.
+- Thiết kế lại màn hình yêu cầu xoay ngang trên điện thoại cực kỳ chuyên nghiệp (chỉ hiện chặn lại khi người chơi cầm dọc máy).
+- Sửa lỗi bố cục màn hình bị đẩy tuột xuống dưới do các thẻ HTML rác.
+
+Phiên bản v2.1.3
+- Sửa lỗi đơ game (Freeze): Khôi phục Vòng lặp game (Game Loop) bị ngắt quãng khi người chơi mở Kho Đồ hoặc Menu Tạm Dừng.
+- Giải quyết triệt để tình trạng nhấn nút "Tiếp tục chơi" hoặc "Thoát ra Menu" nhưng hình ảnh bị đứng im.
+
+Phiên bản v2.1.1
+- Khắc phục Lỗi chí mạng (Crash game): Sửa phiên bản thư viện Firebase SDK tương thích chuẩn nhất, loại bỏ lỗi 404 gây trắng màn hình.
+- Tối ưu Trải nghiệm (UX): Dời Khung nhập tên ra khỏi Vòng lặp game để tránh gây giật lag (Freeze) khi đang chiến đấu.
+- Đại Phẫu Thuật Mã Nguồn (Massive Refactoring): Đưa toàn bộ hệ thống giao diện (UI) Kho đồ, Lò rèn và Minimap sang file độc lập `ui.js`.
+- Việc chia file thông minh giúp main.js giảm tới 300 dòng code, mã nguồn giờ đây cực kỳ gọn nhẹ và chuẩn OOP.
+
+Phiên bản v2.1.0
+- Chia nhỏ mã nguồn: Trích xuất toàn bộ hệ thống Hiệu ứng hình ảnh và Vật phẩm rơi (VFX, Loot) sang file `vfx.js` để dễ bảo trì.
+- Ra mắt Bảng Xếp Hạng Trực Tuyến (Online Leaderboard) lấy dữ liệu thời gian thực từ Firebase Firestore.
+- Tự động vinh danh Top 10 Hiệp sĩ đạt Cấp độ cao nhất.
+- Bổ sung hộp thoại đặt tên cho người chơi khi hệ thống đồng bộ dữ liệu lần đầu tiên lên Đám mây.
+
+Phiên bản v2.0.11
+- Tích hợp Firebase Firestore Database để Lưu trữ Đám mây (Cloud Save).
+- Tự động sinh ID Thiết bị ngẫu nhiên cho mỗi người chơi (Local Storage) để định danh trên máy chủ.
+- Dữ liệu Vàng (Gold) và Linh hồn (Souls) giờ đây được đồng bộ hóa lên Firebase, đảm bảo không bao giờ mất dữ liệu.
+- Áp dụng kỹ thuật Debounce chống spam lưu dữ liệu mạng giúp tối ưu hiệu năng.
+
+Phiên bản v2.0.10
+- Dọn dẹp mã nguồn (Clean code): Xóa bỏ các đoạn mã xử lý rơi đồ (drop item) bị lặp lại 2 lần gây rối rắm.
+- Giải cứu chức năng của Vàng: Thêm "Bình Dược Thủy" vào Lò rèn để người chơi có thể dùng Xu vàng mua máu (HP) hồi phục.
+- Hoàn thiện vòng lặp sinh tồn: Đánh quái -> Rớt Vàng/Linh hồn -> Vàng dùng mua Máu, Linh hồn dùng nâng Súng.
+
+Phiên bản v2.0.9
+- Cải thiện hiển thị Chỉ số: Đổi đơn vị "Tốc độ bắn" từ mili-giây (ms) sang "Đòn/s" (Attacks per second).
+- Việc quy đổi này giúp người chơi dễ hiểu hơn theo quy tắc RPG (số càng to thì vũ khí càng mạnh).
+
+Phiên bản v2.0.8
+- Thu gọn giao diện Lò Rèn: Chuyển bảng Cường hóa sang dạng Lưới 2 cột (Grid) nhỏ gọn, loại bỏ khoảng trắng thừa.
+- Thiết kế lại phong cách màu sắc Nút Cường hóa thành Gradient Cam/Vàng (Lò rèn lửa) để nổi bật hơn.
+- Tối ưu riêng trên màn hình điện thoại: Các hộp cường hóa sẽ xếp dọc để tránh bị tràn và che khuất thông tin.
+
+Phiên bản v2.0.7
+- Định hình lại lối chơi: Loại bỏ tính năng Mua vũ khí bằng Vàng, bắt buộc người chơi phải mở Rương để tìm vũ khí mới.
+- Đổi Thương Gia thành Lò Rèn Bí Ẩn: Giao diện giờ đây chỉ tập trung duy nhất vào tính năng Cường hóa bằng Linh hồn.
+- Hiển thị trực tiếp các mức Cường hóa (Ví dụ: +1, +2) vào sát thương và tốc độ trong giao diện chi tiết Kho đồ.
+
+Phiên bản v2.0.6
+- Thiết kế lại giao diện Lò Rèn Cường Hóa (Upgrade UI) thông minh và đẹp mắt hơn.
+- Hiển thị trực quan Vũ khí đang được trang bị kèm icon và màu sắc độ hiếm ngay trong Lò Rèn.
+- Thêm hiệu ứng hover, gradient và bố cục nút bấm cường hóa chuẩn game RPG.
+
+Phiên bản v2.0.5
+- Ra mắt Đơn vị tiền tệ mới: Linh Hồn (Souls 👻). Có tỉ lệ rớt từ quái vật và rớt số lượng lớn từ Boss.
+- Thêm Hệ thống Cường hóa (Upgrade System) tại Cửa hàng Thương gia.
+- Người chơi có thể tiêu tốn Linh Hồn để nâng cấp Vũ khí đang trang bị theo 2 nhánh: Nhánh Sát Thương và Nhánh Tốc Độ Bắn.
+- Tái thiết kế giao diện Cửa hàng chia làm 2 khu vực: Mua Sắm (Bằng Vàng) và Lò Rèn (Bằng Linh Hồn).
+
+Phiên bản v2.0.4
+- Lột xác thiết kế UI Kho đồ (Inventory): Chuyển từ dạng danh sách chữ sang dạng "Lưới Ô Vuông" (Grid) chuẩn game RPG/Minecraft.
+- Thêm Background nền gỗ đá, thiết kế lại bảng xem chi tiết vũ khí với các thanh tiến trình (Stat Bars) thay vì chữ đơn thuần.
+- Thêm Nút "Trang bị" to rõ ràng và Icon phân loại vũ khí (Cung, Phép, Lửa, Kiếm...).
+
+Phiên bản v2.0.3
+- Sửa lỗi nút Tạm dừng (Pause ⏸) trên Mobile không nhận phản hồi cảm ứng do bị xuyên thấu.
+- Phóng to nút "Quay Lại", "Phát / Đổi", "Bật / Tắt" trong các giao diện Nhân vật và Cài đặt.
+- Mở rộng vùng chạm (Hitbox) của tất cả các nút Menu và thanh trượt Âm lượng để cực kỳ dễ bấm trên Điện thoại.
+
+Phiên bản v2.0.2
+- Thêm nút Tạm dừng (Pause) chuyên dụng dành cho giao diện di động (Mobile).
+- Người chơi trên điện thoại giờ đây có thể dễ dàng dừng game bằng cách nhấn vào biểu tượng ⏸ ở góc phải trên cùng màn hình.
+
+Phiên bản v2.0.1
+- Bổ sung tính năng tự động Toàn màn hình (Fullscreen) trên các thiết bị di động.
+- Khi người chơi nhấn "Bắt đầu chơi", trình duyệt sẽ tự động ẩn thanh địa chỉ và thanh điều hướng để mở rộng tối đa diện tích chơi game.
+- Trải nghiệm giờ đây hoàn hảo 100% giống như một ứng dụng (Native App) tải từ App Store/Google Play.
+
+Phiên bản v2.0.0 - BIG MOBILE UPDATE
+- Ra mắt tính năng Ép buộc xoay ngang màn hình (Landscape Widescreen) trên thiết bị di động.
+- Camera thông minh: Tự động mở rộng góc nhìn hai bên (FOV) tùy theo độ dài của điện thoại, giúp nhìn bao quát hầm ngục rõ hơn.
+- Tái thiết kế bố cục Joypad: Cần gạt đặt sát 2 góc dưới, nút thao tác được xếp cong ngay trên ngón cái phải.
+- Giao diện (HUD, Menu Cài đặt, Shop) tự động thu nhỏ và bo gọn vào giữa để không che khuất tầm nhìn.
+
+Phiên bản v1.9.11
+- Cải thiện hiển thị trạng thái Nhạc nền: Báo lỗi "Không tìm thấy file" trực tiếp lên màn hình nếu đường dẫn nhạc bị sai.
+- Sửa lỗi người chơi nhấn Phát nhạc nhưng chữ vẫn ghi "Chưa phát nhạc" do trình duyệt ngầm từ chối tải file ảo.
+
+Phiên bản v1.9.10
+- Chuyển nguồn phát nhạc từ Online sang Nhạc cục bộ (Local Music) theo yêu cầu.
+- Gỡ bỏ thuộc tính crossorigin gây lỗi tải nhạc trên môi trường máy cá nhân (Localhost).
+- Trải nghiệm nghe nhìn giờ đây cực kỳ mượt mà, âm thanh tải tức thì và không còn phụ thuộc vào kết nối mạng.
+
+Phiên bản v1.9.9
+- Sửa lỗi đơ game (Crash/Freeze) khi nhấn nút Phát/Đổi bài trong Cài đặt do hàm xử lý âm thanh bị sai phạm vi (scope) trong mã nguồn.
+- Khôi phục lại luồng phát nhạc ổn định.
+
+Phiên bản v1.9.8
+- Sửa lỗi Crash Game nghiêm trọng: Truy cập vào Cài đặt bị đơ game do biến hiển thị tên bài hát chưa được khai báo đúng cách.
+
+Phiên bản v1.9.7
+- Sửa đổi logic Phát Nhạc: Xóa bỏ tính năng tự động phát (Autoplay) gây phiền nhiễu và dễ lỗi.
+- Người chơi hiện tại muốn nghe nhạc sẽ phải chủ động vào Menu Cài đặt để "Phát / Đổi bài".
+- Hiển thị trạng thái "Chưa phát nhạc" nếu người chơi không có nhu cầu nghe.
+
+Phiên bản v1.9.6
+- Sửa lỗi hệ thống Nhạc nền (Audio): Nút Chuyển bài đôi khi làm mất tính năng tự động chuyển nhạc.
+- Cải tiến Menu Cài đặt: Hiển thị tên Bài hát đang phát (Now Playing) trực tiếp trên màn hình.
+- Khắc phục các xung đột vòng đời âm thanh trên một số trình duyệt khi người chơi nhấn chuột liên tục.
+
+Phiên bản v1.9.5
+- Đổi nguồn cấp nhạc (Playlist) thành máy chủ Incompetech do nguồn cũ chặn truy cập.
+- Bổ sung nút Bật/Tắt nhạc (Mute) và Nút Chuyển bài (Next track) trực tiếp vào Menu Cài đặt.
+- Hoàn thiện hoàn toàn trải nghiệm nghe nhìn của game.
+
+Phiên bản v1.9.4
+- Thay thế hệ thống nhạc nền cục bộ thành Playlist Lo-Fi trực tuyến (Online) tự động phát.
+- Game sẽ tự động chuyển bài hát (Next track) khi kết thúc bài cũ.
+- Khắc phục triệt để lỗi không có tiếng do thiếu file âm thanh ở máy cá nhân.
+
+Phiên bản v1.9.3
+- Sửa lỗi nhạc nền không phát do bị Trình duyệt chặn Autoplay (Audio Context Policy).
+- Mở khóa tính năng Cài Đặt (Settings) ở màn hình Menu chính.
+- Bổ sung thanh trượt điều chỉnh Âm lượng nhạc nền (Volume Slider), tự động lưu cài đặt cho các lần chơi sau.
+
+Phiên bản v1.9.2
+- Thêm nhạc nền "Ai Đưa Em Về (Low Cortisol)" chạy xuyên suốt quá trình chơi tạo cảm giác cực chill.
+- Sửa lỗi hệ thống ĐẶC BIỆT NGHIÊM TRỌNG (Memory Leak): Hiệu ứng sấm sét lan truyền không bao giờ biến mất gây tụt FPS và tràn RAM sau một thời gian chơi dài.
+
+Phiên bản v1.9.1
+- Cải thiện hình ảnh Avatar hiển thị ở góc màn hình HUD và trong Cửa hàng Trang Phục.
+- Nâng cấp avatar từ khối vuông đơn điệu thành chân dung Chibi dễ thương (chill vibe) phù hợp với bầu không khí game.
+
+Phiên bản v1.9.0
+- Thêm Bảng Nhật ký Cập nhật (Update Log) có thể xem trực tiếp từ màn hình Menu chính.
+- Bảng hiển thị được thiết kế theo phong cách Chibi đáng yêu với các họa tiết rong rêu (Moss/Vines) bao quanh.
+- Dữ liệu được lấy trực tiếp từ file hệ thống, giúp người chơi dễ dàng theo dõi những nâng cấp mới nhất.
+
+Phiên bản v1.8.5
+- Sửa lỗi nghiêm trọng: Menu Tạm Dừng (Pause) bị nháy rồi biến mất ngay lập tức do xung đột (Input loop) vòng lặp phím ESC.
+- Sửa lỗi: Nhấn "Thoát ra Menu" từ Pause và chọn Bắt đầu chơi sẽ lại tạo ra ván chơi hoàn toàn mới thay vì tiếp tục ván cũ.
+- Khắc phục nguy cơ hiệu năng tàn phá (Double Game Loop) khiến game bị x2 tốc độ bất thường khi chơi lại.
+
+Phiên bản v1.8.4
+- Thêm màn hình Tạm Dừng (Pause Menu) riêng biệt khi nhấn phím [ESC] trong lúc đang chơi.
+- Pause Menu được thiết kế theo phong cách Pixel Art phù hợp với game, bao gồm nút Tiếp tục và Thoát ra Menu chính.
+- Sửa logic game: Bấm ESC sẽ không bị văng thẳng ra Menu chính nữa.
+
+Phiên bản v1.8.3
+- Thêm hiệu ứng hạt bụi (Dust particles) bay mù mịt bốc lên từ chân khi nhân vật di chuyển.
+- Bổ sung phím tắt [ESC] để tạm dừng game (quay ra Menu chính) hoặc thoát nhanh các giao diện Túi đồ/Cửa hàng.
+- Hỗ trợ tiếp tục chơi (Resume) bằng cách nhấn [ESC] thêm lần nữa khi đang ở ngoài Menu.
+
+Phiên bản v1.8.2
+- Lột xác hình ảnh Nhân vật chính (Player Sprite): Thiết kế lại hoàn toàn thành nhân vật Chibi ngộ nghĩnh thay cho khối vuông đơn điệu.
+- Thêm khuôn mặt, màu da, đôi tay và đôi mắt biết "liếc nhìn" theo hướng nhắm bắn vũ khí.
+- Thêm hiệu ứng Nhịp thở (Bobbing) làm nhân vật nhấp nhô nhịp nhàng kể cả khi đang đứng yên.
+
+Phiên bản v1.8.1
+- Chỉnh lại góc nhìn Camera trên Điện thoại (Mobile) lùi ra xa hơn, mang lại tầm nhìn bao quát rộng rãi.
+- Đa dạng hóa bầy đàn quái vật: Bổ sung 6 loại kẻ địch khác nhau (Slime, Demon, Bat, Skeleton, Orc, Ghost).
+- Quái vật giờ đây có chỉ số (HP, Tốc độ, Sát thương) riêng biệt và ngoại hình được vẽ thêm mắt/cánh ngộ nghĩnh.
+
+Phiên bản v1.8.0
+- Thiết kế lại toàn bộ hệ thống UI tự động tương thích (Responsive Native) trên Mobile thay vì bóp méo khung hình.
+- Trên Điện thoại, game sẽ tự động mở rộng Canvas tràn viền (Full-screen) hoàn hảo.
+- Sắp xếp lại Joypad và các nút bấm Action sát lề màn hình để ngón tay dễ chạm tới nhất.
+
+Phiên bản v1.7.1
+- Thêm nút [X] màu đỏ phong cách pixel ở góc phải trên của các bảng Túi Đồ và Cửa Hàng.
+- Giúp người chơi (đặc biệt trên Mobile) đóng các giao diện nhanh chóng và trực quan hơn.
+
+Phiên bản v1.7.0
+- Nâng cấp hệ thống vũ khí quy mô lớn (Weapon System Overhaul).
+- Thêm cơ chế Xuyên thấu (Piercing) và Bắn chùm (Spread/Shotgun).
+- Thêm vũ khí mới: Kiếm Phép (Bắn ra kiếm khí khổng lồ xuyên thấu) và Súng Hoa Cải (Bắn chùm 5 tia).
+- Thiết kế lại hoàn toàn Trượng Lửa: Giờ đây sẽ phun ra hàng ngàn hạt lửa Pixel cháy rực lan rộng dần.
+- Tinh chỉnh lại toàn bộ thông số các vũ khí để tạo cảm giác chiến đấu (Game Feel) sướng tay hơn.
+
+Phiên bản v1.6.1
+- Sửa lỗi trên PC: Người chơi bị kẹt không thể di chuyển đi thẳng bằng các phím WASD.
+- Tối ưu hiển thị Mobile: Tự động thu nhỏ (Scale) toàn bộ khung game để vừa vặn hoàn hảo trên các màn hình điện thoại nhỏ.
+- Sửa lỗi ánh xạ tọa độ chuột/cảm ứng bị sai lệch khi màn hình bị thu nhỏ.
+
+Phiên bản v1.6.0
+- Tối ưu hóa đa nền tảng: Hỗ trợ chơi game mượt mà trên Điện thoại (Mobile/Touch devices).
+- Thêm hệ thống Joystick ảo (Joypad) gồm Cần gạt di chuyển, Cần gạt ngắm bắn và các Nút thao tác nhanh.
+- Thiết kế lại giao diện Cửa hàng và Kho đồ (Responsive) để tự động co giãn vừa màn hình nhỏ.
+
+Phiên bản v1.5.2
+- Thêm tính năng Cửa hàng Nhân vật (Skin Shop) ngoài Menu chính.
+- Người chơi có thể dùng Xu vàng tích lũy để mua và thay đổi ngoại hình (màu sắc) nhân vật.
+- Màu sắc của trang phục sẽ tự động được áp dụng vào Khung Avatar trong game.
+
+Phiên bản v1.5.1
+- Thêm cơ chế Quái vật Tinh Anh (Elite Boss) xuất hiện ở mỗi đợt (Wave) thứ 5.
+- Boss có kích thước khổng lồ, lượng máu và sát thương vượt trội, hiển thị rõ trên Minimap.
+- Tiêu diệt Boss đảm bảo rớt ra số lượng lớn Xu vàng và Hạt kinh nghiệm.
+
+Phiên bản v1.5.0
+- Thêm hệ thống Tiền tệ: Xu Vàng (Gold Coins).
+- Quái vật có tỉ lệ rơi ra Xu vàng khi bị tiêu diệt.
+- Cửa hàng Thương gia nay sẽ giao dịch bằng Xu vàng thay vì Hạt EXP.
+- Xu vàng được lưu trữ vĩnh viễn (lưu qua màn/sau khi chết). Hiển thị Xu vàng ở màn hình Menu.
+
+Phiên bản v1.4.9
+- Thêm Thương Gia Bí ẨN (Mystery Merchant) xuất hiện ngẫu nhiên trên bản đồ.
+- Người chơi có thể dùng Hạt EXP (tích lũy từ việc nhặt Orbs) để mua Vũ khí xịn (Hiếm, Sử thi, Huyền thoại).
+- Thêm hệ thống tương tác bằng phím [E] và giao diện Cửa hàng (Shop UI).
+
+Phiên bản v1.4.8
+- Thêm hiệu ứng Chữ sát thương (Floating Damage Text) nảy lên mỗi khi tấn công trúng quái vật.
+- Các hiệu ứng sát thương sấm sét lan chuyền (Chain Lightning) cũng hiển thị chữ sát thương màu xanh lơ.
+
+Phiên bản v1.4.7
+- Thêm cơ chế rơi Hạt kinh nghiệm (EXP Orbs) khi tiêu diệt quái vật thay vì cộng thẳng.
+- Hạt kinh nghiệm văng ra xung quanh và có tính năng từ tính (tự hút vào người chơi khi đứng gần).
+- Tối ưu hóa lại cảm giác tiêu diệt quái vật.
+
+Phiên bản v1.4.6
+- Sửa lỗi nghiêm trọng: Quái vật trở nên bất tử sau khi dính viên đạn đầu tiên do không trừ lùi thời gian I-Frame.
+- Thiết kế lại nền web bên ngoài thành Tường gạch bám rêu phong cách Pixel Art (Terraria Dungeon).
+- Sửa khung game thành dạng viền gỗ sẫm màu 8-bit.
+
+Phiên bản v1.4.5
+- Thiết kế lại hoàn toàn hình nền ngoài trang web với phong cách Vực Thẳm (Abyss) mờ ảo.
+- Thêm hoạt ảnh (animation) cho hình nền Tím/Xanh chuyển động nhẹ nhàng kết hợp vân chấm bi (Dotted grid).
+
+Phiên bản v1.4.4
+- Trang trí lại phần viền ngoài màn hình (background) với hiệu ứng gradient và vân lưới mờ (scanline).
+- Bo góc và thêm hiệu ứng phát sáng (glow) viền xanh 3D cho khung game container.
+
+Phiên bản v1.4.3
+- Sửa lỗi giao diện vỡ nát do sai đường dẫn nhận diện file CSS.
+- Sửa lỗi hiển thị chữ bị nhòe ở góc dưới màn hình Menu.
+
+Phiên bản v1.4.2
+- Dọn dẹp lại cấu trúc mã nguồn (Clean code) để tránh lỗi logic.
+- Hoàn thiện đồng bộ hiển thị Kho đồ và Thanh HP mới tuyệt đẹp (yêu cầu cập nhật HTML/CSS).
+
+Phiên bản v1.4.1
+- Sửa lỗi nghiêm trọng: Game bị đứng hình khi nhấn "Bắt đầu chơi" do lỗi tham chiếu rỗng (null reference) trong lúc cập nhật giao diện (HUD).
+- Sửa lỗi: Nhân vật không được hồi sinh đúng cách sau khi chơi lại từ màn hình Game Over.
+
+Phiên bản v1.4.0
+- Thiết kế lại giao diện thanh Máu (HP Bar) và thanh Kinh nghiệm (EXP Bar) trực quan hơn.
+- Bổ sung hệ thống Kho đồ (Inventory) hoàn chỉnh, truy cập bằng phím 'I' hoặc 'Tab'.
+- Game sẽ tự động tạm dừng khi mở kho đồ.
+- Cho phép xem chi tiết và thay đổi vũ khí đã nhặt được trong kho đồ.
+
+Phiên bản v1.3.1
+- Sửa lỗi hiển thị triệt để: Dọn dẹp hoàn toàn các thành phần UI (Minimap, thông tin vũ khí, máu, kinh nghiệm) bằng thuật toán quét cây DOM thông minh trên màn hình Menu.
+
+Phiên bản v1.3.0
+- Thiết kế lại giao diện Menu khởi động theo phong cách Terraria (Thiên nhiên, đồi núi, mây trôi).
+- Hiệu ứng chữ nổi bập bềnh và nút bấm dạng viền (outline) đặc trưng của Terraria.
+- Khắc phục lỗi hiển thị giao diện người dùng (HUD/Minimap) khi đang ở ngoài màn hình Menu.
+
+Phiên bản v1.2.0
+- Thiết kế lại giao diện Menu khởi động với hoạt ảnh hạt (particles) bay lơ lửng.
+- Tách module quản lý menu sang file độc lập (js/menu.js).
+- Khung cấu trúc các chế độ chờ phát triển (Nhân vật, Cài đặt).
+
+Phiên bản v1.1.0
+- Thêm hiệu ứng lửa cháy lan và gây sát thương theo thời gian cho vũ khí Lửa.
+- Thêm hiệu ứng làm chậm và đóng băng kẻ địch cho vũ khí Băng.
+- Tối ưu hóa cơ chế rớt rương: Rương mới sẽ xuất hiện thêm 2 rương sau mỗi đợt quái.
+- Tự động dọn dẹp các rương đã mở để tránh lag bản đồ.
+- Thêm màn hình Menu khởi động.
+- Hiển thị thông tin phiên bản game góc phải dưới màn hình.
+
+Phiên bản v1.0.0
+- Ra mắt trò chơi cơ bản.
+- Hoàn thiện hệ thống di chuyển, tự động sinh quái và bắn đạn.

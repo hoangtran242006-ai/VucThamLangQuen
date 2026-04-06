@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vực Thẳm Lãng Quên</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Nhạc nền Chill Playlist (Local) -->
+    <audio id="bgm"></audio>
+
+    <!-- Màn hình yêu cầu xoay ngang điện thoại -->
+    <div id="rotate-screen">
+        <div class="rotate-icon">📱 ⤾ 📳</div>
+        <h2>Vui lòng xoay ngang điện thoại!</h2>
+        <p>Để có trải nghiệm khám phá Vực thẳm tốt nhất.</p>
+    </div>
+
+    <div id="game-container">
+        <canvas id="bgCanvas"></canvas>
+        <!-- GIF Overlay cho Bàn Luyện Kim -->
+        <img id="alchemy-gif" src="img/fuse-table.gif" style="display:none; position:absolute; z-index:2; pointer-events:none; width:64px; height:64px; transform:translate(-50%, -50%); filter: drop-shadow(0 0 10px rgba(241, 196, 15, 0.4));">
+        <canvas id="gameCanvas"></canvas>
+        <div id="loading-text">Đang tải tài nguyên...</div>
+
+        <!-- Giao diện trong game (HUD) -->
+        <div id="hud">
+            <!-- Khung thông tin nhân vật & HP Bar Đẹp -->
+            <div id="player-frame">
+                <div id="player-portrait">
+                    <canvas id="hud-avatar-canvas" width="50" height="50" style="position:absolute; top:0; left:0; border-radius:6px; pointer-events:none;"></canvas>
+                    <div id="level-badge">Lv.<span id="levelValue">1</span></div>
+                </div>
+                <div id="player-stats">
+                    <div id="shield-bar" style="display: none;">
+                        <div id="shield-fill"></div>
+                        <span id="shield-text"><span id="shieldValue">0</span> / <span id="maxShieldValue">0</span></span>
+                    </div>
+                    <div id="hp-bar">
+                        <div id="hp-fill"></div>
+                        <span id="hp-text"><span id="hpValue">100</span> / <span id="maxHpValue">100</span></span>
+                    </div>
+                    <div id="exp-bar">
+                        <div id="exp-fill"></div>
+                    </div>
+                    <div id="gold-display">💰 <span id="goldValue">0</span></div>
+                    <div id="soul-display">👻 <span id="soulValue">0</span></div>
+                </div>
+            </div>
+
+            <!-- Tách riêng tên vũ khí hiện tại -->
+            <div id="weapon-hud">
+                <span>Đang trang bị:</span>
+                <strong id="weaponName">Cung Gỗ Tập Sự</strong>
+                <div class="hint">Nhấn [ E ] mở Túi | Giữ [ Tab ] xem Map</div>
+            </div>
+            
+            <div id="loot-text">Nhặt rương để tăng sức mạnh!</div>
+        </div>
+
+        <!-- Thông báo Tầng (Wave Announcement) -->
+        <div id="wave-announcement">
+            <div class="wave-text-wrapper">
+                <h2 id="wave-title">TẦNG 1</h2>
+                <p id="wave-subtitle">BẮT ĐẦU</p>
+            </div>
+        </div>
+
+        <!-- Hệ thống điều khiển ảo trên Điện thoại (Mobile Joypad) -->
+        <div id="mobile-controls">
+            <button id="btn-pause-mobile" class="m-btn pause-m-btn">⏸</button>
+            <div id="joystick-move" class="joystick-zone">
+                <div id="knob-move" class="joystick-knob"></div>
+            </div>
+            <div class="mobile-action-btns">
+                <button id="btn-interact" class="m-btn">E</button>
+                <button id="btn-inventory" class="m-btn">TÚI</button>
+            </div>
+            <div id="joystick-aim" class="joystick-zone">
+                <div id="knob-aim" class="joystick-knob"></div>
+            </div>
+        </div>
+
+        <!-- Nút nhắc nhở tương tác -->
+        <div id="interaction-prompt" style="display: none;">Nhấn [ F ] để Giao dịch</div>
+
+        <!-- Màn hình Kho đồ (Inventory) -->
+        <div id="inventory-screen">
+            <div id="inventory-panel" class="mc-panel">
+                <button class="close-btn" id="close-inventory-btn">X</button>
+                <h2 style="text-align: left; padding: 10px 20px; margin: 0; color: #fff; text-shadow: 2px 2px 0 #000;">KHO ĐỒ TRANG BỊ</h2>
+                <div class="mc-layout">
+                    <div class="mc-left-col">
+                        <div class="mc-equip-slots">
+                            <div class="mc-slot equip-slot" id="slot-helmet" title="Mũ">🪖</div>
+                            <div class="mc-slot equip-slot" id="slot-armor" title="Áo">👕</div>
+                            <div class="mc-slot equip-slot" id="slot-gloves" title="Bao tay">🧤</div>
+                            <div class="mc-slot equip-slot" id="slot-boots" title="Giày">👢</div>
+                        </div>
+                        <div class="mc-player-preview" id="inv-player-preview">
+                            <canvas id="inv-player-canvas" width="80" height="120"></canvas>
+                        </div>
+                        <div class="mc-equip-slots">
+                            <div class="mc-slot equip-slot" id="slot-weapon" title="Vũ khí">🗡️</div>
+                        </div>
+                    </div>
+                    <div class="mc-right-col">
+                        <div class="mc-grid" id="inventory-list"></div>
+                    </div>
+                </div>
+                <div id="inventory-details" class="mc-details">
+                    <p style="text-align: center; color: #7f8c8d; margin-top: 20px;">Di chuột vào vật phẩm để xem chi tiết.<br>Nhấp vào ô để Trang Bị hoặc Tháo ra.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Màn hình Cửa hàng Thương Gia (Shop) -->
+        <div id="shop-screen">
+            <div id="shop-panel">
+                <button class="close-btn" id="close-shop-btn">X</button>
+                <h2>LÒ RÈN BÍ ẨN</h2>
+                
+                <div class="shop-currencies">
+                    <span style="color: #f1c40f;">Xu vàng: <span id="shop-player-gold">0</span> 💰</span>
+                    <span style="color: #00d8d6;">Linh hồn: <span id="shop-player-souls">0</span> 👻</span>
+                </div>
+
+                <div class="shop-single-layout">
+                    <div class="shop-upgrade-side" id="shop-upgrade-container">
+                        <!-- Giao diện Cường hóa sinh ra ở đây -->
+                    </div>
+                </div>
+                
+                <div class="shop-footer">
+                    Nhấn 'F', 'E' hoặc 'ESC' để Thoát
+                </div>
+            </div>
+        </div>
+
+        <!-- Màn hình Luyện Kim (Alchemy) -->
+        <div id="alchemy-screen">
+            <div id="alchemy-panel" class="mc-panel" style="width: 700px; height: 550px;">
+                <button class="close-btn" id="close-alchemy-btn">X</button>
+                <h2 style="text-align: center; padding: 15px 20px 5px; margin: 0; color: #f39c12; text-shadow: 2px 2px 0 #000;">BÀN DUNG HỢP TRANG BỊ</h2>
+                <p style="text-align: center; color: #bdc3c7; margin: 0 0 15px 0; font-size: 14px;">Ghép 3 trang bị giống nhau và cùng phẩm chất để nâng cấp lên bậc cao hơn!</p>
+                
+                <div class="alchemy-forge-area">
+                    <div class="alchemy-slots-container">
+                        <div class="mc-slot equip-slot alchemy-slot" id="alchemy-slot-1"></div>
+                        <div class="mc-slot equip-slot alchemy-slot" id="alchemy-slot-2"></div>
+                        <div class="mc-slot equip-slot alchemy-slot" id="alchemy-slot-3"></div>
+                    </div>
+                    <div style="font-size: 30px; color: #7f8c8d;">➡</div>
+                    <div class="mc-slot equip-slot result-slot" id="alchemy-slot-result"></div>
+                </div>
+                
+                <div style="text-align: center; margin: 15px 0;">
+                    <button id="alchemy-merge-btn" class="upg-btn" style="width: 200px; padding: 12px; font-size: 16px;" disabled>DUNG HỢP</button>
+                </div>
+
+                <div class="mc-layout" style="border-top: 2px solid #57606f; border-bottom: none; background: rgba(0,0,0,0.2);">
+                    <div class="mc-right-col" style="flex: 1;">
+                        <h4 style="margin: 0 0 10px 0; color: #ecf0f1;">Kho đồ của bạn (Bấm để thêm vào):</h4>
+                        <div class="mc-grid" id="alchemy-inventory-list" style="grid-template-columns: repeat(12, 1fr);"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Màn hình Rương (Chest) -->
+        <div id="chest-screen">
+            <div id="chest-panel">
+                <button class="close-btn" id="close-chest-btn">X</button>
+                <h2>RƯƠNG BÁU</h2>
+                <div id="chest-content" style="padding: 20px; background: rgba(0,0,0,0.3); border-radius: 10px; margin-bottom: 20px;"></div>
+                <div style="display: flex; gap: 15px;">
+                    <button id="chest-equip-btn" class="upg-btn" style="background: linear-gradient(180deg, #e74c3c, #c0392b); border-color: #ff7675; font-size: 16px; padding: 12px;">TRANG BỊ VÀO TAY</button>
+                    <button id="chest-take-btn" class="upg-btn" style="background: linear-gradient(180deg, #2ecc71, #27ae60); border-color: #2ecc71; font-size: 16px; padding: 12px;">CẤT VÀO TÚI ĐỒ</button>
+                </div>
+                <div class="inventory-footer" style="margin-top: 20px;">
+                    Kéo thả vật phẩm xuống nút hoặc Click nút | Nhấn 'F', 'E' hoặc 'ESC' để Thoát
+                </div>
+            </div>
+        </div>
+
+        <!-- Màn hình Tạm dừng (Pause) -->
+        <div id="pause-screen">
+            <div class="pause-box">
+                <h2>TẠM DỪNG</h2>
+                <div class="pause-settings" style="margin-bottom: 20px; text-align: left; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid #34495e;">
+                    <label style="color: #f1c40f; font-weight: bold; display: block; margin-bottom: 8px;">Âm lượng Nhạc & SFX:</label>
+                    <input type="range" id="pause-volume" min="0" max="1" step="0.01" style="width: 100%; margin-bottom: 12px; cursor: pointer;">
+                    <button id="pause-mute-btn" class="menu-btn" style="margin-bottom: 0; background: #2c3e50; border-width: 2px;">🔊 Đang Bật</button>
+                </div>
+                <button id="resume-button" class="menu-btn">Tiếp tục chơi</button>
+                <button id="quit-button" class="menu-btn" style="background: #c0392b; border-color: #e74c3c;">Thoát ra Menu</button>
+            </div>
+        </div>
+
+        <!-- Màn hình Update Log -->
+        <div id="update-log-screen">
+            <div id="update-log-panel">
+                <button class="close-btn" id="close-log-btn">X</button>
+                <div class="moss-decoration top-left"></div>
+                <div class="moss-decoration top-right"></div>
+                <div class="moss-decoration bottom-left"></div>
+                <div class="moss-decoration bottom-right"></div>
+                <h2>🌱 NHẬT KÝ CẬP NHẬT 🌱</h2>
+                <div id="update-log-content">Đang tải dữ liệu...</div>
+            </div>
+        </div>
+
+        <!-- Màn hình Bảng Xếp Hạng -->
+        <div id="leaderboard-screen">
+            <div id="leaderboard-panel">
+                <button class="close-btn" id="close-leaderboard-btn">X</button>
+                <h2>🏆 BẢNG VÀNG KỶ LỤC 🏆</h2>
+                <div id="leaderboard-content"><div style="text-align: center; margin-top: 50px;">Đang tải dữ liệu từ Đám mây...</div></div>
+            </div>
+        </div>
+
+        <!-- Màn hình Admin -->
+        <div id="admin-screen">
+            <div id="admin-panel">
+                <button class="close-btn" id="close-admin-btn">X</button>
+                <h2>🛠 BẢNG ĐIỀU KHIỂN ADMIN 🛠</h2>
+                <div id="admin-content"><div style="text-align: center; margin-top: 50px;">Đang tải dữ liệu người chơi...</div></div>
+            </div>
+        </div>
+
+        <!-- Màn hình Game Over -->
+        <div id="game-over-screen">
+            <div class="game-over-box">
+                <h1>GAME OVER</h1>
+                <p>Bạn đã đạt tới Tầng: <span id="final-score-value">0</span></p>
+                <p>Kỷ lục cao nhất: <span id="best-score-value">0</span></p>
+                <p id="spectate-hint">Đang theo dõi đồng đội...</p>
+                <button id="restart-button">Chơi Lại</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mini map (Ngoài màn hình Game) -->
+    <canvas id="minimapCanvas" width="150" height="150"></canvas>
+
+    <!-- Server Info Panel (Nằm ngoài Game Container) -->
+    <div id="server-info-panel">
+        <div class="server-stat">🌐 Ping: <span id="ping-value" class="good-ping">--</span> ms</div>
+        <div class="server-stat" id="online-players-toggle" style="cursor: pointer; transition: color 0.2s;">👥 Đang Online: <span id="server-player-count">1</span> ▾</div>
+        <div id="online-players-list" style="display: none; font-weight: normal; margin-top: 5px; margin-bottom: 5px; max-height: 150px; overflow-y: auto; color: #bdc3c7; text-align: left; background: rgba(0,0,0,0.3); padding: 5px; border-radius: 4px;">
+            <!-- Danh sách người chơi -->
+        </div>
+        <div class="server-stat">⚔️ Chế độ: <span id="current-mode-value">Sảnh Chờ</span></div>
+    </div>
+
+    <!-- Global Chat Widget (Nằm ngoài Game Container) -->
+    <div id="chat-widget">
+        <div id="chat-header">KÊNH THẾ GIỚI <span id="chat-toggle-btn">💬</span></div>
+        <div id="chat-body">
+            <div id="chat-messages">
+                <div class="chat-placeholder">Đang kết nối...</div>
+            </div>
+            <form id="chat-form">
+                <input type="text" id="chat-input" placeholder="Nhập tin nhắn..." maxlength="50" autocomplete="off">
+                <button type="submit" id="chat-send-btn">➤</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dev Panel (Ngoài màn hình Game) -->
+    <div id="dev-panel" style="display: none; position: fixed; top: 20px; left: 20px; background: rgba(0,0,0,0.85); border: 2px solid #e74c3c; padding: 10px; border-radius: 8px; z-index: 9999; color: white; width: 160px; box-shadow: 0 0 20px rgba(231,76,60,0.7); backdrop-filter: blur(5px);">
+        <h3 style="margin: 0 0 10px 0; color: #e74c3c; text-align: center; font-size: 15px; text-shadow: 1px 1px 2px black;">🛠 TEST MODE</h3>
+        <button id="dev-btn-gold" style="width:100%; margin-bottom:6px; background:linear-gradient(to bottom, #f1c40f, #f39c12); color:#000; border:1px solid #d35400; padding:6px; font-weight:bold; cursor:pointer; border-radius:4px;">+10.000 Vàng</button>
+        <button id="dev-btn-soul" style="width:100%; margin-bottom:6px; background:linear-gradient(to bottom, #00d8d6, #0fb9b1); color:#000; border:1px solid #079992; padding:6px; font-weight:bold; cursor:pointer; border-radius:4px;">+1.000 Hồn</button>
+        <button id="dev-btn-god" style="width:100%; margin-bottom:6px; background:linear-gradient(to bottom, #e74c3c, #c0392b); color:white; border:1px solid #c0392b; padding:6px; font-weight:bold; cursor:pointer; border-radius:4px;">Bất Tử (Bật/Tắt)</button>
+        <button id="dev-btn-wave" style="width:100%; margin-bottom:6px; background:linear-gradient(to bottom, #9b59b6, #8e44ad); color:white; border:1px solid #8e44ad; padding:6px; font-weight:bold; cursor:pointer; border-radius:4px;">Dọn Quái Tầng</button>
+        <button id="dev-btn-wpn" style="width:100%; background:linear-gradient(to bottom, #ff4757, #ff6b81); color:white; border:1px solid #c0392b; padding:6px; font-weight:bold; cursor:pointer; border-radius:4px;">Full Set Thần Thoại</button>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

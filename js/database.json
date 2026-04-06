@@ -1,0 +1,71 @@
+{
+  "players": {
+    "player_d45mk429z_1775317701022": {
+      "bestWave": 50,
+      "gold": 9999999,
+      "souls": 1028,
+      "lastUpdated": "2026-04-05T06:05:41.943Z",
+      "playerName": "Hoàng",
+      "id": "player_d45mk429z_1775317701022"
+    },
+    "player_06a5515q2_1775369356146": {
+      "bestWave": 11,
+      "gold": 72725,
+      "souls": 606,
+      "lastUpdated": "2026-04-05T18:32:37.567Z",
+      "playerName": "Hoàng",
+      "id": "player_06a5515q2_1775369356146",
+      "ownedSkins": [
+        "blue",
+        "demon_girl",
+        "bocchi",
+        "c1",
+        "schoolgirl",
+        "tien",
+        "char2",
+        "hoang",
+        "ami",
+        "bao"
+      ],
+      "equippedSkin": "hoang"
+    },
+    "player_frfkowx46_1775380351997": {
+      "bestWave": 9,
+      "gold": 4634,
+      "souls": 220,
+      "ownedSkins": [
+        "blue",
+        "ami"
+      ],
+      "equippedSkin": "ami",
+      "lastUpdated": "2026-04-05T16:29:18.000Z",
+      "playerName": "Dương",
+      "id": "player_frfkowx46_1775380351997"
+    },
+    "player_vtitgabay_1775401338197": {
+      "bestWave": 5,
+      "gold": 391,
+      "souls": 19,
+      "ownedSkins": [
+        "blue"
+      ],
+      "equippedSkin": "blue",
+      "lastUpdated": "2026-04-05T15:11:11.944Z",
+      "playerName": "hihi",
+      "id": "player_vtitgabay_1775401338197"
+    },
+    "player_ohw73h4lv_1775404191319": {
+      "bestWave": 5,
+      "gold": 1810,
+      "souls": 67,
+      "ownedSkins": [
+        "blue",
+        "bao"
+      ],
+      "equippedSkin": "bao",
+      "lastUpdated": "2026-04-05T16:07:12.657Z",
+      "playerName": "DG Stone",
+      "id": "player_ohw73h4lv_1775404191319"
+    }
+  }
+}
