@@ -8,7 +8,7 @@ import { InputManager } from './input.js';
 import { Camera } from './camera.js';
 import { Menu } from './menu.js';
 import { SkinManager } from './skins.js';
-import { syncDataToCloud, loadDataFromCloud, getTopPlayers, checkAndPromptPlayerName, changePlayerName, getAllPlayersAdmin, updatePlayerAdmin, getPlayerName } from './db.js';
+import { syncDataToCloud, loadDataFromCloud, getTopPlayers, checkAndPromptPlayerName, changePlayerName, getAllPlayersAdmin, updatePlayerAdmin, getPlayerName } from '../db.js';
 import * as VFX from './vfx.js';
 import { UI } from './ui.js';
 import { RNG } from './rng.js';

@@ -1,5 +1,5 @@
 // js/network.js
-import { getPlayerName, getDeviceId } from './db.js';
+import { getPlayerName, getDeviceId } from '../db.js';
 import { Player } from './entities.js';
 import { SkinManager } from './skins.js';
 import * as VFX from './vfx.js';

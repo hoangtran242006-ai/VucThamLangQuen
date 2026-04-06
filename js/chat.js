@@ -1,6 +1,6 @@
 // js/chat.js
 import { Network } from './network.js';
-import { checkAndPromptPlayerName, getPlayerName } from './db.js';
+import { checkAndPromptPlayerName, getPlayerName } from '../db.js';
 
 export const ChatSystem = {
     els: {},
