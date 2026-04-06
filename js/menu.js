@@ -114,8 +114,8 @@ export class Menu {
             if (mx >= rollBtnX && mx <= rollBtnX + 240 && my >= rollBtnY && my <= rollBtnY + 50) {
                 this.hoveredButton = 'roll_race';
                 if (inputManager.mouse.leftJustPressed) {
-                    if (player.gold >= 1000) {
-                        player.gold -= 1000;
+                    if (player.gold >= 300) {
+                        player.gold -= 300;
                         const newRace = RaceManager.rollRace();
                         player.raceId = newRace.id;
                         player.recalculateStats();
@@ -250,7 +250,7 @@ export class Menu {
         }
         
         if (inputManager.mouse.leftJustPressed && this.hoveredButton) {
-            if (this.hoveredButton === 'roll_race' && player.gold < 1000) return; // Tránh phát tiếng cạch khi không đủ tiền
+            if (this.hoveredButton === 'roll_race' && player.gold < 300) return; // Tránh phát tiếng cạch khi không đủ tiền
             AudioManager.play('click');
         }
     }
@@ -541,14 +541,14 @@ export class Menu {
             ctx.font = 'bold 12px "Segoe UI"'; ctx.fillStyle = displayRace.rarity.color; ctx.fillText(`(${displayRace.rarity.name})`, CANVAS_WIDTH / 2, cardY + 155);
 
             const rollBtnX = CANVAS_WIDTH / 2 - 120; const rollBtnY = CANVAS_HEIGHT / 2 + 80;
-            const isRollHovered = this.hoveredButton === 'roll_race'; const canAfford = playerGold >= 1000;
+            const isRollHovered = this.hoveredButton === 'roll_race'; const canAfford = playerGold >= 300;
             
             ctx.fillStyle = canAfford ? (isRollHovered ? '#f39c12' : '#f1c40f') : '#7f8c8d';
             ctx.strokeStyle = '#000'; ctx.lineWidth = 3;
             ctx.beginPath(); ctx.roundRect(rollBtnX, rollBtnY, 240, 50, 12); ctx.fill(); ctx.stroke();
             
             ctx.fillStyle = canAfford ? '#000' : '#2c3e50'; ctx.font = 'bold 18px "Segoe UI"';
-            ctx.fillText(this.rollAnimation > 0 ? 'ĐANG QUAY...' : 'QUAY TỘC MỚI (1000 💰)', CANVAS_WIDTH / 2, rollBtnY + 25);
+            ctx.fillText(this.rollAnimation > 0 ? 'ĐANG QUAY...' : 'QUAY TỘC MỚI (300 💰)', CANVAS_WIDTH / 2, rollBtnY + 25);
 
             ctx.restore();
         } else if (this.currentScreen === 'SETTINGS') {

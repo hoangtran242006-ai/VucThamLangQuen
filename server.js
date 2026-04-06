@@ -30,12 +30,15 @@ app.use(express.static(__dirname));
 // --- HỆ THỐNG DATABASE CỤC BỘ ---
 const dbFile = path.join(__dirname, 'database.json'); // Đưa file data ra thư mục gốc
 let dbData = { players: {} };
-if (!dbData.accounts) dbData.accounts = {};
 
 // Tải dữ liệu từ file lên RAM khi khởi động Server
 if (fs.existsSync(dbFile)) {
     try { dbData = JSON.parse(fs.readFileSync(dbFile, 'utf8')); } catch(e) { console.error("Lỗi đọc Database:", e); }
 }
+
+// Đảm bảo cấu trúc dữ liệu luôn tồn tại sau khi đọc file
+if (!dbData.accounts) dbData.accounts = {};
+if (!dbData.players) dbData.players = {};
 
 // Hàm lưu dữ liệu xuống ổ cứng
 function saveDatabase() {
