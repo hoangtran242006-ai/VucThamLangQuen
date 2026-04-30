@@ -10,7 +10,7 @@ body {
     color: white;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex; justify-content: center; align-items: center;
-    height: 100vh; overflow: hidden;
+    height: 100dvh; overflow: hidden;
     touch-action: none; /* Vô hiệu hóa kéo cuộn trang trên điện thoại */
     user-select: none; -webkit-user-select: none;
     box-shadow: inset 0 0 100px rgba(0,0,0,0.9); /* Làm viền tối mờ đi ở các mép màn hình */
@@ -53,6 +53,8 @@ body {
     background-color: #1a202c; 
     border-radius: 10px;
     z-index: 1;
+    width: 100%;
+    height: 100%;
 }
 
 #gameCanvas { 
@@ -61,6 +63,8 @@ body {
     background-color: transparent; 
     border-radius: 10px;
     z-index: 3;
+    width: 100%;
+    height: 100%;
 }
 
 /* --- HUD (Giao diện) --- */
@@ -70,13 +74,14 @@ body {
 #player-frame {
     position: absolute; top: 20px; left: 20px;
     display: flex; align-items: center; gap: 15px;
-    background: rgba(15, 20, 30, 0.85); border: 2px solid #2c3e50;
-    padding: 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-    backdrop-filter: blur(4px);
+    background: linear-gradient(135deg, rgba(15, 20, 30, 0.9) 0%, rgba(25, 35, 50, 0.8) 100%);
+    border: 2px solid #34495e;
+    padding: 12px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.6), inset 0 0 10px rgba(0,0,0,0.3);
+    backdrop-filter: blur(6px);
 }
 #player-portrait {
-    width: 50px; height: 50px; background: #3498db; border: 2px solid #ecf0f1;
-    border-radius: 8px; position: relative;
+    width: 56px; height: 56px; background: linear-gradient(180deg, #3498db, #2980b9); border: 2px solid #ecf0f1;
+    border-radius: 8px; position: relative; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
 }
 #level-badge {
     position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
@@ -106,18 +111,20 @@ body {
 /* Weapon Info Separated */
 #weapon-hud {
     position: absolute; bottom: 20px; left: 20px;
-    background: rgba(15, 20, 30, 0.85); border: 2px solid #2c3e50;
-    padding: 12px 18px; border-radius: 10px; font-size: 16px;
-    backdrop-filter: blur(4px); pointer-events: auto;
+    background: linear-gradient(135deg, rgba(15, 20, 30, 0.9) 0%, rgba(25, 35, 50, 0.8) 100%);
+    border: 2px solid #34495e;
+    padding: 12px 20px; border-radius: 12px; font-size: 16px;
+    backdrop-filter: blur(6px); pointer-events: auto;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.6), inset 0 0 10px rgba(0,0,0,0.3);
 }
 #weapon-hud span { color: #bdc3c7; font-size: 14px; }
-#weaponName { color: #f1c40f; display: block; font-size: 18px; margin-top: 4px; }
+#weaponName { color: #f1c40f; display: block; font-size: 20px; margin-top: 4px; font-weight: bold; text-shadow: 1px 1px 2px #000; }
 #weapon-hud .hint { font-size: 12px; color: #7f8c8d; margin-top: 8px; font-style: italic; }
 
 /* Minimap, Text & Enlarged Map */
 #minimapCanvas { 
-    position: fixed; bottom: 20px; right: 20px; border: 3px solid #2c3e50; border-radius: 50%; 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 1000; background: rgba(0, 0, 0, 0.5); 
+    position: fixed; bottom: 20px; right: 20px; border: 3px solid #34495e; border-radius: 50%; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.6), inset 0 0 15px rgba(0,0,0,0.5); z-index: 1000; background: rgba(10, 15, 20, 0.7); 
     transition: width 0.2s, height 0.2s, bottom 0.2s, right 0.2s, transform 0.2s, border-radius 0.2s;
 }
 #minimapCanvas.enlarged {
@@ -130,10 +137,11 @@ body {
 /* --- SERVER INFO PANEL --- */
 #server-info-panel {
     position: fixed; top: 20px; right: 20px;
-    background: rgba(15, 20, 30, 0.85); border: 2px solid #34495e;
-    padding: 10px 15px; border-radius: 8px; font-size: 14px;
+    background: linear-gradient(135deg, rgba(15, 20, 30, 0.9) 0%, rgba(25, 35, 50, 0.8) 100%);
+    border: 2px solid #34495e;
+    padding: 12px 18px; border-radius: 12px; font-size: 14px;
     color: #ecf0f1; text-align: right; pointer-events: auto; z-index: 1000;
-    backdrop-filter: blur(4px); box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    backdrop-filter: blur(6px); box-shadow: 0 4px 15px rgba(0,0,0,0.6), inset 0 0 10px rgba(0,0,0,0.3);
 }
 .server-stat { margin-bottom: 5px; font-weight: bold; text-shadow: 1px 1px 2px black;}
 .server-stat#online-players-toggle:hover { color: #3498db; }
@@ -158,9 +166,11 @@ body {
 }
 #chat-body:not(.show) { pointer-events: none; }
 #chat-body.show {
-    background: linear-gradient(to bottom, rgba(15, 20, 30, 0) 0%, rgba(15, 20, 30, 0.6) 20%, rgba(15, 20, 30, 0.9) 100%);
-    border-radius: 8px;
-    backdrop-filter: blur(2px); pointer-events: auto;
+    background: linear-gradient(to bottom, rgba(15, 20, 30, 0.4) 0%, rgba(20, 25, 35, 0.8) 20%, rgba(25, 35, 45, 0.95) 100%);
+    border-radius: 12px;
+    backdrop-filter: blur(6px); pointer-events: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
 }
 #chat-messages { 
     flex: 1; overflow-y: auto; padding: 10px; font-size: 14px; color: #ecf0f1; display: flex; flex-direction: column; gap: 6px; 
@@ -178,9 +188,10 @@ body {
 #chat-body:not(.show) .chat-msg.expired { opacity: 0; transform: translateY(-5px); }
 #chat-form { display: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 0 10px 10px 10px; padding-top: 5px; }
 #chat-body.show #chat-form { display: flex; }
-#chat-input { flex: 1; background: transparent; border: none; color: white; padding: 8px 5px; outline: none; font-size: 14px; user-select: auto; -webkit-user-select: auto; text-shadow: 1px 1px 2px black;}
-#chat-send-btn { background: transparent; border: none; color: #3498db; padding: 0 10px; cursor: pointer; font-weight: bold; transition: color 0.2s; font-size: 18px;}
-#chat-send-btn:hover { color: #2980b9; }
+#chat-input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: white; padding: 8px 10px; outline: none; font-size: 14px; user-select: auto; -webkit-user-select: auto; text-shadow: 1px 1px 2px black; transition: border-color 0.2s;}
+#chat-input:focus { border-color: #3498db; }
+#chat-send-btn { background: #3498db; border: none; border-radius: 6px; color: #fff; padding: 0 12px; cursor: pointer; font-weight: bold; transition: background 0.2s; font-size: 14px; margin-left: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+#chat-send-btn:hover { background: #2980b9; }
 
 /* --- THÔNG BÁO TẦNG (WAVE ANNOUNCEMENT) --- */
 #wave-announcement {
@@ -194,8 +205,8 @@ body {
     animation: waveFadeInOut 2.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 #wave-title {
-    margin: 0; font-size: 72px; color: #f1c40f; 
-    text-shadow: 0 0 20px rgba(241, 196, 15, 0.8), 0 5px 0 #d35400, 0 10px 10px rgba(0,0,0,0.8);
+    margin: 0; font-size: 80px; color: #f1c40f; 
+    text-shadow: 0 0 25px rgba(241, 196, 15, 0.9), 0 6px 0 #d35400, 0 15px 15px rgba(0,0,0,0.9);
     letter-spacing: 12px; font-weight: bold; font-family: 'Segoe UI', Tahoma, sans-serif; text-transform: uppercase;
 }
 #wave-subtitle { margin: 5px 0 0; font-size: 28px; color: #fff; text-shadow: 2px 2px 4px #000; letter-spacing: 6px; font-weight: bold; text-transform: uppercase; }
@@ -274,12 +285,15 @@ body {
 
 /* --- CỬA HÀNG (SHOP) & TƯƠNG TÁC --- */
 #interaction-prompt {
-    position: absolute; bottom: 140px; left: 50%; transform: translateX(-50%);
-    background: rgba(0,0,0,0.85); border: 2px solid #f1c40f; color: #f1c40f;
-    padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 16px;
+    position: absolute; bottom: 160px; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(135deg, rgba(20, 25, 30, 0.95), rgba(30, 40, 50, 0.95));
+    border: 2px solid #f1c40f; color: #f1c40f;
+    padding: 10px 20px; border-radius: 12px; font-weight: bold; font-size: 18px;
     z-index: 50; animation: pulse 1s infinite alternate; pointer-events: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.6), inset 0 0 10px rgba(241,196,15,0.2);
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
 }
-@keyframes pulse { from { opacity: 0.8; transform: translateX(-50%) scale(1); } to { opacity: 1; transform: translateX(-50%) scale(1.05); } }
+@keyframes pulse { from { opacity: 0.85; transform: translateX(-50%) scale(1); } to { opacity: 1; transform: translateX(-50%) scale(1.05); } }
 
 #shop-screen {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -332,6 +346,21 @@ body {
 .close-btn:hover { background-color: #ff4757; }
 .close-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #922b21, 0 2px 4px rgba(0,0,0,0.5); }
 
+#btn-pause-mobile {
+    position: absolute;
+    top: 15px;
+    right: 120px;
+    width: 45px;
+    height: 45px;
+    font-size: 20px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.9), rgba(192, 57, 43, 0.9));
+    border: 2px solid #ff7675;
+    color: white;
+    z-index: 1000;
+    pointer-events: auto;
+}
+
 /* --- ĐIỀU KHIỂN MOBILE (JOYPAD) --- */
 #mobile-controls {
     display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50;
@@ -341,49 +370,54 @@ body.touch-device.show-joystick #mobile-controls { display: flex; }
 body.touch-device #interaction-prompt { display: none !important; } /* Ẩn chữ gợi ý vì đã có nút ảo */
 
 .joystick-zone {
-    position: absolute; bottom: 30px; width: 120px; height: 120px;
-    background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.3);
+    position: absolute; bottom: 40px; width: 130px; height: 130px;
+    background: rgba(255, 255, 255, 0.08); border: 2px solid rgba(255, 255, 255, 0.25);
     border-radius: 50%; pointer-events: auto; touch-action: none;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5) inset;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3) inset, 0 4px 10px rgba(0,0,0,0.3);
+    backdrop-filter: blur(2px);
 }
 #joystick-move { left: 40px; }
-#joystick-aim { right: 40px; background: rgba(231, 76, 60, 0.1); border-color: rgba(231, 76, 60, 0.4);}
+#joystick-aim { right: 40px; background: rgba(231, 76, 60, 0.08); border-color: rgba(231, 76, 60, 0.25);}
 
 .joystick-knob {
     position: absolute; top: 50%; left: 50%; width: 50px; height: 50px;
-    background: rgba(255, 255, 255, 0.6); border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(200,200,200,0.5) 100%);
+    border: 1px solid rgba(255,255,255,0.8); border-radius: 50%;
     transform: translate(-50%, -50%); pointer-events: none;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.5);
 }
-#joystick-aim .joystick-knob { background: rgba(231, 76, 60, 0.7); }
+#joystick-aim .joystick-knob { background: radial-gradient(circle, rgba(231,76,60,0.8) 0%, rgba(192,57,43,0.5) 100%); border-color: rgba(255,100,100,0.8); }
 
 .mobile-action-btns {
-    position: absolute; bottom: 170px; right: 40px; display: flex; gap: 15px; pointer-events: auto;
+    position: absolute; bottom: 180px; right: 40px; display: flex; gap: 15px; pointer-events: auto;
 }
 .m-btn {
-    width: 50px; height: 50px; border-radius: 50%; background: rgba(15, 20, 30, 0.8);
+    width: 55px; height: 55px; border-radius: 50%; background: linear-gradient(135deg, rgba(20, 25, 35, 0.9), rgba(10, 15, 20, 0.9));
     border: 2px solid #f1c40f; color: #f1c40f; font-weight: bold; font-size: 14px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.1);
+    backdrop-filter: blur(4px);
+    transition: transform 0.1s, background 0.1s;
 }
-.m-btn:active { background: #f1c40f; color: #000; }
+.m-btn:active { background: #f1c40f; color: #000; transform: scale(0.9); }
 
 /* --- RESPONSIVE CHO MÀN HÌNH NHỎ --- */
-@media (max-width: 850px) {
+@media (max-width: 950px), (max-height: 500px) {
     #game-container { 
-        width: 100vw !important; 
-        height: 100vh !important; 
+        width: 100% !important; 
+        height: 100% !important; 
         border: none; 
         border-radius: 0; 
         box-shadow: none; 
     }
     #gameCanvas { border-radius: 0; }
-    #player-frame { transform: scale(0.85); transform-origin: top left; top: 10px; left: 10px; }
-    #weapon-hud { bottom: auto; top: 90px; left: 10px; transform: scale(0.85); transform-origin: top left; }
-    #minimapCanvas { width: 100px; height: 100px; top: 15px; right: 15px; bottom: auto; }
+    #player-frame { transform: scale(0.8); transform-origin: top left; top: 5px; left: 5px; border-radius: 8px; padding: 8px; }
+    #weapon-hud { bottom: auto; top: 75px; left: 5px; transform: scale(0.8); transform-origin: top left; padding: 8px 12px; }
+    #minimapCanvas { width: 90px; height: 90px; top: 10px; right: 10px; bottom: auto; border-width: 2px; }
     #loot-text { bottom: auto; top: 30px; font-size: 14px; }
     
-    #server-info-panel { top: 15px; right: 15px; font-size: 12px; padding: 8px 10px; }
-    #chat-widget { position: fixed; top: 175px; bottom: auto; left: 10px; width: 240px; }
+    #server-info-panel { top: 110px; right: 5px; font-size: 11px; padding: 6px 10px; transform: scale(0.85); transform-origin: top right; }
+    #chat-widget { position: fixed; top: 180px; bottom: auto; left: 5px; width: 220px; transform: scale(0.85); transform-origin: top left; }
+    #btn-pause-mobile { top: 10px; right: 110px; width: 40px; height: 40px; font-size: 16px; }
     
     #inventory-panel, #shop-panel, #chest-panel { width: 95%; height: 90%; }
     .inventory-content { flex-direction: column; gap: 5px; }
@@ -394,11 +428,11 @@ body.touch-device #interaction-prompt { display: none !important; } /* Ẩn ch�
     .shop-upgrade-side { padding: 10px; border: none; }
     .upgrade-options-grid { grid-template-columns: 1fr; gap: 10px; }
     
-    .joystick-zone { width: 110px; height: 110px; bottom: 20px; }
-    #joystick-move { left: 20px; }
-    #joystick-aim { right: 20px; }
-    .mobile-action-btns { bottom: 140px; right: 20px; gap: 10px; }
-    .m-btn { width: 45px; height: 45px; font-size: 12px; }
+    .joystick-zone { width: 110px; height: 110px; bottom: 30px; }
+    #joystick-move { left: 15px; }
+    #joystick-aim { right: 15px; }
+    .mobile-action-btns { bottom: 145px; right: 15px; gap: 10px; }
+    .m-btn { width: 45px; height: 45px; font-size: 11px; }
     
     #update-log-panel { width: 90%; height: 85%; }
     #leaderboard-panel { width: 90%; height: 85%; }
@@ -406,6 +440,20 @@ body.touch-device #interaction-prompt { display: none !important; } /* Ẩn ch�
     
     #wave-title { font-size: 48px; letter-spacing: 8px; }
     #wave-subtitle { font-size: 20px; letter-spacing: 4px; }
+
+    /* Thu nhỏ Màn hình Tạm dừng & Menu */
+    .pause-box { padding: 15px 20px; width: 85%; max-width: 350px; max-height: 95vh; overflow-y: auto; }
+    .pause-box h2 { margin: 0 0 15px; font-size: 24px; }
+    .menu-btn { padding: 10px; font-size: 15px; margin-bottom: 10px; }
+    .pause-settings { margin-bottom: 10px !important; padding: 10px !important; }
+    .pause-settings label { font-size: 13px; margin-bottom: 5px !important; }
+    #pause-fullscreen-btn { margin-bottom: 10px !important; }
+    .pause-settings.account-settings { display: flex; flex-direction: column; gap: 8px; }
+    
+    /* Thu nhỏ Đăng nhập / Đăng ký */
+    .auth-panel { padding: 20px !important; width: 85% !important; max-width: 320px !important; max-height: 95vh; overflow-y: auto; }
+    #auth-title { font-size: 20px !important; margin-bottom: 10px !important; }
+    .auth-panel input { margin-bottom: 10px !important; padding: 10px !important; font-size: 14px !important; }
 }
 
 /* --- MÀN HÌNH TẠM DỪNG (PAUSE MENU) --- */

@@ -33,7 +33,8 @@ export function updateGoldCoins(deltaTime, player, saveGameData) {
         const friction = Math.exp(-4 * deltaTime / 1000);
         coin.vx *= friction; coin.vy *= friction;
         const dist = Math.hypot(pX - coin.x, pY - coin.y);
-        if (dist < 150) {
+        const pullRadius = player.hasMagneticField ? Math.max(150, player.magneticRadius) : 150;
+        if (dist < pullRadius) {
             const pullForce = 1500;
             coin.vx += ((pX - coin.x) / dist) * pullForce * (deltaTime / 1000);
             coin.vy += ((pY - coin.y) / dist) * pullForce * (deltaTime / 1000);
@@ -68,7 +69,8 @@ export function updateSoulDrops(deltaTime, player, saveGameData) {
         const friction = Math.exp(-3 * deltaTime / 1000);
         soul.vx *= friction; soul.vy *= friction;
         const dist = Math.hypot(pX - soul.x, pY - soul.y);
-        if (dist < 180) {
+        const pullRadius = player.hasMagneticField ? Math.max(180, player.magneticRadius) : 180;
+        if (dist < pullRadius) {
             const pull = 1800;
             soul.vx += ((pX - soul.x) / dist) * pull * (deltaTime / 1000);
             soul.vy += ((pY - soul.y) / dist) * pull * (deltaTime / 1000);
@@ -106,7 +108,8 @@ export function updateExpOrbs(deltaTime, player) {
         const friction = Math.exp(-4 * deltaTime / 1000);
         orb.vx *= friction; orb.vy *= friction;
         const dist = Math.hypot(pX - orb.x, pY - orb.y);
-        if (dist < 120) {
+        const pullRadius = player.hasMagneticField ? Math.max(120, player.magneticRadius) : 120;
+        if (dist < pullRadius) {
             const pull = 1200;
             orb.vx += ((pX - orb.x) / dist) * pull * (deltaTime / 1000);
             orb.vy += ((pY - orb.y) / dist) * pull * (deltaTime / 1000);
@@ -152,7 +155,8 @@ export function drawFloatingTexts(ctx) {
 
 // --- SẤM SÉT & CHÁY NỔ ---
 export function spawnImpactEffect(x, y, type, power = 0, enemies = []) {
-    impactEffects.push({ x, y, type, age: 0, duration: 160, seed: Math.random() * 1000 });
+    const duration = type === 'singularity' ? 3000 : (type === 'meteor' ? 600 : (type === 'blink' ? 300 : 160));
+    impactEffects.push({ x, y, type, age: 0, duration: duration, seed: Math.random() * 1000 });
     if (type === 'lightning' && power > 0) applyLightningImpactDamage(x, y, power, enemies);
 }
 export function applyLightningImpactDamage(x, y, power, enemies) {
@@ -232,6 +236,32 @@ export function drawImpactEffects(ctx) {
             ctx.font = `${24 * scale}px Arial`;
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText('💀', effect.x, effect.y);
+            ctx.restore();
+        } else if (effect.type === 'singularity') {
+            ctx.save();
+            ctx.translate(effect.x, effect.y);
+            ctx.rotate(effect.age * 0.01);
+            const scale = Math.sin(Math.PI * progress);
+            ctx.globalAlpha = alpha;
+            ctx.shadowBlur = 20; ctx.shadowColor = '#9b59b6';
+            ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(0, 0, 25 * scale, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#8e44ad'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 0, 35 * scale, 0, Math.PI * 2); ctx.stroke();
+            ctx.restore();
+        } else if (effect.type === 'blink') {
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = '#3498db';
+            ctx.shadowBlur = 15; ctx.shadowColor = '#2980b9';
+            ctx.beginPath(); ctx.arc(effect.x, effect.y, 20 * (1 - progress), 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+        } else if (effect.type === 'meteor') {
+            ctx.save();
+            const scale = Math.sin(Math.PI * progress);
+            ctx.globalAlpha = alpha;
+            ctx.shadowBlur = 30; ctx.shadowColor = '#ff4757';
+            ctx.fillStyle = '#c0392b'; ctx.beginPath(); ctx.arc(effect.x, effect.y, 150 * scale, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#f39c12'; ctx.beginPath(); ctx.arc(effect.x, effect.y, 90 * scale, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(effect.x, effect.y, 40 * scale, 0, Math.PI * 2); ctx.fill();
             ctx.restore();
         }
     });

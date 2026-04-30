@@ -4,6 +4,7 @@ import { Weapon, Projectile, RARITY } from './weapons.js';
 import { SpriteRenderer } from './sprite.js';
 import { AudioManager } from './audio.js';
 import { RaceManager } from './races.js';
+import * as VFX from './vfx.js';
 
 export class Entity {
     constructor(x, y, width, height, maxHp, speed) {
@@ -16,6 +17,11 @@ export class Entity {
     takeDamage(amount) {
         if (this.invulnerableTimer > 0 || this.isDead) return;
         
+        if (this.dodgeChance && Math.random() < this.dodgeChance) {
+            VFX.spawnFloatingText(this.x + this.width / 2, this.y, 'NÉ!', '#ffffff');
+            return;
+        }
+
         if (this.shield > 0) {
             if (amount <= this.shield) { this.shield -= amount; amount = 0; } 
             else { amount -= this.shield; this.shield = 0; }
@@ -69,7 +75,7 @@ export class Player extends Entity {
         baseMaxHp += race.stats.hp;
         baseMaxShield += race.stats.shield;
         baseSpeed += race.stats.speed;
-        this.damageMult = race.stats.dmgMult;
+        this.damageMult = race.stats.dmgMult * (this.damageMultiplier || 1);
 
         let bonusHp = 0, bonusShield = 0, bonusSpeed = 0;
         for (let key in this.equipment) {
@@ -105,7 +111,7 @@ export class Player extends Entity {
         return (this.y + this.height / 2) - (drawHeight / 2);
     }
 
-    gainExp(amount) { this.exp += amount; if (this.exp >= this.expToNextLevel) this.levelUp(); }
+    gainExp(amount) { this.exp += amount * (this.expMultiplier || 1); if (this.exp >= this.expToNextLevel) this.levelUp(); }
 
     levelUp() {
         this.level++; this.exp -= this.expToNextLevel; this.expToNextLevel = Math.floor(this.expToNextLevel * 1.5);
@@ -210,6 +216,29 @@ export class Player extends Entity {
         this.isMoving = (moveVec.x !== 0 || moveVec.y !== 0);
         
         this.updateAnimation(deltaTime, isAttacking);
+
+        // Hố đen Mini (Trừ thời gian hồi)
+        if (this.hasSingularity && this.singularityTimer > 0) {
+            this.singularityTimer -= deltaTime;
+        }
+
+        // Bước nhảy không gian (Lướt)
+        if (this.canBlink) {
+            if (this.blinkTimer > 0) this.blinkTimer -= deltaTime;
+            if (this.blinkTimer <= 0 && inputManager.isActionJustPressed('dash')) {
+                let dashDir = { x: moveVec.x, y: moveVec.y };
+                if (dashDir.x === 0 && dashDir.y === 0) dashDir = this.facing;
+                const dashDist = 150;
+                let targetX = this.x + dashDir.x * dashDist;
+                let targetY = this.y + dashDir.y * dashDist;
+                if (!this._checkMapCollision(targetX, targetY, map)) {
+                    VFX.spawnImpactEffect(this.x + this.width/2, this.y + this.height/2, 'blink');
+                    this.x = targetX; this.y = targetY;
+                    VFX.spawnImpactEffect(this.x + this.width/2, this.y + this.height/2, 'blink');
+                    this.blinkTimer = this.blinkCooldownTime;
+                }
+            }
+        }
 
         if (this.isMoving) {
             const moveX = moveVec.x * this.speed * (deltaTime / 1000);
@@ -440,6 +469,11 @@ export class Player extends Entity {
             ctx.fillStyle = '#ffdfc4'; ctx.beginPath(); ctx.roundRect(this.x + 4, this.y + breath + 2, 16, 12, 4); ctx.fill();
             ctx.fillStyle = '#2c3e50'; ctx.fillRect(this.x + 7 + this.facing.x * 2.5, this.y + breath + 5 + this.facing.y * 2.5, 3, 5); ctx.fillRect(this.x + 14 + this.facing.x * 2.5, this.y + breath + 5 + this.facing.y * 2.5, 3, 5);
             ctx.fillStyle = '#ffdfc4'; ctx.beginPath(); ctx.arc(this.x + 4, this.y + 16 + breath, 3.5, 0, Math.PI * 2); ctx.fill();
+        }
+
+        if (this.hasMagneticField) {
+            ctx.fillStyle = 'rgba(52, 152, 219, 0.05)'; ctx.strokeStyle = 'rgba(52, 152, 219, 0.2)'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.arc(this.x + this.width/2, this.y + this.height/2, this.magneticRadius, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
         }
 
         if (!this.skin.isSpriteSheet && !(this.skin && this.skin.isAdvancedSprite)) {

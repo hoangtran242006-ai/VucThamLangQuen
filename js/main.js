@@ -17,6 +17,7 @@ import { Network } from './network.js';
 import { ChatSystem } from './chat.js';
 import { AlchemySystem } from './alchemy.js';
 import { AudioManager } from './audio.js';
+import { SkillManager } from './skills.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -75,6 +76,22 @@ bindClick('close-log-btn', () => { elements.updateLogScreen.style.display = 'non
 bindClick('close-leaderboard-btn', () => { elements.leaderboardScreen.style.display = 'none'; gameState = 'MENU'; });
 bindClick('close-admin-btn', () => { elements.adminScreen.style.display = 'none'; gameState = 'MENU'; });
 bindClick('restart-button', () => { enterFullscreen(); restartGame(true, gameMode); });
+bindClick('pause-fullscreen-btn', () => {
+    if (!document.fullscreenElement) {
+        if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(e => {});
+        else if (document.documentElement.webkitRequestFullscreen) document.documentElement.webkitRequestFullscreen().catch(e => {});
+    } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    }
+});
+
+document.addEventListener('fullscreenchange', () => {
+    const btn = document.getElementById('pause-fullscreen-btn');
+    if (btn) {
+        btn.textContent = document.fullscreenElement ? '🔳 Thu Nhỏ Màn Hình' : '🔲 Toàn Màn Hình';
+    }
+});
 
 bindClick('dev-btn-gold', () => { player.gold += 10000; isDataDirty = true; UI.updateHud(player); });
 bindClick('dev-btn-soul', () => { player.souls += 1000; isDataDirty = true; UI.updateHud(player); });
@@ -222,12 +239,19 @@ window.addEventListener('resize', () => {
     const bgCanvas = document.getElementById('bgCanvas');
     if (bgCanvas) { bgCanvas.width = newWidth; bgCanvas.height = newHeight; }
     const container = document.getElementById('game-container'); if (!container) return;
-    if (!isMobile) { const scale = Math.min(window.innerWidth / newWidth, window.innerHeight / newHeight); container.style.transform = scale < 1 ? `scale(${scale})` : 'scale(1)'; } else { container.style.width = '100vw'; container.style.height = '100vh'; container.style.transform = 'none'; }
+    if (!isMobile) { 
+        const scale = Math.min(window.innerWidth / newWidth, window.innerHeight / newHeight); 
+        container.style.width = '800px'; container.style.height = '600px';
+        container.style.transform = scale < 1 ? `scale(${scale})` : 'scale(1)'; 
+    } else { 
+        container.style.width = '100%'; container.style.height = '100%'; container.style.transform = 'none'; 
+    }
 });
 window.dispatchEvent(new Event('resize'));
 
 let gameMap, projectiles = [], chests = [], enemies = [], merchant = null, alchemyTable = null;
 const player = new Player(0, 0); const menu = new Menu(); const inputManager = new InputManager(); inputManager.init(canvas);
+const skillManager = new SkillManager();
 window.playerRef = player; // Giữ tham chiếu cho network.js cập nhật
 window.menuRef = menu; // Giữ tham chiếu để tránh lỗi ReferenceError
 
@@ -441,6 +465,18 @@ function restartGame(startLoop = true, mode = 'solo') {
     projectiles.length = 0; chests.length = 0; VFX.clearAllVFX(); merchant = null; alchemyTable = null;
     player.level = 1; player.exp = 0; player.expToNextLevel = 100; player.maxHp = 100; player.isDead = false; player.hp = 100; player.speed = 200; player.inventory = [];
     player.deathProcessed = false;
+    
+    player.hasMagneticField = false;
+    player.canBlink = false;
+    player.hasSingularity = false;
+    player.damageMultiplier = 1;
+    player.hasLifesteal = false;
+    player.hasThorns = false;
+    player.dodgeChance = 0;
+    player.expMultiplier = 1;
+    player.hasMeteor = false;
+    skillManager.acquiredSkills = [];
+    
     player.setSkin(SkinManager.getEquippedSkin(), SkinManager.skinImages); 
     const pt = document.getElementById('player-portrait'); if (pt) pt.style.backgroundColor = player.color;
     player.currentWeapon = new Weapon({ name:'Cung Gỗ Tập Sự', baseName:'Cung Gỗ', type:'ranged', rarity:RARITY.COMMON, baseDmg:10, baseSpeed:350, fireRate:400, range:300, color:'#f1c40f', effectType:'standard', imgSrc: 'img/weapon/wodden-bow.png' }); player.inventory.push(player.currentWeapon); 
@@ -567,7 +603,16 @@ function gameLoop(time) {
             () => { gameState = 'UPDATE_LOG'; if (elements.updateLogScreen) elements.updateLogScreen.style.display = 'flex'; },
             () => { checkAndPromptPlayerName(); gameState = 'LEADERBOARD'; if (elements.leaderboardScreen) { elements.leaderboardScreen.style.display = 'flex'; const lc = document.getElementById('leaderboard-content'); if(lc) lc.innerHTML = '<div style="text-align:center;margin-top:50px;">Đang tải Dữ liệu Máy chủ...</div>'; getTopPlayers().then(ps => renderLeaderboard(ps)); } },
             (v) => { applyAudioSettings(v, globalMuted); }, (m) => { applyAudioSettings(globalVolume, m); }, () => playNextTrack(), () => { changePlayerName(); if (Network.socket) Network.socket.emit('registerName', getPlayerName()); },
-            () => { gameState = 'ADMIN'; if (elements.adminScreen) { elements.adminScreen.style.display = 'flex'; const ac = document.getElementById('admin-content'); if (ac) ac.innerHTML = '<div style="text-align: center; margin-top: 50px;">Đang tải dữ liệu...</div>'; getAllPlayersAdmin().then(ps => { let h=''; ps.forEach(p => { h+=`<div class="admin-player-card"><div style="flex:1; min-width: 120px; color:#f1c40f"><strong>${p.playerName||'Ẩn danh'}</strong><br><small style="color:#bdc3c7">${p.id}</small></div><div>Vàng: <input type="number" id="adm-g-${p.id}" value="${p.gold||0}"></div><div>Linh hồn: <input type="number" id="adm-s-${p.id}" value="${p.souls||0}"></div><div>Tầng: <input type="number" id="adm-w-${p.id}" value="${p.bestWave||0}"></div><button class="admin-btn" onclick="window.saveAdmin('${p.id}')">LƯU</button></div>`; }); if(ac) ac.innerHTML = h||'<div style="text-align:center;">Không có dữ liệu</div>'; }); } }
+            () => { gameState = 'ADMIN'; if (elements.adminScreen) { elements.adminScreen.style.display = 'flex'; const ac = document.getElementById('admin-content'); if (ac) ac.innerHTML = '<div style="text-align: center; margin-top: 50px;">Đang tải dữ liệu...</div>'; getAllPlayersAdmin().then(ps => { let h=''; ps.forEach(p => { h+=`<div class="admin-player-card"><div style="flex:1; min-width: 120px; color:#f1c40f"><strong>${p.playerName||'Ẩn danh'}</strong><br><small style="color:#bdc3c7">${p.id}</small></div><div>Vàng: <input type="number" id="adm-g-${p.id}" value="${p.gold||0}"></div><div>Linh hồn: <input type="number" id="adm-s-${p.id}" value="${p.souls||0}"></div><div>Tầng: <input type="number" id="adm-w-${p.id}" value="${p.bestWave||0}"></div><button class="admin-btn" onclick="window.saveAdmin('${p.id}')">LƯU</button></div>`; }); if(ac) ac.innerHTML = h||'<div style="text-align:center;">Không có dữ liệu</div>'; }); } },
+            () => {
+                if (!document.fullscreenElement) {
+                    if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(e => {});
+                    else if (document.documentElement.webkitRequestFullscreen) document.documentElement.webkitRequestFullscreen().catch(e => {});
+                } else {
+                    if (document.exitFullscreen) document.exitFullscreen();
+                    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                }
+            }
         );
         menu.draw(ctx, GAME_VERSION, player.gold, musicError ? '⚠️ Lỗi nhạc!' : (isMusicPlaying ? playlist[currentTrackIndex].name : 'Chưa phát')); inputManager.update(); if (loopId) cancelAnimationFrame(loopId); loopId = requestAnimationFrame(gameLoop); return;
     }
@@ -583,6 +628,7 @@ function gameLoop(time) {
     if (gameState === 'SHOP') { if (inputManager.isActionJustPressed('interact') || inputManager.isActionJustPressed('inventory') || inputManager.isActionJustPressed('escape')) closeShop(); inputManager.update(); if (loopId) cancelAnimationFrame(loopId); loopId = requestAnimationFrame(gameLoop); return; }
     if (gameState === 'CHEST') { if (inputManager.isActionJustPressed('interact') || inputManager.isActionJustPressed('inventory') || inputManager.isActionJustPressed('escape')) closeChest(); inputManager.update(); if (loopId) cancelAnimationFrame(loopId); loopId = requestAnimationFrame(gameLoop); return; }
     if (gameState === 'ALCHEMY') { if (inputManager.isActionJustPressed('interact') || inputManager.isActionJustPressed('inventory') || inputManager.isActionJustPressed('escape')) AlchemySystem.close(); inputManager.update(); if (loopId) cancelAnimationFrame(loopId); loopId = requestAnimationFrame(gameLoop); return; }
+    if (gameState === 'SKILL_SELECT') { inputManager.update(); if (loopId) cancelAnimationFrame(loopId); loopId = requestAnimationFrame(gameLoop); return; }
 
     if (inputManager.isActionJustPressed('escape') && !player.isDead) { togglePause(); inputManager.update(); if (loopId) cancelAnimationFrame(loopId); loopId = requestAnimationFrame(gameLoop); return; }
     if (inputManager.isActionJustPressed('inventory') && !player.isDead) { openInventory(); inputManager.update(); if (loopId) cancelAnimationFrame(loopId); loopId = requestAnimationFrame(gameLoop); return; }
@@ -591,6 +637,29 @@ function gameLoop(time) {
 
     player.update(dt, inputManager, gameMap, camera, projectiles);
     
+    // Kỹ năng: Thiên Thạch (Meteor)
+    if (player.hasMeteor && !player.isDead) {
+        player.meteorTimer -= dt;
+        if (player.meteorTimer <= 0) {
+            player.meteorTimer = 15000;
+            let tx = player.x + (Math.random() - 0.5) * 600, ty = player.y + (Math.random() - 0.5) * 600;
+            if (enemies.length > 0) { // Ưu tiên chọn 1 con quái vật làm tâm chấn
+                const t = enemies[Math.floor(Math.random() * enemies.length)];
+                tx = t.x + t.width/2; ty = t.y + t.height/2;
+            }
+            VFX.spawnImpactEffect(tx, ty, 'meteor');
+            AudioManager.play('chest'); // Dùng tiếng Chest để tạo âm thanh vụ nổ trầm
+            
+            const dmg = Math.floor(150 * player.damageMult); // Sát thương tỉ lệ với sức mạnh
+            enemies.forEach(e => {
+                if (!e.isDead && Math.hypot(e.x + e.width/2 - tx, e.y + e.height/2 - ty) <= 150) { 
+                    e.takeDamage(dmg); 
+                    VFX.spawnFloatingText(e.x + e.width/2, e.y, dmg, '#ff4757'); 
+                }
+            });
+        }
+    }
+
     networkSyncTimer += dt;
     // Tăng Tick-rate lên 25 FPS (40ms) do không còn bị Firebase giới hạn
     if (networkSyncTimer >= 40) { Network.updateSync(player, inputManager, waveNumber); networkSyncTimer = 0; }
@@ -681,7 +750,25 @@ function gameLoop(time) {
             }
         }
 
-        if (enemies.length === 0 && !isGameOver) { waveClearTimer -= dt; if (waveClearTimer <= 0) { waveNumber++; Network.clearWaveData(); spawnWave(waveNumber + 1); waveClearTimer = 1200; } } else waveClearTimer = 1200;
+        if (enemies.length === 0 && !isGameOver) { 
+            waveClearTimer -= dt; 
+            if (waveClearTimer <= 0) { 
+                waveNumber++; Network.clearWaveData(); 
+                gameState = 'SKILL_SELECT';
+                document.body.classList.remove('show-joystick');
+                const options = skillManager.getThreeRandomSkills();
+                UI.renderSkillSelection(options, (selectedId) => {
+                    skillManager.selectSkill(selectedId, player);
+                    player.recalculateStats();
+                    AudioManager.play('chest');
+                    gameState = 'PLAYING';
+                    document.body.classList.add('show-joystick');
+                    spawnWave(waveNumber + 1);
+                    waveClearTimer = 1200;
+                    isDataDirty = true;
+                });
+            } 
+        } else waveClearTimer = 1200;
     } else {
         // PvP Mode: Liên tục thả rương tiếp tế
         waveClearTimer -= dt;
@@ -699,6 +786,14 @@ function gameLoop(time) {
                 if (Math.hypot(p.x-(e.x+e.width/2), p.y-(e.y+e.height/2)) < p.radius + Math.max(e.width, e.height)/2) {
                     if (p.hitEnemies && p.hitEnemies.has(e)) continue; e.takeDamage(p.damage); VFX.spawnFloatingText(e.x+e.width/2, e.y, p.damage); if (p.hitEnemies) p.hitEnemies.add(e); p.pierceCount--; if (p.pierceCount <= 0) p.markedForDeletion = true;
                     if (p.effectType === 'lightning' && !p.spawnedImpact) { VFX.spawnLightningChainEffect(e, p.damage*0.55, enemies); p.spawnedImpact = true; } else if (p.effectType === 'fire') e.applyStatusEffect('fire', 3000, Math.max(1, Math.floor(p.damage*0.3))); else if (p.effectType === 'ice') e.applyStatusEffect('ice', 2000, 0.4);
+                    if (player.hasSingularity && player.singularityTimer <= 0) {
+                        player.singularityTimer = player.singularityMaxCooldown;
+                        VFX.spawnImpactEffect(e.x + e.width/2, e.y + e.height/2, 'singularity');
+                    }
+                    if (player.hasLifesteal && Math.random() < 0.1) {
+                        player.hp = Math.min(player.maxHp, player.hp + 2);
+                        VFX.spawnFloatingText(player.x + player.width/2, player.y, '+2', '#2ecc71');
+                    }
                     if (p.markedForDeletion) break;
                 }
             }

@@ -65,8 +65,6 @@ export class Enemy extends Entity {
             else if (effect.type === 'fire') { effect.tickTimer += deltaTime; if (effect.tickTimer >= 500) { this.takeDamage(effect.power); effect.tickTimer -= 500; } }
             if (effect.timer <= 0) this.statusEffects.splice(i, 1);
         }
-        this.speed = this.baseSpeed * currentSpeedModifier;
-        if (this.isDead) return;
 
         // Tìm người chơi gần nhất (Local hoặc Multiplayer)
         let closestDist = Infinity;
@@ -78,6 +76,14 @@ export class Enemy extends Entity {
             const distance = Math.hypot(dX, dY);
             if (distance < closestDist) { closestDist = distance; targetPlayer = p; }
         }
+        
+        // Vòng từ trường làm chậm
+        if (targetPlayer && targetPlayer.hasMagneticField && closestDist < targetPlayer.magneticRadius) {
+            currentSpeedModifier *= targetPlayer.magneticSlowMult;
+        }
+        
+        this.speed = this.baseSpeed * currentSpeedModifier;
+        if (this.isDead) return;
 
         if (!targetPlayer) return; // Nếu tất cả đều chết thì đứng im
 
@@ -90,7 +96,29 @@ export class Enemy extends Entity {
             else { if (!this._checkMapCollision(this.x + moveX, this.y, map)) this.x += moveX; if (!this._checkMapCollision(this.x, this.y + moveY, map)) this.y += moveY; }
         }
 
-        if (this.isCollidingWith(targetPlayer) && !window.isGodMode) { targetPlayer.takeDamage(this.damage); if (closestDist > 0) { this.x -= (dx / closestDist) * 10; this.y -= (dy / closestDist) * 10; } }
+        // Áp dụng sức hút của Hố Đen Mini (Singularity)
+        for (const fx of VFX.impactEffects) {
+            if (fx.type === 'singularity') {
+                const distToBlackHole = Math.hypot(fx.x - (this.x + this.width/2), fx.y - (this.y + this.height/2));
+                if (distToBlackHole > 0 && distToBlackHole < 200) {
+                    const pullForce = 250;
+                    const pullX = ((fx.x - (this.x + this.width/2)) / distToBlackHole) * pullForce * (deltaTime / 1000);
+                    const pullY = ((fx.y - (this.y + this.height/2)) / distToBlackHole) * pullForce * (deltaTime / 1000);
+                    if (this.typeInfo && this.typeInfo.noClip) { this.x += pullX; this.y += pullY; } 
+                    else { if (!this._checkMapCollision(this.x + pullX, this.y, map)) this.x += pullX; if (!this._checkMapCollision(this.x, this.y + pullY, map)) this.y += pullY; }
+                }
+            }
+        }
+
+        if (this.isCollidingWith(targetPlayer) && !window.isGodMode) { 
+            targetPlayer.takeDamage(this.damage); 
+            if (targetPlayer.hasThorns) {
+                const reflectDmg = Math.max(1, Math.floor(this.damage * 0.5));
+                this.takeDamage(reflectDmg);
+                VFX.spawnFloatingText(this.x + this.width/2, this.y, reflectDmg, '#e67e22');
+            }
+            if (closestDist > 0) { this.x -= (dx / closestDist) * 10; this.y -= (dy / closestDist) * 10; } 
+        }
     }
 
     _checkMapCollision(newX, newY, map) { return map.isSolidPixel(newX, newY) || map.isSolidPixel(newX + this.width, newY) || map.isSolidPixel(newX, newY + this.height) || map.isSolidPixel(newX + this.width, newY + this.height); }

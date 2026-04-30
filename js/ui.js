@@ -319,5 +319,41 @@ export const UI = {
         
         this.miniCtx.fillStyle='#3498db'; this.miniCtx.beginPath(); this.miniCtx.arc((player.x+player.width/2)*sc, (player.y+player.height/2)*sc, 4, 0, Math.PI*2); this.miniCtx.fill();
         this.miniCtx.strokeStyle='rgba(255,255,255,0.7)'; this.miniCtx.lineWidth=2; this.miniCtx.strokeRect(camera.x*sc, camera.y*sc, W*sc, H*sc);
+    },
+
+    renderSkillSelection(options, onSelect) {
+        let screen = document.getElementById('skill-screen');
+        if (!screen) {
+            screen = document.createElement('div');
+            screen.id = 'skill-screen';
+            screen.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:none;justify-content:center;align-items:center;z-index:9999;flex-direction:column;backdrop-filter:blur(5px);';
+            document.body.appendChild(screen);
+        }
+        
+        let html = '<h2 style="color:#f1c40f;font-size:36px;margin-bottom:30px;text-shadow:0 0 15px #f1c40f;text-align:center;">🌟 CHỌN KỸ NĂNG MỚI 🌟</h2>';
+        html += '<div style="display:flex;gap:20px;flex-wrap:wrap;justify-content:center;">';
+        
+        options.forEach((skill, idx) => {
+            html += `
+                <div id="skill-card-${idx}" style="width:240px;background:rgba(30,40,50,0.9);border:2px solid #3498db;border-radius:12px;padding:25px;text-align:center;cursor:pointer;transition:transform 0.2s, box-shadow 0.2s;color:#fff;box-shadow:inset 0 0 20px rgba(0,0,0,0.8);">
+                    <div style="font-size:54px;margin-bottom:15px;text-shadow:0 0 15px rgba(255,255,255,0.5);">${skill.icon}</div>
+                    <h3 style="color:#3498db;margin:0 0 15px 0;font-size:20px;">${skill.name}</h3>
+                    <p style="font-size:14px;color:#bdc3c7;margin:0;line-height:1.4;">${skill.description}</p>
+                </div>
+            `;
+        });
+        html += '</div>';
+        screen.innerHTML = html;
+        screen.style.display = 'flex';
+        
+        options.forEach((skill, idx) => {
+            const card = document.getElementById(`skill-card-${idx}`);
+            card.onmouseover = () => { card.style.transform = 'translateY(-10px)'; card.style.boxShadow = '0 10px 25px rgba(52,152,219,0.5), inset 0 0 20px rgba(0,0,0,0.8)'; card.style.borderColor = '#f1c40f'; };
+            card.onmouseout = () => { card.style.transform = 'translateY(0)'; card.style.boxShadow = 'inset 0 0 20px rgba(0,0,0,0.8)'; card.style.borderColor = '#3498db'; };
+            card.onclick = () => {
+                screen.style.display = 'none';
+                onSelect(skill.id);
+            };
+        });
     }
 };

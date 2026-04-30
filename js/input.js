@@ -95,6 +95,7 @@ export class InputManager {
             bindVirtualBtn('btn-interact', 'KeyF');
             bindVirtualBtn('btn-inventory', 'KeyE');
             bindVirtualBtn('btn-pause-mobile', 'Escape');
+            bindVirtualBtn('btn-dash', 'ShiftLeft');
 
             // Cho phép chạm vào màn hình game để giả lập click chuột (hữu ích cho Menu Shop)
             window.addEventListener('touchstart', (e) => {
