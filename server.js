@@ -2,7 +2,13 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
-const db = require('./db'); // Kết nối cơ sở dữ liệu Supabase
+const { Pool } = require('pg'); // Gọi thư viện PostgreSQL
+
+// Khởi tạo kết nối thẳng tới Supabase
+const db = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+});
 
 const app = express();
 const server = http.createServer(app);
