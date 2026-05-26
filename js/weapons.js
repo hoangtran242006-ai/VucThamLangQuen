@@ -23,7 +23,17 @@ export const WEAPON_TYPES = [
     { name: 'Mũ Da', type: 'armor', armorType: 'helmet', hpBonus: 20, color: '#e67e22', ability: 'Tăng cường sinh lực tối đa.' },
     { name: 'Áo Giáp Sắt', type: 'armor', armorType: 'armor', shieldBonus: 40, color: '#bdc3c7', ability: 'Tạo lớp khiên từ trường bảo vệ.' },
     { name: 'Bao Tay Vải', type: 'armor', armorType: 'gloves', speedBonus: 15, color: '#3498db', ability: 'Tăng nhẹ tốc độ di chuyển.' },
-    { name: 'Giày Thợ Săn', type: 'armor', armorType: 'boots', speedBonus: 30, color: '#2ecc71', ability: 'Bước đi nhẹ nhàng và nhanh nhẹn hơn.' }
+    { name: 'Giày Thợ Săn', type: 'armor', armorType: 'boots', speedBonus: 30, color: '#2ecc71', ability: 'Bước đi nhẹ nhàng và nhanh nhẹn hơn.' },
+    // --- RUNE PHÁP SƯ XƯƠNG ---
+    { name: 'Triều Cường Xương Khô', type: 'rune', branch: 'SWARM', runeId: 'undead_tide', color: '#8e44ad', buff: 'Tăng 50% max quái triệu hồi. Giảm 30% hồi chiêu.', debuff: 'Giảm 25% Máu và Sát thương quái.', imgSrc: 'img/rune/rune1.png' },
+    { name: 'Cộng Hưởng Cuồng Nộ', type: 'rune', branch: 'SWARM', runeId: 'mass_frenzy', color: '#8e44ad', buff: 'Mỗi quái đồng minh tăng 4% Tốc đánh & 2% Tốc chạy.', debuff: 'Bạn bị giảm 20% tốc độ và nhận thêm 15% ST.', imgSrc: 'img/rune/rune2.png' },
+    { name: 'Nghi Thức Khổng Lồ', type: 'rune', branch: 'TITAN', runeId: 'goliath', color: '#e74c3c', buff: 'Chỉ 1 quái duy nhất hóa Khổng Lồ: +300% HP, +200% ST lan.', debuff: 'Quái chết bạn bị choáng 3s.', imgSrc: 'img/rune/rune3.png' },
+    { name: 'Ký Sinh Linh Hồn', type: 'rune', branch: 'TITAN', runeId: 'parasite', color: '#e74c3c', buff: 'ST của Cự Thần tạo Giáp ảo cho bạn.', debuff: 'Rút 3% máu bạn mỗi giây, tự hủy nếu máu bạn <15%.', imgSrc: 'img/rune/rune4.png' },
+    { name: 'Bộc Phá Tủy Xương', type: 'rune', branch: 'SACRIFICE', runeId: 'bone_burst', color: '#2ecc71', buff: 'Quái chết nổ lan gây 25% HP và làm chậm.', debuff: 'Tuổi thọ quái giảm 50%.', imgSrc: 'img/rune/rune5.png' },
+    { name: 'Lời Nguyền Suy Kiệt', type: 'rune', branch: 'SACRIFICE', runeId: 'withering', color: '#2ecc71', buff: 'Đòn đánh của quái làm chậm địch 20%.', debuff: 'ST của quái bị giảm 30%.', imgSrc: 'img/rune/rune6.png' },
+    { name: 'Binh Đoàn Bất Tử', type: 'rune', branch: 'SWARM', runeId: 'undead_legion', color: '#8e44ad', buff: 'Tăng 20% Máu cho quái đồng minh.', debuff: 'Giảm 10% Máu tối đa của bạn.', imgSrc: 'img/rune/rune7.png' },
+    { name: 'Sức Mạnh Tuyệt Đối', type: 'rune', branch: 'TITAN', runeId: 'absolute_power', color: '#e74c3c', buff: 'Tăng 50% Tốc đánh cho Cự Thần.', debuff: 'Bạn bị giảm 20% Tốc chạy.', imgSrc: 'img/rune/rune8.png' },
+    { name: 'Hấp Thụ Oán Hồn', type: 'rune', branch: 'SACRIFICE', runeId: 'soul_absorb', color: '#2ecc71', buff: 'Quái chết hồi cho bạn 5% Máu.', debuff: 'Mất 5 Máu khi triệu hồi quái.', imgSrc: 'img/rune/rune9.png' }
 ];
 
 /**
@@ -37,6 +47,8 @@ export class Weapon {
         this.type = config.type;
         this.rarity = config.rarity;
         this.imgSrc = config.imgSrc || null;
+        this.spriteX = config.spriteX !== undefined ? config.spriteX : null;
+        this.spriteY = config.spriteY !== undefined ? config.spriteY : null;
         
         // Chỉ số chiến đấu thực tế
         this.damage = Math.floor(config.baseDmg * this.rarity.statMultiplier);
@@ -52,11 +64,15 @@ export class Weapon {
         this.shieldBonus = config.shieldBonus || 0;
         this.speedBonus = config.speedBonus || 0;
         
-        if (this.type === 'armor') { this.damage = 0; this.projectileSpeed = 0; this.fireRate = 9999; this.range = 0; }
+        if (this.type === 'armor' || this.type === 'rune') { this.damage = 0; this.projectileSpeed = 0; this.fireRate = 9999; this.range = 0; }
+        this.branch = config.branch || null;
+        this.runeId = config.runeId || null;
+        this.buff = config.buff || null;
+        this.debuff = config.debuff || null;
         
         // Quản lý thời gian hồi chiêu
         this.lastFiredTime = 0;
-        this.ability = config.ability || 'Vũ khí cơ bản, không có hiệu ứng đặc biệt.';
+        this.ability = config.ability || (this.type === 'rune' ? `[${this.branch}] ${this.buff} | ${this.debuff}` : 'Vũ khí cơ bản, không có hiệu ứng đặc biệt.');
         this.effectType = config.effectType || this.type;
         
         // Đặc tính nâng cao
@@ -73,7 +89,7 @@ export class Weapon {
      * Hàm tính toán để sinh ra một vũ khí NGẪU NHIÊN hoàn toàn.
      * Dùng khi mở rương hoặc quái vật chết rớt đồ.
      */
-    static rollRandomWeapon() {
+    static rollRandomWeapon(isMage = false) {
         // 1. Quay "Gacha" để xác định độ hiếm dựa trên tỉ lệ dropRate
         let rand = Math.random();
         let cumulative = 0;
@@ -90,7 +106,8 @@ export class Weapon {
         }
 
         // 2. Chọn ngẫu nhiên một loại vũ khí cơ bản
-        const baseWeapon = WEAPON_TYPES[Math.floor(Math.random() * WEAPON_TYPES.length)];
+        const availableTypes = WEAPON_TYPES.filter(w => isMage ? (w.type === 'rune' || w.type === 'armor') : (w.type !== 'rune'));
+        const baseWeapon = availableTypes[Math.floor(Math.random() * availableTypes.length)];
 
         // 3. Ghép tiền tố (Prefix) để tên vũ khí ngầu hơn
         const prefixes = ['Tàn bạo', 'Cổ đại', 'Linh thiêng', 'Bị nguyền rủa', 'Khát máu'];
@@ -105,7 +122,7 @@ export class Weapon {
         });
     }
 
-    static rollRandomLightning() {
+    static rollRandomLightning(isMage = false) {
         let rand = Math.random();
         let cumulative = 0;
         let selectedRarity = RARITY.COMMON;
@@ -118,7 +135,8 @@ export class Weapon {
             }
         }
 
-        const baseWeapon = WEAPON_TYPES.find(w => w.effectType === 'lightning') || WEAPON_TYPES[0];
+        const availableTypes = WEAPON_TYPES.filter(w => isMage ? (w.type === 'rune' || w.type === 'armor') : (w.type !== 'rune'));
+        const baseWeapon = availableTypes.find(w => w.effectType === 'lightning') || availableTypes[0];
         const prefixes = ['Tàn bạo', 'Cổ đại', 'Linh thiêng', 'Bị nguyền rủa', 'Khát máu'];
         const randomPrefix = prefixes[Math.floor(Math.random() * prefixes.length)];
         const finalName = `${selectedRarity.name} ${baseWeapon.name} ${randomPrefix}`;
@@ -134,8 +152,9 @@ export class Weapon {
     /**
      * Hàm đặc biệt dành cho Thương gia: Sinh vũ khí với độ hiếm (Rarity) được ép định sẵn.
      */
-    static rollWithRarity(forcedRarity) {
-        const baseWeapon = WEAPON_TYPES[Math.floor(Math.random() * WEAPON_TYPES.length)];
+    static rollWithRarity(forcedRarity, isMage = false) {
+        const availableTypes = WEAPON_TYPES.filter(w => isMage ? (w.type === 'rune' || w.type === 'armor') : (w.type !== 'rune'));
+        const baseWeapon = availableTypes[Math.floor(Math.random() * availableTypes.length)];
         const prefixes = ['Tàn bạo', 'Cổ đại', 'Linh thiêng', 'Bị nguyền rủa', 'Khát máu', 'Huyền bí'];
         const randomPrefix = prefixes[Math.floor(Math.random() * prefixes.length)];
         const finalName = `${forcedRarity.name} ${baseWeapon.name} ${randomPrefix}`;

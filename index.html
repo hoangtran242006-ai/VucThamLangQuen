@@ -50,13 +50,6 @@
                 </div>
             </div>
 
-            <!-- Tách riêng tên vũ khí hiện tại -->
-            <div id="weapon-hud">
-                <span>Đang trang bị:</span>
-                <strong id="weaponName">Cung Gỗ Tập Sự</strong>
-                <div class="hint">Nhấn [ E ] mở Túi | Giữ [ Tab ] xem Map</div>
-            </div>
-            
             <div id="loot-text">Nhặt rương để tăng sức mạnh!</div>
         </div>
 
@@ -76,12 +69,13 @@
             </div>
             <div class="mobile-action-btns">
                 <button id="btn-dash" class="m-btn" style="font-size: 11px;">LƯỚT</button>
-                <button id="btn-interact" class="m-btn">F</button>
+                <button id="btn-interact" class="m-btn">MỞ</button>
                 <button id="btn-inventory" class="m-btn">TÚI</button>
             </div>
             <div id="joystick-aim" class="joystick-zone">
                 <div id="knob-aim" class="joystick-knob"></div>
             </div>
+            <button id="btn-summon" class="joystick-zone" style="display: none;">TRIỆU<br>HỒI</button>
         </div>
 
         <!-- Nút nhắc nhở tương tác -->
@@ -94,12 +88,6 @@
                 <h2 style="text-align: left; padding: 10px 20px; margin: 0; color: #fff; text-shadow: 2px 2px 0 #000;">KHO ĐỒ TRANG BỊ</h2>
                 <div class="mc-layout">
                     <div class="mc-left-col">
-                        <div class="mc-equip-slots">
-                            <div class="mc-slot equip-slot" id="slot-helmet" title="Mũ">🪖</div>
-                            <div class="mc-slot equip-slot" id="slot-armor" title="Áo">👕</div>
-                            <div class="mc-slot equip-slot" id="slot-gloves" title="Bao tay">🧤</div>
-                            <div class="mc-slot equip-slot" id="slot-boots" title="Giày">👢</div>
-                        </div>
                         <div class="mc-player-preview" id="inv-player-preview">
                             <canvas id="inv-player-canvas" width="80" height="120"></canvas>
                         </div>
@@ -176,7 +164,7 @@
                 <button class="close-btn" id="close-chest-btn">X</button>
                 <h2>RƯƠNG BÁU</h2>
                 <div id="chest-content" style="padding: 20px; background: rgba(0,0,0,0.3); border-radius: 10px; margin-bottom: 20px;"></div>
-                <div style="display: flex; gap: 15px;">
+                <div class="chest-btn-group" style="display: flex; gap: 15px;">
                     <button id="chest-equip-btn" class="upg-btn" style="background: linear-gradient(180deg, #e74c3c, #c0392b); border-color: #ff7675; font-size: 16px; padding: 12px;">TRANG BỊ VÀO TAY</button>
                     <button id="chest-take-btn" class="upg-btn" style="background: linear-gradient(180deg, #2ecc71, #27ae60); border-color: #2ecc71; font-size: 16px; padding: 12px;">CẤT VÀO TÚI ĐỒ</button>
                 </div>
@@ -232,6 +220,15 @@
             </div>
         </div>
 
+        <!-- Nút Hòm thư nổi ở Menu -->
+        <div id="mailbox-floating-btn" onclick="window.openMailbox()" style="position: absolute; bottom: 20px; right: 20px; width: 45px; height: 45px; background: #2980b9; border: 2px solid #3498db; border-radius: 8px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.5); z-index: 900; transition: transform 0.2s, box-shadow 0.2s; pointer-events: auto;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            <div id="mailbox-noti-dot" style="display: none; position: absolute; top: -5px; right: -5px; width: 14px; height: 14px; background: #e74c3c; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 8px #e74c3c; animation: pulse-dot 1s infinite alternate; pointer-events: none;"></div>
+        </div>
+
         <!-- Màn hình Update Log -->
         <div id="update-log-screen">
             <div id="update-log-panel">
@@ -255,11 +252,35 @@
         </div>
 
         <!-- Màn hình Admin -->
-        <div id="admin-screen">
-            <div id="admin-panel">
+        <div id="admin-screen" style="pointer-events: auto;">
+            <div id="admin-panel" style="width: 750px; max-height: 85vh; overflow-y: auto;">
                 <button class="close-btn" id="close-admin-btn">X</button>
                 <h2>🛠 BẢNG ĐIỀU KHIỂN ADMIN 🛠</h2>
+                
+                <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f39c12; text-align: left;">
+                    <h3 style="color: #f1c40f; margin-top: 0;">GỬI THƯ / QUÀ TẶNG</h3>
+                    <input type="text" id="admin-mail-target" placeholder="ID Người chơi (Hoặc nhập 'all' để gửi toàn Server)" style="width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box; background: #2c3e50; color: white; border: 1px solid #34495e; border-radius: 4px;">
+                    <input type="text" id="admin-mail-title" placeholder="Tiêu đề thư" style="width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box; background: #2c3e50; color: white; border: 1px solid #34495e; border-radius: 4px;">
+                    <textarea id="admin-mail-content" placeholder="Nội dung thư..." style="width: 100%; margin-bottom: 10px; padding: 8px; height: 60px; box-sizing: border-box; background: #2c3e50; color: white; border: 1px solid #34495e; border-radius: 4px;"></textarea>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <div style="flex: 1;"><label style="color: #bdc3c7; font-size: 12px;">Số Vàng tặng:</label><input type="number" id="admin-mail-gold" value="0" style="width: 100%; padding: 8px; box-sizing: border-box; background: #2c3e50; color: white; border: 1px solid #34495e; border-radius: 4px;"></div>
+                        <div style="flex: 1;"><label style="color: #bdc3c7; font-size: 12px;">Số Linh hồn tặng:</label><input type="number" id="admin-mail-souls" value="0" style="width: 100%; padding: 8px; box-sizing: border-box; background: #2c3e50; color: white; border: 1px solid #34495e; border-radius: 4px;"></div>
+                    </div>
+                    <button class="admin-btn" style="width: 100%; background: #2ecc71; padding: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; color: white; border: none;" onclick="window.sendAdminMail()">GỬI THƯ NÀY</button>
+                </div>
+
                 <div id="admin-content"><div style="text-align: center; margin-top: 50px;">Đang tải dữ liệu người chơi...</div></div>
+            </div>
+        </div>
+
+        <!-- Màn hình Hòm Thư -->
+        <div id="mailbox-screen" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:998; justify-content:center; align-items:center; backdrop-filter:blur(4px); pointer-events:auto;">
+            <div id="mailbox-panel" class="mc-panel" style="width:600px; height:550px; position:relative; max-width: 95%;">
+                <button class="close-btn" onclick="window.closeMailbox()">X</button>
+                <h2 style="text-align: center; padding: 15px; margin: 0; color: #f1c40f; text-shadow: 2px 2px 0 #000;">HÒM THƯ CỦA TÔI</h2>
+                <div id="mailbox-content" style="overflow-y:auto; flex:1; padding: 0 20px 20px 20px; display:flex; flex-direction:column; gap:12px;">
+                    <div style="text-align:center; color:#bdc3c7; margin-top: 50px;">Đang tải hòm thư...</div>
+                </div>
             </div>
         </div>
 
@@ -273,11 +294,6 @@
                 <button id="restart-button">Chơi Lại</button>
             </div>
         </div>
-    </div>
-    
-    <!-- Floating Auth Button (Sảnh Chờ) -->
-    <div id="floating-auth-container" style="position: fixed; top: 15px; left: 15px; z-index: 100;">
-        <button id="floating-auth-btn" class="moss-btn" style="padding: 8px 16px; font-size: 14px; letter-spacing: 1px;">👤 ĐĂNG NHẬP / ĐĂNG KÝ</button>
     </div>
 
     <!-- Mini map (Ngoài màn hình Game) -->
@@ -295,7 +311,7 @@
 
     <!-- Global Chat Widget (Nằm ngoài Game Container) -->
     <div id="chat-widget">
-        <div id="chat-header">KÊNH THẾ GIỚI <span id="chat-toggle-btn">💬</span></div>
+        <div id="chat-header"><span class="chat-title-text">KÊNH THẾ GIỚI</span> <span id="chat-toggle-btn">💬</span></div>
         <div id="chat-body">
             <div id="chat-messages">
                 <div class="chat-placeholder">Đang kết nối...</div>
@@ -308,7 +324,7 @@
     </div>
 
     <!-- Dev Panel (Ngoài màn hình Game) -->
-    <div id="dev-panel" style="display: none; position: fixed; top: 20px; left: 20px; background: rgba(0,0,0,0.85); border: 2px solid #e74c3c; padding: 10px; border-radius: 8px; z-index: 9999; color: white; width: 160px; box-shadow: 0 0 20px rgba(231,76,60,0.7); backdrop-filter: blur(5px);">
+    <div id="dev-panel" style="display: none; position: fixed; top: 130px; left: 20px; background: rgba(0,0,0,0.85); border: 2px solid #e74c3c; padding: 10px; border-radius: 8px; z-index: 9999; color: white; width: 160px; box-shadow: 0 0 20px rgba(231,76,60,0.7); backdrop-filter: blur(5px);">
         <h3 style="margin: 0 0 10px 0; color: #e74c3c; text-align: center; font-size: 15px; text-shadow: 1px 1px 2px black;">🛠 TEST MODE</h3>
         <button id="dev-btn-gold" style="width:100%; margin-bottom:6px; background:linear-gradient(to bottom, #f1c40f, #f39c12); color:#000; border:1px solid #d35400; padding:6px; font-weight:bold; cursor:pointer; border-radius:4px;">+10.000 Vàng</button>
         <button id="dev-btn-soul" style="width:100%; margin-bottom:6px; background:linear-gradient(to bottom, #00d8d6, #0fb9b1); color:#000; border:1px solid #079992; padding:6px; font-weight:bold; cursor:pointer; border-radius:4px;">+1.000 Hồn</button>

@@ -22,6 +22,9 @@ export class Entity {
             return;
         }
 
+        // Tính toán sát thương khuếch đại (từ Debuff) trước khi trừ vào Giáp ảo
+        amount = amount * (this.damageTakenMult || 1);
+
         if (this.shield > 0) {
             if (amount <= this.shield) { this.shield -= amount; amount = 0; } 
             else { amount -= this.shield; this.shield = 0; }
@@ -53,7 +56,8 @@ export class Player extends Entity {
         this.level = 1; this.exp = 0; this.expToNextLevel = 100;
         this.gold = 0; this.souls = 0; this.dustParticles = []; this.dustTimer = 0;
         this.inventory = [];
-        this.equipment = { helmet: null, armor: null, gloves: null, boots: null };
+        this.equipment = { helmet: null, armor: null, gloves: null, boots: null, rune1: null, rune2: null, rune3: null };
+        this.runes = [];
         this.currentWeapon = new Weapon({ name: 'Cung Gỗ Tập Sự', baseName: 'Cung Gỗ', type: 'ranged', rarity: RARITY.COMMON, baseDmg: 10, baseSpeed: 350, fireRate: 400, range: 300, color: '#f1c40f', imgSrc: 'img/weapon/wodden-bow.png' });
         this.activeChat = null;
         this.raceId = 'human';
@@ -67,6 +71,7 @@ export class Player extends Entity {
 
     recalculateStats() {
         const isHoang = this.skin && this.skin.id === 'hoang';
+        const isMage = this.skin && this.skin.id === 'skeleton_mage';
         let baseMaxHp = isHoang ? 200 + (this.level - 1) * 40 : 100 + (this.level - 1) * 20;
         let baseMaxShield = isHoang ? 100 + (this.level - 1) * 10 : 0;
         let baseSpeed = 200 + (this.level * 5); 
@@ -80,13 +85,25 @@ export class Player extends Entity {
         let bonusHp = 0, bonusShield = 0, bonusSpeed = 0;
         for (let key in this.equipment) {
             const item = this.equipment[key];
-            if (item) {
+            if (item && item.type === 'armor') {
                 if (item.hpBonus) bonusHp += item.hpBonus * item.rarity.statMultiplier;
                 if (item.shieldBonus) bonusShield += item.shieldBonus * item.rarity.statMultiplier;
                 if (item.speedBonus) bonusSpeed += item.speedBonus * item.rarity.statMultiplier;
             }
         }
-        this.maxHp = Math.floor(baseMaxHp + bonusHp); this.maxShield = Math.floor(baseMaxShield + bonusShield); this.speed = Math.floor(baseSpeed + bonusSpeed);
+        
+        this.runes = [this.equipment.rune1, this.equipment.rune2, this.equipment.rune3].filter(Boolean);
+        let runeHpMult = 1; let runeSpeedMult = 1; this.damageTakenMult = 1;
+
+        if (isMage) {
+            if (this.runes.some(r => r.runeId === 'mass_frenzy')) { runeSpeedMult *= 0.8; this.damageTakenMult *= 1.15; }
+            if (this.runes.some(r => r.runeId === 'undead_legion')) { runeHpMult *= 0.9; }
+            if (this.runes.some(r => r.runeId === 'absolute_power')) { runeSpeedMult *= 0.8; }
+            // Cấp Giới hạn Giáp Ảo tối đa (Bằng 100% HP gốc) khi mang Rune Ký Sinh để UI hiển thị chuẩn
+            if (this.runes.some(r => r.runeId === 'parasite')) { bonusShield += baseMaxHp; }
+        }
+
+        this.maxHp = Math.floor((baseMaxHp + bonusHp) * runeHpMult); this.maxShield = Math.floor(baseMaxShield + bonusShield); this.speed = Math.floor((baseSpeed + bonusSpeed) * runeSpeedMult);
         if (this.hp > this.maxHp) this.hp = this.maxHp; if (this.shield > this.maxShield) this.shield = this.maxShield;
     }
 
@@ -94,12 +111,27 @@ export class Player extends Entity {
         if (!this.inventory.includes(item)) return;
         this.inventory.splice(this.inventory.indexOf(item), 1);
         let oldItem = null;
-        if (item.type === 'ranged' || item.type === 'magic') { oldItem = this.currentWeapon; this.currentWeapon = item; } 
+        if (item.type === 'ranged' || item.type === 'magic') { 
+            if (this.skin && this.skin.id === 'skeleton_mage') { this.inventory.push(item); return; }
+            oldItem = this.currentWeapon; this.currentWeapon = item; 
+        } 
         else if (item.type === 'armor') { oldItem = this.equipment[item.armorType]; this.equipment[item.armorType] = item; }
+        else if (item.type === 'rune') {
+            if (this.skin && this.skin.id === 'skeleton_mage') {
+                if (!this.equipment.rune1) { this.equipment.rune1 = item; }
+                else if (!this.equipment.rune2) { this.equipment.rune2 = item; }
+                else if (!this.equipment.rune3) { this.equipment.rune3 = item; }
+                else { oldItem = this.equipment.rune1; this.equipment.rune1 = item; }
+            } else { this.inventory.push(item); return; }
+        }
         if (oldItem) this.inventory.push(oldItem);
         this.recalculateStats();
     }
-    unequipItem(slot) { if (slot === 'weapon') return; let item = this.equipment[slot]; if (item) { this.equipment[slot] = null; this.inventory.push(item); this.recalculateStats(); } }
+    unequipItem(slot) { 
+        if (slot === 'weapon') return; 
+        let item = this.equipment[slot]; 
+        if (item) { this.equipment[slot] = null; this.inventory.push(item); this.recalculateStats(); } 
+    }
 
     getSpriteTopY() {
         let drawHeight = 48;
@@ -175,6 +207,13 @@ export class Player extends Entity {
     }
 
     update(deltaTime, inputManager, map, camera, gameProjectiles) {
+        if (this.stunTimer > 0) {
+            this.stunTimer -= deltaTime;
+            this.isMoving = false;
+            this.updateAnimation(deltaTime, false);
+            return;
+        }
+        
         if (this.isDead) {
             const moveVec = inputManager.getMovementVector();
             if (moveVec.x !== 0 || moveVec.y !== 0) {
@@ -199,7 +238,18 @@ export class Player extends Entity {
 
         if (this.invulnerableTimer > 0) this.invulnerableTimer -= deltaTime;
 
-        const moveVec = inputManager.getMovementVector();
+        if (this.mergedTarget && !this.mergedTarget.isDead) {
+            this.x = this.mergedTarget.x + this.mergedTarget.width/2 - this.width/2;
+            this.y = this.mergedTarget.y + this.mergedTarget.height/2 - this.height/2;
+            this.invulnerableTimer = 100;
+            this.lastMoveVec = inputManager.getMovementVector();
+            this.isMoving = (this.lastMoveVec.x !== 0 || this.lastMoveVec.y !== 0);
+            this.updateAnimation(deltaTime, false);
+            return; 
+        }
+
+        this.lastMoveVec = inputManager.getMovementVector();
+        const moveVec = this.lastMoveVec;
         let isAttacking = inputManager.mouse.leftDown || inputManager.isActionActive('attack');
         
         if (inputManager.joystickAim && inputManager.isShooting) {
@@ -220,6 +270,19 @@ export class Player extends Entity {
         // Hố đen Mini (Trừ thời gian hồi)
         if (this.hasSingularity && this.singularityTimer > 0) {
             this.singularityTimer -= deltaTime;
+        }
+
+        // Kỹ năng Z: Triệu hồi (Skeleton Mage)
+        if (this.summonTimer === undefined) this.summonTimer = 0;
+        if (this.summonAnimTimer === undefined) this.summonAnimTimer = 0;
+        if (this.summonTimer > 0) this.summonTimer -= deltaTime;
+        if (this.summonAnimTimer > 0) this.summonAnimTimer -= deltaTime;
+        if (this.skin && this.skin.id === 'skeleton_mage' && inputManager.isActionJustPressed('skill_z') && this.summonTimer <= 0) {
+            let cd = 15000;
+            if (this.runes && this.runes.some(r => r.runeId === 'undead_tide')) cd *= 0.7;
+            this.summonTimer = cd; 
+            this.wantsToSummon = true;
+            this.summonAnimTimer = 600; // Hiệu ứng triệu hồi kéo dài 0.6s
         }
 
         // Bước nhảy không gian (Lướt)
@@ -268,6 +331,7 @@ export class Player extends Entity {
     }
 
     fireWeapon(gameProjectiles, currentTime, isEnemy = false) {
+        if (this.skin && this.skin.id === 'skeleton_mage') return;
         if (!this.currentWeapon) return;
         if ((currentTime - (this.currentWeapon.lastFiredTime || 0)) >= this.currentWeapon.fireRate) {
             const count = this.currentWeapon.projectilesPerShot || 1;
@@ -462,6 +526,220 @@ export class Player extends Entity {
             ctx.beginPath(); ctx.moveTo(1 + recoil, -18); ctx.lineTo(5 + recoil, -12); ctx.lineTo(9 + recoil, -18); ctx.fill();
 
             ctx.restore();
+        } else if (this.skin.id === 'skeleton_mage') {
+            const isSummoning = this.summonAnimTimer > 0;
+            const isAttacking = isShooting;
+            
+            // Xoay hướng (Animation Walk)
+            const isSide = Math.abs(this.facing.x) > Math.abs(this.facing.y);
+            const isUp = !isSide && this.facing.y < 0;
+            const isDown = !isSide && !isUp;
+            const flip = isSide && this.facing.x < 0 ? -1 : 1; 
+
+            ctx.save();
+            ctx.translate(this.x + this.width / 2, this.y + this.height / 2 + breath);
+
+            // Aura đen tím ngầu (Aura effect)
+            const auraScale = 1 + Math.sin(time * 0.005) * 0.1 + (isSummoning ? 0.3 : 0);
+            ctx.save();
+            ctx.scale(auraScale, auraScale);
+            ctx.shadowBlur = isSummoning ? 30 : 20;
+            ctx.shadowColor = '#9b59b6';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.beginPath(); ctx.ellipse(0, -5, 22, 28, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+
+            // Những đốm lửa linh hồn bay xung quanh (Floating soul fire)
+            const numFires = isSummoning ? 5 : 3;
+            const fireSpeed = isSummoning ? 0.01 : 0.005;
+            for (let i = 0; i < numFires; i++) {
+                const angle = (time * fireSpeed) + (i * Math.PI * 2 / numFires);
+                const radius = (isSummoning ? 35 : 25) + Math.sin(time * 0.005 + i) * 5;
+                const ox = Math.cos(angle) * radius;
+                const oy = Math.sin(angle) * 10 - 15 - (isSummoning ? 10 : 0);
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#8e44ad';
+                ctx.fillStyle = '#000';
+                ctx.beginPath(); ctx.arc(ox, oy, 4, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = isSummoning ? '#e056fd' : '#9b59b6';
+                ctx.beginPath(); ctx.arc(ox, oy, 2, 0, Math.PI*2); ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            ctx.scale(flip, 1);
+            ctx.translate(-25, -25); // Lùi trục tọa độ lại để khớp với box 50x50 của ảnh
+
+            const C_BONE = '#e3d1b5';
+            const C_BONE_SHADOW = '#bba07d';
+            const C_SHIRT = '#5c4033';
+            const C_SHIRT_SHADOW = '#3e2723';
+            const C_PANTS = '#363636';
+            const C_BOOTS = '#4a3018';
+            const C_BELT_GOLD = '#d4af37';
+            const C_BLACK = '#111111';
+
+            const walkCycle = time * 0.015;
+            const swing1 = this.isMoving ? Math.sin(walkCycle) * 5 : 0;
+            const swing2 = this.isMoving ? Math.sin(walkCycle + Math.PI) * 5 : 0;
+
+            const drawMagicGlow = (hx, hy) => {
+                if (isSummoning || isAttacking) {
+                    ctx.save();
+                    ctx.shadowBlur = 15; ctx.shadowColor = '#e056fd';
+                    ctx.fillStyle = '#e056fd';
+                    ctx.beginPath(); ctx.arc(hx, hy, isSummoning ? 5 : 3, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath(); ctx.arc(hx, hy, isSummoning ? 2 : 1, 0, Math.PI*2); ctx.fill();
+                    ctx.restore();
+                }
+            };
+
+            const drawSideArms = () => {
+                ctx.fillStyle = C_BONE_SHADOW;
+                let bArmY = isSummoning ? 12 : (isAttacking ? 22 : 25 + swing1);
+                ctx.fillRect(20, bArmY, 2, 5); ctx.fillRect(19, bArmY + 4, 4, 2); ctx.fillRect(20, bArmY + 6, 2, 5);
+            };
+
+            const drawFrontArms = () => {
+                ctx.fillStyle = C_BONE;
+                let fArmY = isSummoning ? 12 : (isAttacking ? 22 : 25 + swing2);
+                if (isAttacking) {
+                    ctx.fillRect(24, fArmY, 2, 5); ctx.fillRect(23, fArmY + 4, 4, 2); 
+                    ctx.fillRect(26, fArmY + 4, 5, 2); ctx.fillRect(31, fArmY + 4, 2, 3); 
+                    drawMagicGlow(32, fArmY + 5);
+                } else if (isSummoning) {
+                    ctx.fillRect(24, fArmY, 2, 5); ctx.fillRect(23, fArmY - 2, 4, 2); ctx.fillRect(24, fArmY - 7, 2, 5);
+                    drawMagicGlow(25, fArmY - 8);
+                } else {
+                    ctx.fillRect(24, fArmY, 2, 5); ctx.fillRect(23, fArmY + 4, 4, 2); ctx.fillRect(25, fArmY + 6, 2, 5);
+                }
+            };
+
+            const drawBothArms = () => {
+                let lArmY = isSummoning ? 15 : (isAttacking ? 22 : 25 + swing2);
+                let rArmY = isSummoning ? 15 : (isAttacking ? 22 : 25 + swing1);
+                ctx.fillStyle = C_BONE;
+                ctx.fillRect(13, lArmY, 2, 5); ctx.fillRect(12, lArmY + 4, 4, 2); ctx.fillRect(11, lArmY + 6, 2, 5);
+                ctx.fillRect(35, rArmY, 2, 5); ctx.fillRect(34, rArmY + 4, 4, 2); ctx.fillRect(36, rArmY + 6, 2, 6);
+                if (!isUp && (isAttacking || isSummoning)) {
+                    drawMagicGlow(12, lArmY + 11);
+                    drawMagicGlow(37, rArmY + 11);
+                }
+            };
+
+            // 1. CHÂN XƯƠNG & GIÀY
+            if (isSide) {
+                ctx.fillStyle = C_BONE_SHADOW;
+                ctx.fillRect(23 + swing2, 38, 2, 5); ctx.fillRect(22 + swing2, 41, 4, 2);
+                ctx.fillStyle = '#3a2512';
+                ctx.fillRect(20 + swing2, 43, 7, 3); ctx.fillRect(21 + swing2, 46, 6, 4); ctx.fillRect(25 + swing2, 47, 4, 3);
+                ctx.fillStyle = C_BONE;
+                ctx.fillRect(25 + swing1, 38, 2, 5); ctx.fillRect(24 + swing1, 41, 4, 2);
+                ctx.fillStyle = C_BOOTS;
+                ctx.fillRect(22 + swing1, 43, 7, 3); ctx.fillRect(23 + swing1, 46, 6, 4); ctx.fillRect(27 + swing1, 47, 4, 3);
+            } else {
+                const leftSwing = isUp ? swing2 : swing1;
+                const rightSwing = isUp ? swing1 : swing2;
+                ctx.fillStyle = C_BONE;
+                ctx.fillRect(19 + leftSwing, 38, 2, 5); ctx.fillRect(18 + leftSwing, 41, 4, 2);
+                ctx.fillRect(29 + rightSwing, 38, 2, 5); ctx.fillRect(28 + rightSwing, 41, 4, 2);
+                ctx.fillStyle = C_BOOTS;
+                ctx.fillRect(15 + leftSwing, 43, 9, 3); ctx.fillRect(16 + leftSwing, 46, 7, 4); 
+                if (!isUp) ctx.fillRect(12 + leftSwing, 47, 4, 3);
+                ctx.fillRect(26 + rightSwing, 43, 9, 3); ctx.fillRect(27 + rightSwing, 46, 7, 4); 
+                if (!isUp) ctx.fillRect(34 + rightSwing, 47, 4, 3);
+            }
+
+            // 2. QUẦN ĐÙI XÁM RÁCH
+            ctx.fillStyle = C_PANTS;
+            if (isSide) {
+                ctx.fillRect(21, 32, 8, 6);
+                ctx.fillRect(20, 38, 2, 2); ctx.fillRect(23, 38, 3, 3); ctx.fillRect(27, 38, 2, 1);
+            } else {
+                ctx.fillRect(16, 32, 8, 6); ctx.fillRect(26, 32, 8, 6);
+                if (!isUp) {
+                    ctx.fillRect(15, 38, 2, 2); ctx.fillRect(18, 38, 3, 3); ctx.fillRect(22, 38, 2, 1);
+                    ctx.fillRect(26, 38, 3, 2); ctx.fillRect(30, 38, 2, 3); ctx.fillRect(33, 38, 2, 2);
+                }
+            }
+
+            if (isSide) drawSideArms();
+            else if (isUp) drawBothArms();
+
+            // 3. ÁO NÂU RÁCH & THẮT LƯNG
+            if (isSide) {
+                ctx.fillStyle = C_SHIRT;
+                ctx.fillRect(20, 18, 10, 14); ctx.fillRect(18, 18, 4, 7);
+                ctx.fillRect(19, 31, 3, 2); ctx.fillRect(24, 31, 2, 3); ctx.fillRect(27, 31, 2, 2);
+                ctx.fillStyle = C_SHIRT_SHADOW; ctx.fillRect(19, 27, 12, 4); 
+                ctx.fillStyle = C_BELT_GOLD; ctx.fillRect(27, 26, 3, 6); 
+            } else {
+                ctx.fillStyle = C_SHIRT;
+                ctx.fillRect(16, 18, 18, 14); ctx.fillRect(13, 18, 5, 7); ctx.fillRect(32, 18, 5, 7);
+                if (isUp) {
+                    ctx.fillRect(16, 31, 3, 2); ctx.fillRect(21, 31, 2, 3); ctx.fillRect(26, 31, 4, 2); ctx.fillRect(31, 31, 3, 3);
+                    ctx.fillStyle = C_SHIRT_SHADOW; ctx.fillRect(16, 27, 18, 4);
+                } else {
+                    ctx.fillRect(15, 31, 3, 2); ctx.fillRect(20, 31, 2, 3); ctx.fillRect(25, 31, 4, 2); ctx.fillRect(31, 31, 4, 3);
+                    ctx.fillStyle = C_SHIRT_SHADOW; ctx.fillRect(20, 18, 10, 4);
+                    ctx.fillStyle = C_BONE; ctx.fillRect(23, 16, 4, 4); ctx.fillRect(21, 19, 8, 2);
+                    ctx.fillStyle = C_BLACK; ctx.fillRect(24, 21, 2, 1);
+                    ctx.fillStyle = C_SHIRT_SHADOW; ctx.fillRect(16, 27, 18, 4);
+                    ctx.fillStyle = C_BELT_GOLD; ctx.fillRect(21, 26, 8, 6);
+                    ctx.fillStyle = C_SHIRT_SHADOW; ctx.fillRect(23, 28, 4, 2);
+                }
+            }
+
+            if (isSide) drawFrontArms();
+            else if (!isUp) drawBothArms();
+
+            // 4. HỘP SỌ (SKULL)
+            if (isSide) {
+                ctx.fillStyle = C_BONE;
+                ctx.fillRect(19, 2, 14, 12); ctx.fillRect(21, 14, 12, 5);
+                ctx.fillStyle = C_BONE_SHADOW;
+                ctx.fillRect(19, 12, 3, 2); ctx.fillRect(21, 17, 2, 2);
+                ctx.fillStyle = C_BLACK;
+                if (isAttacking) { ctx.beginPath(); ctx.moveTo(27, 8); ctx.lineTo(31, 11); ctx.lineTo(31, 12); ctx.lineTo(27, 12); ctx.fill(); }
+                else { ctx.beginPath(); ctx.moveTo(27, 7); ctx.lineTo(31, 9); ctx.lineTo(31, 12); ctx.lineTo(27, 12); ctx.fill(); }
+                ctx.fillRect(32, 13, 1, 2); ctx.fillRect(26, 16, 7, 1); ctx.fillRect(28, 15, 1, 3); ctx.fillRect(31, 15, 1, 3);
+                ctx.fillStyle = '#e056fd'; ctx.shadowBlur = 10; ctx.shadowColor = '#e056fd';
+                if (isSummoning) { ctx.fillRect(28, 10, 3, 2); ctx.shadowBlur = 20; ctx.fillRect(29, 9, 1, 4); } 
+                else { ctx.fillRect(29, 9, 2, 2); ctx.fillRect(31, 9, 1, 1); }
+                ctx.shadowBlur = 0;
+            } else {
+                ctx.fillStyle = C_BONE;
+                ctx.fillRect(15, 2, 20, 12); 
+                if (isUp) {
+                    ctx.fillStyle = C_BONE_SHADOW;
+                    ctx.fillRect(15, 12, 3, 2); ctx.fillRect(32, 12, 3, 2); 
+                    ctx.fillRect(18, 5, 2, 4); ctx.fillRect(20, 7, 3, 2); ctx.fillRect(28, 4, 1, 5);
+                } else {
+                    ctx.fillRect(18, 14, 14, 5);
+                    ctx.fillStyle = C_BONE_SHADOW;
+                    ctx.fillRect(15, 12, 3, 2); ctx.fillRect(32, 12, 3, 2); ctx.fillRect(18, 17, 2, 2); ctx.fillRect(30, 17, 2, 2);
+                    ctx.fillStyle = C_BLACK;
+                    if (isAttacking) {
+                        ctx.beginPath(); ctx.moveTo(16, 8); ctx.lineTo(23, 11); ctx.lineTo(23, 12); ctx.lineTo(16, 12); ctx.fill();
+                        ctx.beginPath(); ctx.moveTo(34, 8); ctx.lineTo(27, 11); ctx.lineTo(27, 12); ctx.lineTo(34, 12); ctx.fill();
+                    } else {
+                        ctx.beginPath(); ctx.moveTo(16, 7); ctx.lineTo(23, 9); ctx.lineTo(23, 12); ctx.lineTo(16, 12); ctx.fill();
+                        ctx.beginPath(); ctx.moveTo(34, 7); ctx.lineTo(27, 9); ctx.lineTo(27, 12); ctx.lineTo(34, 12); ctx.fill();
+                    }
+                    ctx.beginPath(); ctx.moveTo(24, 13); ctx.lineTo(26, 13); ctx.lineTo(25, 15); ctx.fill();
+                    ctx.fillRect(19, 16, 12, 1); ctx.fillRect(21, 15, 1, 3); ctx.fillRect(24, 15, 1, 3); ctx.fillRect(27, 15, 1, 3);
+                    ctx.fillStyle = '#e056fd'; ctx.shadowBlur = 10; ctx.shadowColor = '#e056fd';
+                    if (isSummoning) {
+                        ctx.fillRect(19, 10, 4, 2); ctx.fillRect(27, 10, 4, 2);
+                        ctx.shadowBlur = 20; ctx.fillRect(20, 9, 2, 4); ctx.fillRect(28, 9, 2, 4);
+                    } else {
+                        ctx.fillRect(19, 9, 2, 2); ctx.fillRect(29, 9, 2, 2); ctx.fillRect(21, 9, 2, 1); ctx.fillRect(27, 9, 2, 1);
+                    }
+                    ctx.shadowBlur = 0;
+                }
+            }
+
+            ctx.restore();
         } else {
             ctx.fillStyle = this.color; ctx.beginPath(); ctx.roundRect(this.x + 2, this.y + 10 + breath, 20, 14 - breath, 4); ctx.fill();
             ctx.fillStyle = 'rgba(0, 0, 0, 0.15)'; ctx.beginPath(); ctx.roundRect(this.x + 12, this.y + 10 + breath, 10, 14 - breath, {tr: 4, br: 4, tl: 0, bl: 0}); ctx.fill();
@@ -480,13 +758,49 @@ export class Player extends Entity {
             const recoilX = (this.skin.id === 'schoolgirl' && isShooting) ? -this.facing.x * 6 : 0;
             const recoilY = (this.skin.id === 'schoolgirl' && isShooting) ? -this.facing.y * 6 : 0;
 
-            const endX = this.x + this.width / 2 + this.facing.x * 20 + recoilX; 
-            const endY = this.y + this.height / 2 + breath + this.facing.y * 20 + recoilY;
-            const handX = this.x + this.width / 2 - this.facing.x * 4 + recoilX; 
-            const handY = this.y + this.height / 2 + breath - this.facing.y * 4 + recoilY;
+            let endX = this.x + this.width / 2 + this.facing.x * 20 + recoilX; 
+            let endY = this.y + this.height / 2 + breath + this.facing.y * 20 + recoilY;
+            let handX = this.x + this.width / 2 - this.facing.x * 4 + recoilX; 
+            let handY = this.y + this.height / 2 + breath - this.facing.y * 4 + recoilY;
             const effectType = this.currentWeapon.effectType || 'standard';
 
-            ctx.fillStyle = '#ffdfc4'; ctx.beginPath(); ctx.arc(handX, handY, 3.5, 0, Math.PI * 2); ctx.fill();
+            if (this.skin.id === 'skeleton_mage') {
+                const isSummoning = this.summonAnimTimer > 0;
+                const walkCycle = time * 0.015;
+                const swing1 = this.isMoving ? Math.sin(walkCycle) * 5 : 0;
+                const swing2 = this.isMoving ? Math.sin(walkCycle + Math.PI) * 5 : 0;
+                
+                const isSide = Math.abs(this.facing.x) > Math.abs(this.facing.y);
+                const isUp = !isSide && this.facing.y < 0;
+                const flip = isSide && this.facing.x < 0 ? -1 : 1; 
+
+                let relX = 0;
+                let relY = 0;
+
+                if (isSide) {
+                    let fArmY = isSummoning ? 12 : (isShooting ? 22 : 25 + swing2);
+                    let localX = isShooting ? 32 : (isSummoning ? 25 : 25);
+                    let localY = isSummoning ? fArmY - 8 : fArmY + 5;
+                    relX = (localX - 25) * flip;
+                    relY = localY - 25;
+                } else if (isUp) {
+                    let rArmY = isSummoning ? 15 : (isShooting ? 22 : 25 + swing1);
+                    relX = 37 - 25; 
+                    relY = rArmY + 11 - 25;
+                } else {
+                    let lArmY = isSummoning ? 15 : (isShooting ? 22 : 25 + swing2);
+                    relX = 12 - 25; 
+                    relY = lArmY + 11 - 25;
+                }
+                
+                handX = this.x + this.width / 2 + relX;
+                handY = this.y + this.height / 2 + breath + relY;
+                endX = handX + this.facing.x * 20;
+                endY = handY + this.facing.y * 20;
+            }
+
+            ctx.fillStyle = this.skin.id === 'skeleton_mage' ? '#e3d1b5' : '#ffdfc4'; 
+            ctx.beginPath(); ctx.arc(handX, handY, 3.5, 0, Math.PI * 2); ctx.fill();
             
             if (this.currentWeapon.imgSrc) {
                 if (!this.currentWeapon.imageObj) {

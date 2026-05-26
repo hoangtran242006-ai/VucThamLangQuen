@@ -106,20 +106,9 @@ body {
 }
 #exp-bar { width: 100%; height: 8px; background: #2c3e50; border-radius: 4px; margin-top: 6px; overflow: hidden; }
 #exp-fill { height: 100%; background: #9b59b6; transition: width 0.2s; }
-#gold-display { background: #2c3e50; border: 1px solid #000; border-radius: 6px; padding: 2px 8px; margin-top: 6px; display: inline-block; font-size: 13px; font-weight: bold; color: #f1c40f; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
-
-/* Weapon Info Separated */
-#weapon-hud {
-    position: absolute; bottom: 20px; left: 20px;
-    background: linear-gradient(135deg, rgba(15, 20, 30, 0.9) 0%, rgba(25, 35, 50, 0.8) 100%);
-    border: 2px solid #34495e;
-    padding: 12px 20px; border-radius: 12px; font-size: 16px;
-    backdrop-filter: blur(6px); pointer-events: auto;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.6), inset 0 0 10px rgba(0,0,0,0.3);
-}
-#weapon-hud span { color: #bdc3c7; font-size: 14px; }
-#weaponName { color: #f1c40f; display: block; font-size: 20px; margin-top: 4px; font-weight: bold; text-shadow: 1px 1px 2px #000; }
-#weapon-hud .hint { font-size: 12px; color: #7f8c8d; margin-top: 8px; font-style: italic; }
+#gold-display, #soul-display { background: #2c3e50; border: 1px solid #000; border-radius: 6px; padding: 2px 8px; margin-top: 6px; display: inline-block; font-size: 13px; font-weight: bold; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
+#gold-display { color: #f1c40f; margin-right: 4px; }
+#soul-display { color: #00d8d6; }
 
 /* Minimap, Text & Enlarged Map */
 #minimapCanvas { 
@@ -148,16 +137,21 @@ body {
 .server-stat:last-child { margin-bottom: 0; }
 .good-ping { color: #2ecc71; } .med-ping { color: #f1c40f; } .bad-ping { color: #e74c3c; }
 
+@keyframes pulse-dot { from { transform: scale(1); } to { transform: scale(1.4); } }
+#mailbox-floating-btn:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.6), inset 0 2px 5px rgba(255,255,255,0.5) !important; }
+#mailbox-floating-btn:active { transform: translateY(2px); box-shadow: 0 2px 5px rgba(0,0,0,0.6) !important; }
+
 /* --- GLOBAL CHAT WIDGET --- */
 #chat-widget {
     position: fixed; bottom: 20px; left: 20px; width: 300px;
-    display: flex; flex-direction: column; z-index: 1000; pointer-events: auto;
+    display: flex; flex-direction: column; z-index: 1000; pointer-events: none;
     user-select: auto; -webkit-user-select: auto; /* Fix lỗi không thể nhấp vào trên iOS */
 }
 #chat-header {
     padding: 8px 10px; color: rgba(255,255,255,0.7); font-weight: bold; font-size: 13px;
     cursor: pointer; display: flex; justify-content: space-between; align-items: center; text-transform: uppercase;
     text-shadow: 1px 1px 2px black; transition: color 0.2s;
+    pointer-events: auto;
 }
 #chat-header:hover { color: white; }
 #chat-body { 
@@ -176,6 +170,7 @@ body {
     flex: 1; overflow-y: auto; padding: 10px; font-size: 14px; color: #ecf0f1; display: flex; flex-direction: column; gap: 6px; 
     -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%);
     mask-image: linear-gradient(to bottom, transparent 0%, black 15%);
+    touch-action: pan-y;
 }
 #chat-body:not(.show) #chat-messages { overflow-y: hidden; }
 .chat-placeholder { text-align: center; color: #7f8c8d; font-style: italic; margin-top: 20px; }
@@ -234,12 +229,12 @@ body {
 .mc-left-col { display: flex; gap: 15px; align-items: center; justify-content: center; flex: 0.35; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; border: 2px solid #1e272e; }
 .mc-equip-slots { display: flex; flex-direction: column; gap: 10px; }
 .mc-player-preview { width: 100px; height: 160px; background: rgba(0,0,0,0.4); border-radius: 8px; border: 2px solid #373737; display: flex; justify-content: center; align-items: center; }
-.mc-right-col { flex: 0.65; overflow-y: auto; }
+.mc-right-col { flex: 0.65; overflow-y: auto; touch-action: pan-y; }
 .mc-grid { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; background: #a4b0be; padding: 8px; border-radius: 4px; box-shadow: inset 0 4px 6px rgba(0,0,0,0.4), inset 0 -2px 0 rgba(255,255,255,0.2); }
 .mc-slot { width: 100%; aspect-ratio: 1/1; background: #747d8c; border-top: 2px solid #ced6e0; border-left: 2px solid #ced6e0; border-bottom: 2px solid #2f3542; border-right: 2px solid #2f3542; display: flex; justify-content: center; align-items: center; font-size: 24px; cursor: pointer; position: relative; }
 .mc-slot:hover { background: #a4b0be; }
 .mc-slot.equip-slot { width: 44px; height: 44px; }
-.mc-details { height: 100px; padding: 15px; overflow-y: auto; background: #1e272e; color: #fff; border-radius: 0 0 6px 6px; }
+.mc-details { height: 100px; padding: 15px; overflow-y: auto; background: #1e272e; color: #fff; border-radius: 0 0 6px 6px; touch-action: pan-y; }
 .item-icon { font-size: 26px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
 .stat-row { background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 6px; margin-bottom: 4px; border: 1px solid rgba(255,255,255,0.05); font-size: 13px; color: #bdc3c7;}
 .stat-row strong { color: #fff; }
@@ -309,7 +304,7 @@ body {
 }
 #shop-panel h2 { margin: 0 0 10px 0; text-align: center; color: #9b59b6; border-bottom: 2px solid #8e44ad; padding-bottom: 8px; text-shadow: 0 0 10px #8e44ad; font-size: 22px;}
 .shop-currencies { display: flex; justify-content: center; gap: 20px; font-size: 15px; font-weight: bold; margin-bottom: 10px; background: rgba(0,0,0,0.3); padding: 6px; border-radius: 8px;}
-.shop-single-layout { display: flex; justify-content: center; flex: 1; min-height: 0; overflow-y: auto; }
+.shop-single-layout { display: flex; justify-content: center; flex: 1; min-height: 0; overflow-y: auto; touch-action: pan-y; }
 .shop-upgrade-side { width: 100%; display: flex; flex-direction: column; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid #00d8d6; }
 .shop-footer { text-align: center; margin-top: 15px; color: #718096; font-size: 13px; }
 
@@ -378,6 +373,18 @@ body.touch-device #interaction-prompt { display: none !important; } /* Ẩn ch�
 }
 #joystick-move { left: 40px; }
 #joystick-aim { right: 40px; background: rgba(231, 76, 60, 0.08); border-color: rgba(231, 76, 60, 0.25);}
+#btn-summon {
+    right: 40px;
+    background: rgba(142, 68, 173, 0.2);
+    border-color: rgba(155, 89, 182, 0.4);
+    color: #e056fd;
+    font-weight: bold;
+    font-size: 18px;
+    text-shadow: 1px 1px 2px #000;
+    line-height: 1.2;
+    justify-content: center;
+    align-items: center;
+}
 
 .joystick-knob {
     position: absolute; top: 50%; left: 50%; width: 50px; height: 50px;
@@ -410,39 +417,84 @@ body.touch-device #interaction-prompt { display: none !important; } /* Ẩn ch�
         box-shadow: none; 
     }
     #gameCanvas { border-radius: 0; }
-    #player-frame { transform: scale(0.8); transform-origin: top left; top: 5px; left: 5px; border-radius: 8px; padding: 8px; }
-    #weapon-hud { bottom: auto; top: 75px; left: 5px; transform: scale(0.8); transform-origin: top left; padding: 8px 12px; }
-    #minimapCanvas { width: 90px; height: 90px; top: 10px; right: 10px; bottom: auto; border-width: 2px; }
+    #player-frame { transform: scale(0.85); transform-origin: top left; top: 10px; left: 10px; border-radius: 8px; padding: 8px; }
+    #minimapCanvas { width: 85px; height: 85px; top: 10px; right: 10px; bottom: auto; border-width: 2px; }
     #loot-text { bottom: auto; top: 30px; font-size: 14px; }
     
-    #server-info-panel { top: 110px; right: 5px; font-size: 11px; padding: 6px 10px; transform: scale(0.85); transform-origin: top right; }
-    #chat-widget { position: fixed; top: 180px; bottom: auto; left: 5px; width: 220px; transform: scale(0.85); transform-origin: top left; }
-    #btn-pause-mobile { top: 10px; right: 110px; width: 40px; height: 40px; font-size: 16px; }
+    #server-info-panel { display: none !important; }
     
-    #inventory-panel, #shop-panel, #chest-panel { width: 95%; height: 90%; }
-    .inventory-content { flex-direction: column; gap: 5px; }
-    .item-list-container { border-right: none; border-bottom: 2px solid #485460; flex: 0 0 45%; }
-    #inventory-list { grid-template-columns: repeat(5, 1fr); }
+    #chat-widget { position: fixed; top: 90px; bottom: auto; left: 10px; width: 220px; transform: none; }
+    #chat-header { 
+        background: rgba(25, 35, 50, 0.8); border: 2px solid #34495e; border-radius: 20px; 
+        padding: 6px 12px; align-self: flex-start; 
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5); backdrop-filter: blur(4px); 
+    }
+    .chat-title-text { display: none; }
+    #chat-toggle-btn::after { content: " CHAT"; font-size: 13px; font-weight: bold; color: #ecf0f1; margin-left: 4px; }
+    #chat-body { position: absolute; top: 42px; left: 0; width: 100%; height: 180px; }
+    #chat-body.show { box-shadow: 0 4px 15px rgba(0,0,0,0.7); border: 1px solid #3498db; }
+    
+    #btn-pause-mobile { top: 10px; right: 105px; width: 38px; height: 38px; font-size: 16px; opacity: 0.85; border-width: 2px; }
+    
+    #inventory-panel, #alchemy-panel, #mailbox-panel { width: 95% !important; height: 90% !important; border-width: 2px; border-radius: 8px; }
+    
+    #shop-panel { width: 340px !important; max-width: 95% !important; height: auto !important; max-height: 85vh !important; display: flex; flex-direction: column; border-width: 2px; border-radius: 8px; padding: 12px; }
+    #shop-panel h2 { font-size: 18px; margin-bottom: 8px; padding-bottom: 5px; flex-shrink: 0; }
+    .shop-currencies { font-size: 12px; gap: 10px; padding: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    .shop-footer { display: none !important; }
+    .shop-upgrade-side { padding: 8px; border: none; }
+    .upgrade-options-grid { grid-template-columns: 1fr; gap: 8px; }
+    .upgrade-box { padding: 8px; }
+    .upgrade-box h4 { font-size: 13px; margin-bottom: 4px; }
+    .upgrade-stat { font-size: 11px; margin-bottom: 8px; }
+    .upg-btn { font-size: 12px; padding: 8px; }
+    
+    #chest-panel { width: 300px !important; max-width: 90% !important; height: auto !important; max-height: 85vh !important; display: flex; flex-direction: column; border-width: 2px; border-radius: 8px; padding: 12px; }
+    #chest-panel h2 { font-size: 18px; margin-bottom: 8px; padding-bottom: 5px; flex-shrink: 0; }
+    #chest-content { padding: 8px !important; margin-bottom: 10px !important; text-align: center; overflow-y: auto; flex: 1 1 auto; min-height: 0; touch-action: pan-y; }
+    #chest-content .stat-row { display: none !important; }
+    .chest-btn-group { flex-direction: row !important; gap: 8px !important; flex-shrink: 0; }
+    .chest-btn-group button { font-size: 11px !important; padding: 10px 4px !important; width: 50%; }
+    .inventory-footer { display: none !important; }
+
+    .mc-layout { flex-direction: column; gap: 10px; padding: 10px; }
+    .mc-left-col { flex: 0 0 auto; padding: 5px; gap: 10px; }
+    .mc-player-preview { width: 80px; height: 120px; }
+    .mc-slot.equip-slot { width: 36px; height: 36px; font-size: 18px; }
+    .mc-right-col { flex: 1; }
+    .mc-grid { grid-template-columns: repeat(6, 1fr); }
+    #alchemy-inventory-list { grid-template-columns: repeat(8, 1fr) !important; }
+    .alchemy-forge-area { flex-direction: column; gap: 15px; padding: 10px; margin: 0 10px; }
+    .alchemy-slot { width: 50px !important; height: 50px !important; }
+    .result-slot { width: 60px !important; height: 60px !important; }
+    .mc-details { height: auto; min-height: 80px; padding: 10px; }
     
     .shop-single-layout { align-items: stretch; }
     .shop-upgrade-side { padding: 10px; border: none; }
     .upgrade-options-grid { grid-template-columns: 1fr; gap: 10px; }
     
-    .joystick-zone { width: 110px; height: 110px; bottom: 30px; }
-    #joystick-move { left: 15px; }
-    #joystick-aim { right: 15px; }
-    .mobile-action-btns { bottom: 145px; right: 15px; gap: 10px; }
-    .m-btn { width: 45px; height: 45px; font-size: 11px; }
+    /* Làm mờ và thu gọn cụm điều khiển ảo */
+    .joystick-zone { width: 100px; height: 100px; bottom: 20px; opacity: 0.65; }
+    .joystick-knob { width: 40px; height: 40px; }
+    #joystick-move { left: 20px; }
+    #joystick-aim, #btn-summon { right: 20px; }
+    .mobile-action-btns { bottom: 135px; right: 20px; gap: 12px; opacity: 0.8; }
+    .m-btn { width: 46px; height: 46px; font-size: 10px; border-width: 2px; background: rgba(20, 25, 35, 0.7); }
+
+    /* Thu nhỏ nút đóng panel */
+    .close-btn { width: 32px; height: 32px; font-size: 14px; top: -10px; right: -10px; border-width: 2px; }
     
-    #update-log-panel { width: 90%; height: 85%; }
-    #leaderboard-panel { width: 90%; height: 85%; }
-    #admin-panel { width: 95%; height: 85%; }
+    #update-log-panel { width: 95%; height: 90%; border-width: 2px; }
+    #leaderboard-panel { width: 340px !important; max-width: 95% !important; height: auto !important; max-height: 85vh !important; border-width: 2px; border-radius: 8px; padding: 12px; }
+    #leaderboard-panel h2 { font-size: 18px; margin-bottom: 10px; padding-bottom: 5px; }
+    .rank-item { padding: 8px 10px; font-size: 13px; margin-bottom: 6px; border-width: 1px; border-radius: 6px; }
+    #admin-panel { width: 95%; height: 90%; border-width: 2px; }
     
     #wave-title { font-size: 48px; letter-spacing: 8px; }
     #wave-subtitle { font-size: 20px; letter-spacing: 4px; }
 
     /* Thu nhỏ Màn hình Tạm dừng & Menu */
-    .pause-box { padding: 15px 20px; width: 85%; max-width: 350px; max-height: 95vh; overflow-y: auto; }
+    .pause-box { padding: 15px 20px; width: 85%; max-width: 350px; max-height: 95vh; overflow-y: auto; touch-action: pan-y; }
     .pause-box h2 { margin: 0 0 15px; font-size: 24px; }
     .menu-btn { padding: 10px; font-size: 15px; margin-bottom: 10px; }
     .pause-settings { margin-bottom: 10px !important; padding: 10px !important; }
@@ -450,8 +502,17 @@ body.touch-device #interaction-prompt { display: none !important; } /* Ẩn ch�
     #pause-fullscreen-btn { margin-bottom: 10px !important; }
     .pause-settings.account-settings { display: flex; flex-direction: column; gap: 8px; }
     
+    /* Thu nhỏ Bảng Chọn Kỹ Năng */
+    #skill-screen { padding: 5px; }
+    #skill-screen h2 { font-size: 18px; margin-bottom: 10px; text-shadow: 0 0 10px #f1c40f; }
+    .skill-options-container { gap: 8px; flex-direction: row; flex-wrap: nowrap; justify-content: center; max-width: 100%; padding-bottom: 5px; overflow-x: visible; }
+    .skill-card { width: 95px; flex: 0 0 auto; padding: 10px 4px; border-width: 2px; border-radius: 8px; }
+    .skill-card .skill-icon { font-size: 24px; margin-bottom: 5px; }
+    .skill-card h3 { font-size: 11px; margin-bottom: 4px; }
+    .skill-card p { font-size: 9px; line-height: 1.2; }
+
     /* Thu nhỏ Đăng nhập / Đăng ký */
-    .auth-panel { padding: 20px !important; width: 85% !important; max-width: 320px !important; max-height: 95vh; overflow-y: auto; }
+    .auth-panel { padding: 20px !important; width: 85% !important; max-width: 320px !important; max-height: 95vh; overflow-y: auto; touch-action: pan-y; }
     #auth-title { font-size: 20px !important; margin-bottom: 10px !important; }
     .auth-panel input { margin-bottom: 10px !important; padding: 10px !important; font-size: 14px !important; }
 }
@@ -511,7 +572,7 @@ body.touch-device #interaction-prompt { display: none !important; } /* Ẩn ch�
 #update-log-content {
     flex: 1; background: #1e272e; border-radius: 12px; padding: 15px;
     overflow-y: auto; color: #dfe6e9; font-size: 15px; line-height: 1.5;
-    border: 3px solid #00b894; white-space: pre-wrap; font-family: 'Segoe UI', Tahoma, sans-serif;
+    border: 3px solid #00b894; white-space: pre-wrap; font-family: 'Segoe UI', Tahoma, sans-serif; touch-action: pan-y;
 }
 .moss-decoration {
     position: absolute; width: 60px; height: 60px; pointer-events: none; z-index: 10;
@@ -529,15 +590,46 @@ body.touch-device #interaction-prompt { display: none !important; } /* Ẩn ch�
     z-index: 250; pointer-events: auto; backdrop-filter: blur(5px);
 }
 #leaderboard-panel {
-    position: relative; width: 550px; height: 600px; background: #1a1c20; border: 4px solid #f1c40f; border-radius: 16px; 
+    position: relative; width: 450px; max-width: 90%; height: auto; max-height: 85vh; background: #1a1c20; border: 4px solid #f1c40f; border-radius: 16px; 
     display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.8), inset 0 0 20px rgba(241,196,15,0.2); padding: 20px; color: white;
 }
-#leaderboard-panel h2 { text-align: center; margin: 0 0 20px 0; color: #f1c40f; font-size: 32px; text-shadow: 2px 2px 0 #000; }
-#leaderboard-content { flex: 1; overflow-y: auto; padding-right: 10px; }
-.rank-item { display: flex; justify-content: space-between; align-items: center; background: #2c3e50; padding: 12px 20px; border-radius: 10px; margin-bottom: 12px; border: 2px solid #34495e; font-size: 18px; }
+#leaderboard-panel h2 { text-align: center; margin: 0 0 15px 0; color: #f1c40f; font-size: 24px; text-shadow: 2px 2px 0 #000; flex-shrink: 0; border-bottom: 2px solid #f1c40f; padding-bottom: 10px; }
+#leaderboard-content { flex: 1 1 auto; overflow-y: auto; padding-right: 5px; touch-action: pan-y; min-height: 0; }
+.rank-item { display: flex; justify-content: space-between; align-items: center; background: #2c3e50; padding: 10px 15px; border-radius: 8px; margin-bottom: 8px; border: 2px solid #34495e; font-size: 16px; }
 .rank-1 { background: linear-gradient(90deg, #f39c12, #f1c40f); border-color: #fff; color: #000; transform: scale(1.02); font-weight: bold;} .rank-1 .rank-score { color: #c0392b; }
 .rank-2 { background: linear-gradient(90deg, #bdc3c7, #ecf0f1); border-color: #fff; color: #000; font-weight: bold;} .rank-2 .rank-score { color: #2c3e50; }
 .rank-3 { background: linear-gradient(90deg, #d35400, #e67e22); border-color: #fff; color: #fff; font-weight: bold;}
+
+/* --- SKILL SELECTION --- */
+#skill-screen {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85); display: none; justify-content: center; align-items: center;
+    z-index: 9999; flex-direction: column; backdrop-filter: blur(5px);
+    padding: 20px; box-sizing: border-box;
+}
+#skill-screen h2 {
+    color: #f1c40f; font-size: 36px; margin-bottom: 30px; text-shadow: 0 0 15px #f1c40f; text-align: center;
+}
+.skill-options-container {
+    display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; max-width: 900px;
+}
+.skill-card {
+    width: 240px; background: rgba(30, 40, 50, 0.9); border: 2px solid #3498db; border-radius: 12px;
+    padding: 25px; text-align: center; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    color: #fff; box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+}
+.skill-card:hover {
+    transform: translateY(-10px); box-shadow: 0 10px 25px rgba(52, 152, 219, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.8); border-color: #f1c40f;
+}
+.skill-card .skill-icon {
+    font-size: 54px; margin-bottom: 15px; text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+}
+.skill-card h3 {
+    color: #3498db; margin: 0 0 15px 0; font-size: 20px;
+}
+.skill-card p {
+    font-size: 14px; color: #bdc3c7; margin: 0; line-height: 1.4;
+}
 
 /* --- ADMIN PANEL --- */
 #admin-screen {
@@ -550,7 +642,7 @@ body.touch-device #interaction-prompt { display: none !important; } /* Ẩn ch�
     display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(231, 76, 60, 0.4); padding: 20px; color: white;
 }
 #admin-panel h2 { text-align: center; margin: 0 0 20px 0; color: #e74c3c; text-shadow: 2px 2px 0 #000; }
-#admin-content { flex: 1; overflow-y: auto; padding-right: 10px; display: flex; flex-direction: column; gap: 10px; }
+#admin-content { flex: 1; overflow-y: auto; padding-right: 10px; display: flex; flex-direction: column; gap: 10px; touch-action: pan-y; }
 .admin-player-card { background: #34495e; padding: 12px; border-radius: 8px; border: 1px solid #7f8c8d; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; font-size: 14px;}
 .admin-player-card input { width: 70px; padding: 4px; border-radius: 4px; border: 1px solid #bdc3c7; text-align: center; font-weight: bold; background: #ecf0f1; color: #2c3e50; outline: none; }
 .admin-btn { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: background 0.2s;}

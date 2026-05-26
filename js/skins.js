@@ -15,8 +15,9 @@ export const SKINS = [
     { id: 'bocchi', name: 'Bocchi', color: '#ffb6c1', isImage: true, src: 'img/bocchi.png', price: 9000, isSpriteSheet: true, framesX: 9, framesY: 4, rarity: SKIN_RARITY.LEGENDARY },
     { id: 'schoolgirl', name: 'Nữ Sinh', color: '#0984e3', isImage: false, price: 9900, rarity: SKIN_RARITY.LEGENDARY },
     { id: 'tien', name: 'Tiên', color: '#a29bfe', isImage: true, src: 'img/character-1.png', price: 15000, isSpriteSheet: true, framesX: 10, framesY: 4, rarity: SKIN_RARITY.LIMITED },
-    { id: 'ami', name: 'Ami', color: '#ff9ff3', isImage: true, src: 'img/Ami.png', price: 18000, isSpriteSheet: true, framesX: 10, framesY: 4, rarity: SKIN_RARITY.LEGENDARY },
-    { id: 'bao', name: 'Bảo', color: '#1abc9c', isImage: true, src: 'img/bao.png', price: 20000, isSpriteSheet: true, framesX: 6, framesY: 3, rarity: SKIN_RARITY.LIMITED },
+    { id: 'ami', name: 'Nhi', color: '#ff9ff3', isImage: true, src: 'img/Ami.png', price: 18000, isSpriteSheet: true, framesX: 10, framesY: 4, rarity: SKIN_RARITY.LEGENDARY },
+    { id: 'bao', name: 'Tèo', color: '#1abc9c', isImage: true, src: 'img/bao.png', price: 20000, isSpriteSheet: true, framesX: 6, framesY: 3, rarity: SKIN_RARITY.LIMITED },
+    { id: 'skeleton_mage', name: 'Pháp Sư Xương', color: '#9b59b6', isImage: false, price: 35000, rarity: SKIN_RARITY.SECRET },
     { 
         id: 'hoang', name: 'Hoàng (Thức Tỉnh)', color: '#34495e', price: 50000, 
         isAdvancedSprite: true, framesX: 8, scale: 2.2, rarity: SKIN_RARITY.SECRET,

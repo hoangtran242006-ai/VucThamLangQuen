@@ -4,6 +4,7 @@ import { SkinManager } from './skins.js';
 import { RaceManager } from './races.js';
 import { SpriteRenderer } from './sprite.js';
 import { AudioManager } from './audio.js';
+import { isLoggedIn, getPlayerName } from '../db.js';
 
 export class Menu {
     constructor() {
@@ -39,7 +40,7 @@ export class Menu {
         this.isMusicMuted = savedMuted === 'true';
     }
 
-    update(deltaTime, inputManager, player, onStart, saveGameData, onShowUpdateLog, onShowLeaderboard, onVolumeChange, onToggleMute, onNextTrack, onChangeName, onAdmin, onFullscreen) {
+    update(deltaTime, inputManager, player, onStart, saveGameData, onShowUpdateLog, onShowLeaderboard, onVolumeChange, onToggleMute, onNextTrack, onChangeName, onAdmin, onFullscreen, onAuth) {
         const isAdmin = localStorage.getItem('vucthamlangquen_admin_token') === 'true';
         let visibleButtons = [...this.buttons];
         if (isAdmin) {
@@ -104,6 +105,7 @@ export class Menu {
                 this.currentScreen = 'MODE_SELECTION';
             }
         } else if (this.currentScreen === 'RACES') {
+            if (inputManager.isActionJustPressed('escape')) { this.currentScreen = 'MAIN'; return; }
             if ((mx >= 20 && mx <= 140 && my >= 20 && my <= 60) || (mx >= CANVAS_WIDTH - 65 && mx <= CANVAS_WIDTH - 15 && my >= 15 && my <= 65)) {
                 this.hoveredButton = 'back';
                 if (inputManager.mouse.leftJustPressed) this.currentScreen = 'MAIN';
@@ -126,6 +128,7 @@ export class Menu {
                 }
             }
         } else if (this.currentScreen === 'MODE_SELECTION') {
+            if (inputManager.isActionJustPressed('escape')) { this.currentScreen = 'MAIN'; return; }
             if ((mx >= 20 && mx <= 140 && my >= 20 && my <= 60) || (mx >= CANVAS_WIDTH - 65 && mx <= CANVAS_WIDTH - 15 && my >= 15 && my <= 65)) {
                 this.hoveredButton = 'back';
                 if (inputManager.mouse.leftJustPressed) this.currentScreen = 'MAIN';
@@ -149,6 +152,7 @@ export class Menu {
                 if (inputManager.mouse.leftJustPressed) onStart('pvp');
             }
         } else if (this.currentScreen === 'CHARACTERS') {
+            if (inputManager.isActionJustPressed('escape')) { this.currentScreen = 'MAIN'; this.skinPage = 0; return; }
             if ((mx >= 20 && mx <= 140 && my >= 20 && my <= 60) || (mx >= CANVAS_WIDTH - 65 && mx <= CANVAS_WIDTH - 15 && my >= 15 && my <= 65)) {
                 this.hoveredButton = 'back';
                 if (inputManager.mouse.leftJustPressed) {
@@ -187,19 +191,24 @@ export class Menu {
                         if (SkinManager.ownedSkins.includes(skin.id)) {
                             SkinManager.equippedSkin = skin.id;
                             SkinManager.saveSkinData();
+                            player.setSkin(SkinManager.getEquippedSkin(), SkinManager.skinImages);
+                            const pt = document.getElementById('player-portrait'); if (pt) pt.style.backgroundColor = player.color;
                         } else {
                             if (player.gold >= skin.price) {
                                 player.gold -= skin.price;
-                                SkinManager.ownedSkins.push(skin.id);
+                                if (!SkinManager.ownedSkins.includes(skin.id)) SkinManager.ownedSkins.push(skin.id);
                                 SkinManager.equippedSkin = skin.id;
                                 SkinManager.saveSkinData();
                                 saveGameData();
+                                player.setSkin(SkinManager.getEquippedSkin(), SkinManager.skinImages);
+                                const pt = document.getElementById('player-portrait'); if (pt) pt.style.backgroundColor = player.color;
                             }
                         }
                     }
                 }
             }
         } else if (this.currentScreen === 'SETTINGS') {
+            if (inputManager.isActionJustPressed('escape')) { this.currentScreen = 'MAIN'; return; }
             if ((mx >= 10 && mx <= 170 && my >= 10 && my <= 75) || (mx >= CANVAS_WIDTH - 65 && mx <= CANVAS_WIDTH - 15 && my >= 15 && my <= 65)) {
                 this.hoveredButton = 'back';
                 if (inputManager.mouse.leftJustPressed) {
@@ -209,7 +218,7 @@ export class Menu {
 
             const sliderWidth = 300;
             const sliderX = CANVAS_WIDTH / 2 - sliderWidth / 2;
-            const sliderY = CANVAS_HEIGHT / 2 - 20;
+            const sliderY = CANVAS_HEIGHT / 2 - 70;
             
             if (inputManager.mouse.leftDown && mx >= sliderX - 30 && mx <= sliderX + sliderWidth + 30 && my >= sliderY - 40 && my <= sliderY + 40) {
                 let vol = (mx - sliderX) / sliderWidth;
@@ -220,7 +229,7 @@ export class Menu {
             }
 
             const muteBtnX = CANVAS_WIDTH / 2 - 140;
-            const btnY = CANVAS_HEIGHT / 2 + 20;
+            const btnY = CANVAS_HEIGHT / 2 - 20;
             if (mx >= muteBtnX - 10 && mx <= muteBtnX + 140 && my >= btnY - 10 && my <= btnY + 55) {
                 this.hoveredButton = 'mute';
                 if (inputManager.mouse.leftJustPressed) {
@@ -240,7 +249,7 @@ export class Menu {
             }
             
             const renameBtnX = CANVAS_WIDTH / 2 - 140;
-            const renameBtnY = CANVAS_HEIGHT / 2 + 80;
+            const renameBtnY = CANVAS_HEIGHT / 2 + 40;
             if (mx >= renameBtnX - 10 && mx <= renameBtnX + 290 && my >= renameBtnY - 10 && my <= renameBtnY + 55) {
                 this.hoveredButton = 'rename';
                 if (inputManager.mouse.leftJustPressed) {
@@ -249,11 +258,20 @@ export class Menu {
             }
 
             const fullscreenBtnX = CANVAS_WIDTH / 2 - 140;
-            const fullscreenBtnY = CANVAS_HEIGHT / 2 + 140;
+            const fullscreenBtnY = CANVAS_HEIGHT / 2 + 100;
             if (mx >= fullscreenBtnX - 10 && mx <= fullscreenBtnX + 290 && my >= fullscreenBtnY - 10 && my <= fullscreenBtnY + 55) {
                 this.hoveredButton = 'fullscreen';
                 if (inputManager.mouse.leftJustPressed) {
                     if (onFullscreen) onFullscreen();
+                }
+            }
+
+            const authBtnX = CANVAS_WIDTH / 2 - 140;
+            const authBtnY = CANVAS_HEIGHT / 2 + 160;
+            if (mx >= authBtnX - 10 && mx <= authBtnX + 290 && my >= authBtnY - 10 && my <= authBtnY + 55) {
+                this.hoveredButton = 'auth';
+                if (inputManager.mouse.leftJustPressed) {
+                    if (onAuth) onAuth();
                 }
             }
         }
@@ -481,7 +499,7 @@ export class Menu {
 
                 // Tên Nhân Vật (Kèm Glow)
                 ctx.shadowColor = rarity.glow; ctx.shadowBlur = 8;
-                ctx.fillStyle = rarity.color; ctx.textAlign = 'left'; ctx.font = 'bold 18px "Segoe UI"';
+                ctx.fillStyle = rarity.color; ctx.textAlign = 'left'; ctx.font = 'bold 16px "Segoe UI"';
                 ctx.fillText(skin.name, boxX + 90, boxY + 40);
                 ctx.shadowBlur = 0;
 
@@ -590,17 +608,17 @@ export class Menu {
             ctx.fillStyle = '#2c3e50';
             ctx.strokeStyle = '#3498db';
             ctx.lineWidth = 4;
-            ctx.beginPath(); ctx.roundRect(CANVAS_WIDTH/2 - 250, CANVAS_HEIGHT/2 - 180, 500, 380, 16); ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.roundRect(CANVAS_WIDTH/2 - 250, CANVAS_HEIGHT/2 - 220, 500, 460, 16); ctx.fill(); ctx.stroke();
 
             ctx.fillStyle = '#3498db'; ctx.font = 'bold 36px "Segoe UI"';
-            ctx.fillText('CÀI ĐẶT', CANVAS_WIDTH / 2, CANVAS_HEIGHT/2 - 120);
+            ctx.fillText('CÀI ĐẶT', CANVAS_WIDTH / 2, CANVAS_HEIGHT/2 - 160);
 
             ctx.fillStyle = '#fff'; ctx.font = 'bold 20px "Segoe UI"';
-            ctx.fillText(`Âm lượng Nhạc nền: ${Math.round(this.bgmVolume * 100)}%`, CANVAS_WIDTH / 2, CANVAS_HEIGHT/2 - 60);
+            ctx.fillText(`Âm lượng Nhạc nền: ${Math.round(this.bgmVolume * 100)}%`, CANVAS_WIDTH / 2, CANVAS_HEIGHT/2 - 110);
             
             const sliderWidth = 300;
             const sliderX = CANVAS_WIDTH / 2 - sliderWidth / 2;
-            const sliderY = CANVAS_HEIGHT / 2 - 20;
+            const sliderY = CANVAS_HEIGHT / 2 - 70;
             
             ctx.fillStyle = '#1a252f'; ctx.beginPath(); ctx.roundRect(sliderX, sliderY, sliderWidth, 12, 6); ctx.fill();
             ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.roundRect(sliderX, sliderY, sliderWidth * this.bgmVolume, 12, 6); ctx.fill();
@@ -608,7 +626,7 @@ export class Menu {
             ctx.strokeStyle = '#f39c12'; ctx.lineWidth = 3; ctx.stroke();
 
             const muteBtnX = CANVAS_WIDTH / 2 - 140;
-            const btnY = CANVAS_HEIGHT / 2 + 20;
+            const btnY = CANVAS_HEIGHT / 2 - 20;
             const isMuteHovered = this.hoveredButton === 'mute';
             ctx.fillStyle = isMuteHovered ? '#34495e' : '#2c3e50';
             ctx.strokeStyle = this.isMusicMuted ? '#e74c3c' : '#2ecc71';
@@ -624,20 +642,28 @@ export class Menu {
             ctx.fillStyle = '#fff'; ctx.font = 'bold 16px "Segoe UI"'; ctx.fillText('▶ Phát / Đổi', nextBtnX + 65, btnY + 22.5);
 
             const renameBtnX = CANVAS_WIDTH / 2 - 140;
-            const renameBtnY = CANVAS_HEIGHT / 2 + 80;
+            const renameBtnY = CANVAS_HEIGHT / 2 + 40;
             const isRenameHovered = this.hoveredButton === 'rename';
             ctx.fillStyle = isRenameHovered ? '#d35400' : '#e67e22'; ctx.strokeStyle = '#f1c40f'; ctx.beginPath(); ctx.roundRect(renameBtnX, renameBtnY, 280, 45, 6); ctx.fill(); ctx.stroke();
             ctx.fillStyle = '#fff'; ctx.font = 'bold 16px "Segoe UI"'; ctx.fillText('✏️ Đổi Tên Hiệp Sĩ', CANVAS_WIDTH / 2, renameBtnY + 22.5);
 
             const fullscreenBtnX = CANVAS_WIDTH / 2 - 140;
-            const fullscreenBtnY = CANVAS_HEIGHT / 2 + 140;
+            const fullscreenBtnY = CANVAS_HEIGHT / 2 + 100;
             const isFullscreenHovered = this.hoveredButton === 'fullscreen';
             ctx.fillStyle = isFullscreenHovered ? '#27ae60' : '#2ecc71'; ctx.strokeStyle = '#f1c40f'; ctx.beginPath(); ctx.roundRect(fullscreenBtnX, fullscreenBtnY, 280, 45, 6); ctx.fill(); ctx.stroke();
             ctx.fillStyle = '#fff'; ctx.font = 'bold 16px "Segoe UI"'; ctx.fillText(document.fullscreenElement ? '🔳 Thu Nhỏ Màn Hình' : '🔲 Toàn Màn Hình', CANVAS_WIDTH / 2, fullscreenBtnY + 22.5);
 
+            const authBtnX = CANVAS_WIDTH / 2 - 140;
+            const authBtnY = CANVAS_HEIGHT / 2 + 160;
+            const isAuthHovered = this.hoveredButton === 'auth';
+            ctx.fillStyle = isAuthHovered ? '#8e44ad' : '#9b59b6'; ctx.strokeStyle = '#f1c40f'; ctx.beginPath(); ctx.roundRect(authBtnX, authBtnY, 280, 45, 6); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = '#fff'; ctx.font = 'bold 16px "Segoe UI"'; 
+            const authText = isLoggedIn() ? `👤 ${getPlayerName()} (Đăng Xuất)` : '👤 Đăng Nhập / Đăng Ký';
+            ctx.fillText(authText, CANVAS_WIDTH / 2, authBtnY + 22.5);
+
             ctx.fillStyle = '#f1c40f';
             ctx.font = 'italic 18px "Segoe UI"';
-            ctx.fillText(`🎵 Tình trạng: ${currentTrackName || 'Chưa rõ'}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 215);
+            ctx.fillText(`🎵 Tình trạng: ${currentTrackName || 'Chưa rõ'}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 230);
 
             ctx.restore();
         }

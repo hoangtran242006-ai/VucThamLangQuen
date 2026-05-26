@@ -113,6 +113,7 @@ export async function getAllPlayersAdmin() {
     try {
         const response = await fetch(`${SERVER_URL}/api/admin/players`);
         if (response.ok) return await response.json();
+        return [];
     } catch (e) {
         console.error("⚠️ Lỗi lấy dữ liệu Admin:", e);
         return [];
@@ -129,4 +130,38 @@ export async function updatePlayerAdmin(playerId, data) {
     } catch (e) {
         console.error("⚠️ Lỗi cập nhật Admin:", e);
     }
+}
+
+// --- HỆ THỐNG HÒM THƯ (MAILBOX API) ---
+export async function getMailboxAPI() {
+    try {
+        const response = await fetch(`${SERVER_URL}/api/mail/${getDeviceId()}`);
+        if (response.ok) return await response.json();
+        return [];
+    } catch (e) {
+        console.error("⚠️ Lỗi tải Hòm thư:", e);
+    }
+    return [];
+}
+
+export async function claimMailAPI(mailId) {
+    try {
+        const response = await fetch(`${SERVER_URL}/api/mail/claim`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ playerId: getDeviceId(), mailId })
+        });
+        return await response.json();
+    } catch (e) { console.error("⚠️ Lỗi nhận quà:", e); }
+    return { success: false, error: "Lỗi kết nối máy chủ" };
+}
+
+export async function sendAdminMailAPI(target, title, content, gold, souls) {
+    try {
+        const response = await fetch(`${SERVER_URL}/api/admin/mail`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ target, title, content, gold, souls })
+        });
+        return await response.json();
+    } catch (e) { console.error("⚠️ Lỗi gửi thư Admin:", e); }
+    return { success: false, error: "Lỗi kết nối máy chủ" };
 }

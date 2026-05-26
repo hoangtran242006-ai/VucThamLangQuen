@@ -173,6 +173,48 @@ app.get('/api/admin/players', (req, res) => {
     res.json(allPlayers);
 });
 
+// --- HỆ THỐNG HÒM THƯ (MAILBOX) ---
+app.get('/api/mail/:id', (req, res) => {
+    const player = dbData.players[req.params.id];
+    if (!player) return res.json([]);
+    res.json(player.mailbox || []);
+});
+
+app.post('/api/mail/claim', (req, res) => {
+    const { playerId, mailId } = req.body;
+    const player = dbData.players[playerId];
+    if (!player || !player.mailbox) return res.status(400).json({ error: 'Không tìm thấy thông tin người chơi!' });
+    
+    const mail = player.mailbox.find(m => m.id === mailId);
+    if (!mail) return res.status(400).json({ error: 'Thư không tồn tại!' });
+    if (mail.claimed) return res.status(400).json({ error: 'Đã nhận quà thư này rồi!' });
+    
+    mail.claimed = true;
+    saveDatabase();
+    res.json({ success: true, gold: mail.gold || 0, souls: mail.souls || 0 });
+});
+
+app.post('/api/admin/mail', (req, res) => {
+    const { target, title, content, gold, souls } = req.body;
+    const mail = {
+        id: 'mail_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+        title, content, gold, souls, claimed: false, timestamp: Date.now()
+    };
+
+    if (target === 'all') {
+        for (let id in dbData.players) {
+            if (!dbData.players[id].mailbox) dbData.players[id].mailbox = [];
+            dbData.players[id].mailbox.push({ ...mail });
+        }
+    } else {
+        if (!dbData.players[target]) return res.status(400).json({ error: 'Người chơi không tồn tại!' });
+        if (!dbData.players[target].mailbox) dbData.players[target].mailbox = [];
+        dbData.players[target].mailbox.push(mail);
+    }
+    saveDatabase();
+    res.json({ success: true });
+});
+
 // --- HỆ THỐNG ĐĂNG KÝ / ĐĂNG NHẬP CỤC BỘ ---
 app.post('/api/register', (req, res) => {
     const { username, password } = req.body;

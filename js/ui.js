@@ -1,6 +1,7 @@
 import { MAP_WIDTH, MAP_COLS, MAP_ROWS } from './constants.js';
 import { SpriteRenderer } from './sprite.js';
 import { RaceManager } from './races.js';
+import { SkinManager } from './skins.js';
 
 export const UI = {
     els: {},
@@ -8,6 +9,7 @@ export const UI = {
     lootTimer: 0,
     lastAvatarSkinId: null,
     lastRaceId: null,
+    lastJoystickSkinId: null,
 
     init(callbacks) {
         this.cb = callbacks;
@@ -25,7 +27,6 @@ export const UI = {
             expFill: document.getElementById('exp-fill'),
             goldValue: document.getElementById('goldValue'),
             soulValue: document.getElementById('soulValue'),
-            weaponName: document.getElementById('weaponName'),
             lootText: document.getElementById('loot-text'),
             invList: document.getElementById('inventory-list'),
             invDetails: document.getElementById('inventory-details'),
@@ -35,7 +36,9 @@ export const UI = {
             chestContent: document.getElementById('chest-content'),
             chestEquipBtn: document.getElementById('chest-equip-btn'),
             chestTakeBtn: document.getElementById('chest-take-btn'),
-            minimap: document.getElementById('minimapCanvas')
+            minimap: document.getElementById('minimapCanvas'),
+            joystickAim: document.getElementById('joystick-aim'),
+            btnSummon: document.getElementById('btn-summon')
         };
         if(this.els.minimap) this.miniCtx = this.els.minimap.getContext('2d');
 
@@ -57,9 +60,22 @@ export const UI = {
         if(this.els.levelValue) this.els.levelValue.textContent = player.level;
         if(this.els.hpValue) this.els.hpValue.textContent = Math.max(0, Math.round(player.hp));
         if(this.els.maxHpValue) this.els.maxHpValue.textContent = player.maxHp;
-        if(this.els.weaponName) this.els.weaponName.textContent = player.currentWeapon.name;
         if(this.els.goldValue) this.els.goldValue.textContent = player.gold;
         if(this.els.soulValue) this.els.soulValue.textContent = player.souls;
+
+        const currentSkinId = player.skin ? player.skin.id : null;
+        if (this.lastJoystickSkinId !== currentSkinId) {
+            this.lastJoystickSkinId = currentSkinId;
+            if (this.els.joystickAim && this.els.btnSummon) {
+                if (currentSkinId === 'skeleton_mage') {
+                    this.els.joystickAim.style.display = 'none';
+                    this.els.btnSummon.style.display = 'flex';
+                } else {
+                    this.els.joystickAim.style.display = 'block';
+                    this.els.btnSummon.style.display = 'none';
+                }
+            }
+        }
 
         // Chỉ render lại DOM của Race Badge nếu người chơi đổi tộc (Tránh tụt FPS do gọi innerHTML 60 lần/giây)
         if (this.els.raceBadge && this.lastRaceId !== player.raceId) {
@@ -170,22 +186,51 @@ export const UI = {
         }
 
         // 2. Render Equipment Slots
-        ['helmet', 'armor', 'gloves', 'boots', 'weapon'].forEach(slot => {
-            const el = document.getElementById(`slot-${slot}`);
-            if (el) {
-                const item = slot === 'weapon' ? player.currentWeapon : player.equipment[slot];
+        const isMage = player.skin && player.skin.id === 'skeleton_mage';
+        const equipSlotsContainer = document.querySelector('.mc-equip-slots');
+        
+        if (equipSlotsContainer) {
+            equipSlotsContainer.innerHTML = '';
+            equipSlotsContainer.style.display = 'grid';
+            equipSlotsContainer.style.gridTemplateColumns = isMage ? 'repeat(3, 44px)' : 'repeat(2, 44px)';
+            equipSlotsContainer.style.gap = '8px';
+            equipSlotsContainer.style.justifyContent = 'center';
+            
+            const armorSlots = [{id: 'helmet', icon: '🪖'}, {id: 'armor', icon: '👕'}, {id: 'gloves', icon: '🧤'}, {id: 'boots', icon: '👢'}];
+            
+            armorSlots.forEach(conf => {
+                const item = player.equipment[conf.id];
+                const div = document.createElement('div');
+                div.className = 'mc-slot equip-slot'; div.id = `slot-${conf.id}`;
                 if (item) {
-                    let iconHtml = item.imgSrc 
-                        ? `<img src="${item.imgSrc}" style="width:32px; height:32px; object-fit:contain; filter:drop-shadow(0 0 10px ${item.rarity.color}); pointer-events:none;">` 
-                        : `<div class="item-icon" style="text-shadow:0 0 15px ${item.rarity.color}; pointer-events:none;">${slot==='helmet'?'🪖':slot==='armor'?'👕':slot==='gloves'?'🧤':slot==='boots'?'👢':(item.type==='ranged'?'🏹':item.type==='magic'?'🪄':'🗡️')}</div>`;
-                    el.innerHTML = iconHtml;
-                    el.style.borderColor = item.rarity.color; el.onclick = () => this.cb.onUnequip(slot); el.onmouseover = () => this.showItemDetails(item); el.onmouseout = () => this.els.invDetails.innerHTML='';
+                    let iconHtml = item.imgSrc ? `<img src="${item.imgSrc}" style="width:32px; height:32px; object-fit:contain; filter:drop-shadow(0 0 10px ${item.rarity.color}); pointer-events:none;">` : `<div class="item-icon" style="text-shadow:0 0 15px ${item.rarity.color}; pointer-events:none;">${this.getIcon(item)}</div>`;
+                    div.innerHTML = iconHtml; div.style.borderColor = item.rarity.color; div.onclick = () => this.cb.onUnequip(conf.id); div.onmouseover = () => this.showItemDetails(item); div.onmouseout = () => this.els.invDetails.innerHTML='';
                 } else {
-                    el.innerHTML = `<div style="opacity:0.3;font-size:24px;">${slot==='helmet'?'🪖':slot==='armor'?'👕':slot==='gloves'?'🧤':'👢'}</div>`;
-                    el.style.borderColor = '#373737'; el.onclick = null; el.onmouseover = null;
+                    div.innerHTML = `<div style="opacity:0.3;font-size:24px;">${conf.icon}</div>`; div.style.borderColor = '#373737';
                 }
+                equipSlotsContainer.appendChild(div);
+            });
+            
+            if (isMage) {
+                ['rune1', 'rune2', 'rune3'].forEach(rId => {
+                    const item = player.equipment[rId];
+                    const div = document.createElement('div'); div.className = 'mc-slot equip-slot'; div.id = `slot-${rId}`;
+                    if (item) {
+                        let iconHtml = item.imgSrc ? `<img src="${item.imgSrc}" style="width:32px; height:32px; object-fit:contain; filter:drop-shadow(0 0 10px ${item.rarity.color}); pointer-events:none;">` : `<div class="item-icon" style="text-shadow:0 0 15px ${item.rarity.color}; pointer-events:none;">🪨</div>`;
+                        div.innerHTML = iconHtml; div.style.borderColor = item.rarity.color; div.onclick = () => this.cb.onUnequip(rId); div.onmouseover = () => this.showItemDetails(item); div.onmouseout = () => this.els.invDetails.innerHTML='';
+                    } else { div.innerHTML = `<div style="opacity:0.3;font-size:24px;">🪨</div>`; div.style.borderColor = '#373737'; }
+                    equipSlotsContainer.appendChild(div);
+                });
+            } else {
+                const item = player.currentWeapon;
+                const div = document.createElement('div'); div.className = 'mc-slot equip-slot'; div.id = `slot-weapon`;
+                if (item) {
+                    let iconHtml = item.imgSrc ? `<img src="${item.imgSrc}" style="width:32px; height:32px; object-fit:contain; filter:drop-shadow(0 0 10px ${item.rarity.color}); pointer-events:none;">` : `<div class="item-icon" style="text-shadow:0 0 15px ${item.rarity.color}; pointer-events:none;">${this.getIcon(item)}</div>`;
+                    div.innerHTML = iconHtml; div.style.borderColor = item.rarity.color; div.onclick = () => this.cb.onUnequip('weapon'); div.onmouseover = () => this.showItemDetails(item); div.onmouseout = () => this.els.invDetails.innerHTML='';
+                } else { div.innerHTML = `<div style="opacity:0.3;font-size:24px;">🗡️</div>`; div.style.borderColor = '#373737'; }
+                equipSlotsContainer.appendChild(div);
             }
-        });
+        }
 
         // 3. Render 27 Grid Slots
         list.innerHTML = '';
@@ -195,7 +240,7 @@ export const UI = {
             if(item) {
                 let iconHtml = item.imgSrc 
                     ? `<img src="${item.imgSrc}" style="width:32px; height:32px; object-fit:contain; filter:drop-shadow(0 0 10px ${item.rarity.color}); pointer-events:none;">` 
-                    : `<div class="item-icon" style="text-shadow:0 0 15px ${item.rarity.color}; pointer-events:none;">${item.type==='ranged'?'🏹':item.type==='magic'?'🪄':item.type==='armor'?(item.armorType==='helmet'?'🪖':item.armorType==='armor'?'👕':item.armorType==='gloves'?'🧤':'👢'):'🗡️'}</div>`;
+                    : `<div class="item-icon" style="text-shadow:0 0 15px ${item.rarity.color}; pointer-events:none;">${this.getIcon(item)}</div>`;
                 div.innerHTML = iconHtml;
                 div.style.borderColor = item.rarity.color;
                 div.onclick = () => this.cb.onEquip(item); div.onmouseover = () => this.showItemDetails(item); div.onmouseout = () => this.els.invDetails.innerHTML='';
@@ -206,6 +251,14 @@ export const UI = {
         }
     },
     
+    getIcon(item) {
+        let icon = '🗡️';
+        if(item.type==='ranged') icon='🏹'; else if(item.type==='magic') icon='🪄'; 
+        else if(item.type==='armor') { if(item.armorType==='helmet') icon='🪖'; if(item.armorType==='armor') icon='👕'; if(item.armorType==='gloves') icon='🧤'; if(item.armorType==='boots') icon='👢'; }
+        else if(item.type==='rune') icon='🪨';
+        return icon;
+    },
+
     showItemDetails(w) {
         if (!w || !this.els.invDetails) return;
         let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><h3 style="margin:0;color:${w.rarity.color};font-size:18px;">${w.name}</h3><span style="background:${w.rarity.color}44;color:${w.rarity.color};padding:2px 8px;border-radius:4px;font-size:11px;">${w.rarity.name}</span></div><div style="display:flex;gap:15px;"><div style="flex:1;">`;
@@ -215,7 +268,16 @@ export const UI = {
             if (w.shieldBonus) html += `<div class="stat-row">🛡️ Giáp ảo: <strong style="color:#3498db">+${Math.floor(w.shieldBonus*w.rarity.statMultiplier)}</strong></div>`;
             if (w.speedBonus) html += `<div class="stat-row">👟 Tốc chạy: <strong style="color:#f1c40f">+${Math.floor(w.speedBonus*w.rarity.statMultiplier)}</strong></div>`;
         }
-        html += `</div><div style="flex:1;font-style:italic;color:#bdc3c7;font-size:12px;background:rgba(0,0,0,0.3);padding:8px;border-radius:4px;">✨ ${w.ability}</div></div>`;
+        else if (w.type === 'rune') {
+            html += `<div class="stat-row" style="background: rgba(46, 204, 113, 0.1); border-color: #2ecc71; text-align: left;"><strong style="color:#2ecc71;">[BUFF]</strong> ${w.buff}</div>`;
+            html += `<div class="stat-row" style="background: rgba(231, 76, 60, 0.1); border-color: #e74c3c; text-align: left;"><strong style="color:#e74c3c;">[DEBUFF]</strong> ${w.debuff}</div>`;
+        }
+        
+        if (w.type !== 'rune') {
+            html += `</div><div style="flex:1;font-style:italic;color:#bdc3c7;font-size:12px;background:rgba(0,0,0,0.3);padding:8px;border-radius:4px;">✨ ${w.ability}</div></div>`;
+        } else {
+            html += `</div></div>`;
+        }
         this.els.invDetails.innerHTML = html;
     },
 
@@ -225,16 +287,34 @@ export const UI = {
             ? `<img src="${w.imgSrc}" draggable="false" style="width:60px; height:60px; object-fit:contain; filter:drop-shadow(0 0 15px ${w.rarity.color}); pointer-events:none;">` 
             : `<div style="font-size:40px; text-shadow:0 0 15px ${w.rarity.color}; pointer-events:none;">${w.type === 'ranged' ? '🏹' : w.type==='magic' ? '🪄' : w.effectType==='fire' ? '🔥' : w.effectType==='ice' ? '❄️' : w.effectType==='lightning' ? '⚡' : w.effectType==='poison' ? '🧪' : '🗡️'}</div>`;
 
+        let statsHtml = '';
+        if (w.type === 'ranged' || w.type === 'magic') {
+            statsHtml = `<div style="width:100%; display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:5px;"><div class="stat-row" style="margin:0;"><span>⚔️ Sát thương: <strong>${w.damage}</strong></span></div><div class="stat-row" style="margin:0;"><span>⚡ Tốc độ: <strong>${(1000/w.fireRate).toFixed(1)}/s</strong></span></div></div><div class="inv-ability" style="width:100%; box-sizing:border-box; margin:0; font-size:13px; padding: 10px;">✨ ${w.ability}</div>`;
+        } else if (w.type === 'armor') {
+            let armorStats = '';
+            if (w.hpBonus) armorStats += `<div class="stat-row" style="margin:0;"><span>❤️ Máu: <strong style="color:#2ecc71">+${Math.floor(w.hpBonus*w.rarity.statMultiplier)}</strong></span></div>`;
+            if (w.shieldBonus) armorStats += `<div class="stat-row" style="margin:0;"><span>🛡️ Giáp: <strong style="color:#3498db">+${Math.floor(w.shieldBonus*w.rarity.statMultiplier)}</strong></span></div>`;
+            if (w.speedBonus) armorStats += `<div class="stat-row" style="margin:0;"><span>👟 Tốc độ: <strong style="color:#f1c40f">+${Math.floor(w.speedBonus*w.rarity.statMultiplier)}</strong></span></div>`;
+            statsHtml = `<div style="width:100%; display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:5px;">${armorStats}</div><div class="inv-ability" style="width:100%; box-sizing:border-box; margin:0; font-size:13px; padding: 10px;">✨ ${w.ability}</div>`;
+        } else if (w.type === 'rune') {
+            statsHtml = `
+                <div style="width:100%; display:flex; flex-direction:column; gap:5px; margin-top:5px;">
+                    <div class="stat-row" style="margin:0; background: rgba(46, 204, 113, 0.1); border-color: #2ecc71; text-align: left;">
+                        <strong style="color:#2ecc71;">[BUFF]</strong> ${w.buff}
+                    </div>
+                    <div class="stat-row" style="margin:0; background: rgba(231, 76, 60, 0.1); border-color: #e74c3c; text-align: left;">
+                        <strong style="color:#e74c3c;">[DEBUFF]</strong> ${w.debuff}
+                    </div>
+                </div>
+            `;
+        }
+
         this.els.chestContent.innerHTML = `
             <div style="display:flex; flex-direction:column; align-items:center; gap:15px; padding-top: 10px;">
                 <div id="chest-draggable-item" draggable="true" ondragstart="event.dataTransfer.setData('text', 'chest-item'); this.style.opacity='0.5';" ondragend="this.style.opacity='1';" style="cursor:grab; width:80px;height:80px;background:rgba(0,0,0,0.4);border:3px solid ${w.rarity.color};border-radius:15px;display:flex;justify-content:center;align-items:center;box-shadow:0 0 20px ${w.rarity.color}66; transition: transform 0.2s;" title="Kéo để thả hoặc bấm nút bên dưới">${iconHtml}</div>
                 <h3 style="color:${w.rarity.color}; margin:0; text-align:center; font-size:22px;">${w.name}</h3>
                 <span style="background:${w.rarity.color}22;border:1px solid ${w.rarity.color};color:${w.rarity.color};padding:4px 12px;border-radius:15px;font-size:13px;font-weight:bold;text-transform:uppercase;">${w.rarity.name}</span>
-                <div style="width:100%; display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:5px;">
-                    <div class="stat-row" style="margin:0;"><span>⚔️ Sát thương: <strong>${w.damage}</strong></span></div>
-                    <div class="stat-row" style="margin:0;"><span>⚡ Tốc độ: <strong>${(1000/w.fireRate).toFixed(1)}/s</strong></span></div>
-                </div>
-                <div class="inv-ability" style="width:100%; box-sizing:border-box; margin:0; font-size:13px; padding: 10px;">✨ ${w.ability}</div>
+                ${statsHtml}
             </div>
         `;
     },
@@ -243,13 +323,28 @@ export const UI = {
         if(this.els.shopGold) this.els.shopGold.textContent = player.gold;
         if(this.els.shopSouls) this.els.shopSouls.textContent = player.souls;
         if(!this.els.shopUpg) return;
+        
+        const isMage = player.skin && player.skin.id === 'skeleton_mage';
         const w = player.currentWeapon;
-        const dmgCost = 15 + (w.upgradeDmgLevel * 20);
-        const speedCost = 15 + (w.upgradeSpeedLevel * 20);
-        const canUpSpeed = w.fireRate > 50;
-        let iconHtml = w.imgSrc 
-            ? `<img src="${w.imgSrc}" style="width:30px; height:30px; object-fit:contain; filter:drop-shadow(0 0 10px ${w.rarity.color}); pointer-events:none;">` 
-            : `<div style="font-size:20px; text-shadow:0 0 10px ${w.rarity.color}; pointer-events:none;">${w.type === 'ranged' ? '🏹' : w.type==='magic' ? '🪄' : w.effectType==='fire' ? '🔥' : w.effectType==='ice' ? '❄️' : w.effectType==='lightning' ? '⚡' : w.effectType==='poison' ? '🧪' : '🗡️'}</div>`;
+        
+        let upgradeHtml = '';
+        if (isMage) {
+            upgradeHtml = `<div style="text-align:center; color:#bdc3c7; margin: 20px 0; font-size: 14px; font-style: italic;">Pháp Sư Xương không sử dụng vũ khí vật lý.<br>Hãy tìm Cổ Ngữ trong rương và sử dụng Luyện Kim!</div>`;
+        } else if (w) {
+            const dmgCost = 15 + (w.upgradeDmgLevel * 20);
+            const speedCost = 15 + (w.upgradeSpeedLevel * 20);
+            const canUpSpeed = w.fireRate > 50;
+            let iconHtml = w.imgSrc 
+                ? `<img src="${w.imgSrc}" style="width:30px; height:30px; object-fit:contain; filter:drop-shadow(0 0 10px ${w.rarity.color}); pointer-events:none;">` 
+                : `<div style="font-size:20px; text-shadow:0 0 10px ${w.rarity.color}; pointer-events:none;">${w.type === 'ranged' ? '🏹' : w.type==='magic' ? '🪄' : w.effectType==='fire' ? '🔥' : w.effectType==='ice' ? '❄️' : w.effectType==='lightning' ? '⚡' : w.effectType==='poison' ? '🧪' : '🗡️'}</div>`;
+            
+            upgradeHtml = `
+            <div style="display:flex;align-items:center;justify-content:center;gap:15px;margin-bottom:15px;background:rgba(0,0,0,0.4);padding:10px;border-radius:8px;border:1px solid ${w.rarity.color}55;"><div style="width:40px;height:40px;background:#2d3436;border:2px solid ${w.rarity.color};border-radius:8px;display:flex;justify-content:center;align-items:center;box-shadow:inset 0 0 10px rgba(0,0,0,0.8),0 0 10px ${w.rarity.color}88;">${iconHtml}</div><div style="text-align:center;"><div style="font-size:12px;color:#a0aec0;">Đang trang bị</div><div style="font-size:16px;font-weight:bold;color:${w.rarity.color};text-shadow:0 0 5px ${w.rarity.color}88;">${w.name}</div></div></div>
+            <div class="upgrade-options-grid">
+                <div class="upgrade-box"><h4>⚔️ Sát Thương <span style="color:#f1c40f">+${w.upgradeDmgLevel}</span></h4><div class="upgrade-stat">Tăng vĩnh viễn 15% gốc.<br>Đang có: ${w.damage} ➔ <span style="color:#2ecc71;font-weight:bold;">${w.damage+Math.max(1,Math.floor(w.damage*0.15))}</span></div><button id="upg-dmg" class="upg-btn" ${player.souls<dmgCost?'disabled':''}><div style="display:flex;justify-content:space-between;align-items:center;"><span>Rèn vũ khí</span><span style="background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:10px;">${dmgCost} 👻</span></div></button></div>
+                <div class="upgrade-box"><h4>⚡ Tốc Độ <span style="color:#f1c40f">+${w.upgradeSpeedLevel}</span></h4><div class="upgrade-stat">Giảm 15ms giữa 2 lần bắn.<br>Đang có: ${(1000/w.fireRate).toFixed(1)} Đ/s ➔ <span style="color:#2ecc71;font-weight:bold;">${canUpSpeed?(1000/Math.max(50,w.fireRate-15)).toFixed(1)+' Đ/s':'MAX'}</span></div><button id="upg-spd" class="upg-btn" ${!canUpSpeed||player.souls<speedCost?'disabled':''}><div style="display:flex;justify-content:space-between;align-items:center;"><span>${canUpSpeed?'Rèn vũ khí':'ĐẠT GIỚI HẠN'}</span><span style="background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:10px;">${canUpSpeed?speedCost+' 👻':'MAX'}</span></div></button></div>
+            </div>`;
+        }
 
         let reviveHtml = '';
         if (deadPlayers.length > 0) {
@@ -274,16 +369,16 @@ export const UI = {
 
         this.els.shopUpg.innerHTML = `
             <h3 style="margin:0 0 15px 0;color:#00d8d6;border-bottom:2px solid #4a5568;padding-bottom:10px;text-align:center;text-shadow:0 0 8px #00d8d6;">LÒ RÈN LINH HỒN</h3>
-            <div style="display:flex;align-items:center;justify-content:center;gap:15px;margin-bottom:15px;background:rgba(0,0,0,0.4);padding:10px;border-radius:8px;border:1px solid ${w.rarity.color}55;"><div style="width:40px;height:40px;background:#2d3436;border:2px solid ${w.rarity.color};border-radius:8px;display:flex;justify-content:center;align-items:center;box-shadow:inset 0 0 10px rgba(0,0,0,0.8),0 0 10px ${w.rarity.color}88;">${iconHtml}</div><div style="text-align:center;"><div style="font-size:12px;color:#a0aec0;">Đang trang bị</div><div style="font-size:16px;font-weight:bold;color:${w.rarity.color};text-shadow:0 0 5px ${w.rarity.color}88;">${w.name}</div></div></div>
-            <div class="upgrade-options-grid">
-                <div class="upgrade-box"><h4>⚔️ Sát Thương <span style="color:#f1c40f">+${w.upgradeDmgLevel}</span></h4><div class="upgrade-stat">Tăng vĩnh viễn 15% gốc.<br>Đang có: ${w.damage} ➔ <span style="color:#2ecc71;font-weight:bold;">${w.damage+Math.max(1,Math.floor(w.damage*0.15))}</span></div><button id="upg-dmg" class="upg-btn" ${player.souls<dmgCost?'disabled':''}><div style="display:flex;justify-content:space-between;align-items:center;"><span>Rèn vũ khí</span><span style="background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:10px;">${dmgCost} 👻</span></div></button></div>
-                <div class="upgrade-box"><h4>⚡ Tốc Độ <span style="color:#f1c40f">+${w.upgradeSpeedLevel}</span></h4><div class="upgrade-stat">Giảm 15ms giữa 2 lần bắn.<br>Đang có: ${(1000/w.fireRate).toFixed(1)} Đ/s ➔ <span style="color:#2ecc71;font-weight:bold;">${canUpSpeed?(1000/Math.max(50,w.fireRate-15)).toFixed(1)+' Đ/s':'MAX'}</span></div><button id="upg-spd" class="upg-btn" ${!canUpSpeed||player.souls<speedCost?'disabled':''}><div style="display:flex;justify-content:space-between;align-items:center;"><span>${canUpSpeed?'Rèn vũ khí':'ĐẠT GIỚI HẠN'}</span><span style="background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:10px;">${canUpSpeed?speedCost+' 👻':'MAX'}</span></div></button></div>
-                <div class="upgrade-box" style="grid-column:1/-1;border-color:#e74c3c;"><h4 style="color:#ff7675;margin-bottom:5px;">❤️ Bình Dược Thủy (Hồi Phục)</h4><div class="upgrade-stat" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0;"><span>Hồi ngay lập tức 50 Máu.<br>Sinh lực: <span style="color:#ff7675;font-weight:bold;">${Math.round(player.hp)} / ${player.maxHp}</span></span><button id="buy-hp" class="upg-btn" style="width:auto;padding:10px 20px;background:linear-gradient(180deg,#e74c3c,#c0392b);border-color:#ff7675;" ${player.gold<50||player.hp>=player.maxHp?'disabled':''}><div style="display:flex;gap:10px;align-items:center;"><span>Mua ngay</span><span style="background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:10px;">50 💰</span></div></button></div></div>
-            </div>
+            ${upgradeHtml}
+            <div class="upgrade-box" style="grid-column:1/-1;border-color:#e74c3c; margin-top: ${isMage ? '0' : '12px'};"><h4 style="color:#ff7675;margin-bottom:5px;">❤️ Bình Dược Thủy (Hồi Phục)</h4><div class="upgrade-stat" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0;"><span>Hồi ngay lập tức 50 Máu.<br>Sinh lực: <span style="color:#ff7675;font-weight:bold;">${Math.round(player.hp)} / ${player.maxHp}</span></span><button id="buy-hp" class="upg-btn" style="width:auto;padding:10px 20px;background:linear-gradient(180deg,#e74c3c,#c0392b);border-color:#ff7675;" ${player.gold<50||player.hp>=player.maxHp?'disabled':''}><div style="display:flex;gap:10px;align-items:center;"><span>Mua ngay</span><span style="background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:10px;">50 💰</span></div></button></div></div>
             ${reviveHtml}
         `;
-        document.getElementById('upg-dmg')?.addEventListener('click', () => this.cb.onUpgDmg(w, dmgCost));
-        document.getElementById('upg-spd')?.addEventListener('click', () => this.cb.onUpgSpd(w, speedCost));
+        if (!isMage && w) {
+            const dmgCost = 15 + (w.upgradeDmgLevel * 20);
+            const speedCost = 15 + (w.upgradeSpeedLevel * 20);
+            document.getElementById('upg-dmg')?.addEventListener('click', () => this.cb.onUpgDmg(w, dmgCost));
+            document.getElementById('upg-spd')?.addEventListener('click', () => this.cb.onUpgSpd(w, speedCost));
+        }
         document.getElementById('buy-hp')?.addEventListener('click', () => this.cb.onBuyHp());
         if (deadPlayers.length > 0) {
             deadPlayers.forEach(dp => { document.getElementById(`revive-btn-${dp.id}`)?.addEventListener('click', () => this.cb.onRevivePlayer(dp.id, 50)); });
@@ -303,6 +398,7 @@ export const UI = {
         enemies.forEach(e => {
             if(e.isDead) return;
             if(e.isBoss) { this.miniCtx.fillStyle='#ff0000'; this.miniCtx.fillRect((e.x+e.width/2)*sc-2.5, (e.y+e.height/2)*sc-2.5, 5, 5); }
+            else if(e.isAlly) { this.miniCtx.fillStyle='#3498db'; this.miniCtx.fillRect((e.x+e.width/2)*sc-1.5, (e.y+e.height/2)*sc-1.5, 3, 3); }
             else { this.miniCtx.fillStyle='#e74c3c'; this.miniCtx.fillRect((e.x+e.width/2)*sc-1.5, (e.y+e.height/2)*sc-1.5, 3, 3); }
         });
         if(merchant) { this.miniCtx.fillStyle='#8e44ad'; this.miniCtx.fillRect((merchant.x+merchant.width/2)*sc-2, (merchant.y+merchant.height/2)*sc-2, 4, 4); }
@@ -326,19 +422,18 @@ export const UI = {
         if (!screen) {
             screen = document.createElement('div');
             screen.id = 'skill-screen';
-            screen.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:none;justify-content:center;align-items:center;z-index:9999;flex-direction:column;backdrop-filter:blur(5px);';
             document.body.appendChild(screen);
         }
         
-        let html = '<h2 style="color:#f1c40f;font-size:36px;margin-bottom:30px;text-shadow:0 0 15px #f1c40f;text-align:center;">🌟 CHỌN KỸ NĂNG MỚI 🌟</h2>';
-        html += '<div style="display:flex;gap:20px;flex-wrap:wrap;justify-content:center;">';
+        let html = '<h2>🌟 CHỌN KỸ NĂNG MỚI 🌟</h2>';
+        html += '<div class="skill-options-container">';
         
         options.forEach((skill, idx) => {
             html += `
-                <div id="skill-card-${idx}" style="width:240px;background:rgba(30,40,50,0.9);border:2px solid #3498db;border-radius:12px;padding:25px;text-align:center;cursor:pointer;transition:transform 0.2s, box-shadow 0.2s;color:#fff;box-shadow:inset 0 0 20px rgba(0,0,0,0.8);">
-                    <div style="font-size:54px;margin-bottom:15px;text-shadow:0 0 15px rgba(255,255,255,0.5);">${skill.icon}</div>
-                    <h3 style="color:#3498db;margin:0 0 15px 0;font-size:20px;">${skill.name}</h3>
-                    <p style="font-size:14px;color:#bdc3c7;margin:0;line-height:1.4;">${skill.description}</p>
+                <div id="skill-card-${idx}" class="skill-card">
+                    <div class="skill-icon">${skill.icon}</div>
+                    <h3>${skill.name}</h3>
+                    <p>${skill.description}</p>
                 </div>
             `;
         });
@@ -348,8 +443,6 @@ export const UI = {
         
         options.forEach((skill, idx) => {
             const card = document.getElementById(`skill-card-${idx}`);
-            card.onmouseover = () => { card.style.transform = 'translateY(-10px)'; card.style.boxShadow = '0 10px 25px rgba(52,152,219,0.5), inset 0 0 20px rgba(0,0,0,0.8)'; card.style.borderColor = '#f1c40f'; };
-            card.onmouseout = () => { card.style.transform = 'translateY(0)'; card.style.boxShadow = 'inset 0 0 20px rgba(0,0,0,0.8)'; card.style.borderColor = '#3498db'; };
             card.onclick = () => {
                 screen.style.display = 'none';
                 onSelect(skill.id);

@@ -39,7 +39,8 @@ export class InputManager {
             'interact': ['KeyF', 'Enter'], // Nhặt đồ, Luyện kim
             'inventory': ['KeyE'], // Mở túi đồ
             'escape': ['Escape'], // Phím ESC để Pause/Đóng menu
-            'map': ['Tab'] // Xem bản đồ lớn
+            'map': ['Tab'], // Xem bản đồ lớn
+            'skill_z': ['KeyZ'] // Kỹ năng đặc biệt
         };
 
         // Ràng buộc context (bind) cho các event listener để không bị mất 'this'
@@ -96,6 +97,7 @@ export class InputManager {
             bindVirtualBtn('btn-inventory', 'KeyE');
             bindVirtualBtn('btn-pause-mobile', 'Escape');
             bindVirtualBtn('btn-dash', 'ShiftLeft');
+            bindVirtualBtn('btn-summon', 'KeyZ');
 
             // Cho phép chạm vào màn hình game để giả lập click chuột (hữu ích cho Menu Shop)
             window.addEventListener('touchstart', (e) => {
@@ -117,7 +119,7 @@ export class InputManager {
 
     _handleKeyDown(e) {
         // Nếu đang gõ chat thì bỏ qua phím
-        if (document.activeElement && document.activeElement.tagName === 'INPUT') {
+        if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) {
             if (e.code === 'Escape') document.activeElement.blur(); // Ấn ESC để thoát chat
             return;
         }

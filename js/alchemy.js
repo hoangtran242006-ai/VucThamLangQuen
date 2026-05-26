@@ -108,6 +108,7 @@ export const AlchemySystem = {
         let icon = '🗡️';
         if(item.type==='ranged') icon='🏹'; else if(item.type==='magic') icon='🪄'; 
         else if(item.type==='armor') { if(item.armorType==='helmet') icon='🪖'; if(item.armorType==='armor') icon='👕'; if(item.armorType==='gloves') icon='🧤'; if(item.armorType==='boots') icon='👢'; }
+        else if(item.type==='rune') icon='🪨';
         return icon;
     },
 

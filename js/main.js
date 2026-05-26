@@ -9,7 +9,7 @@ import { Camera } from './camera.js';
 import { Menu } from './menu.js';
 import { SkinManager } from './skins.js';
 import { RaceManager } from './races.js';
-import { syncDataToCloud, loadDataFromCloud, getTopPlayers, checkAndPromptPlayerName, changePlayerName, getAllPlayersAdmin, updatePlayerAdmin, getPlayerName, isLoggedIn, registerAccount, loginAccount, logoutAccount } from '../db.js';
+import { syncDataToCloud, loadDataFromCloud, getTopPlayers, checkAndPromptPlayerName, changePlayerName, getAllPlayersAdmin, updatePlayerAdmin, getPlayerName, isLoggedIn, registerAccount, loginAccount, logoutAccount, getMailboxAPI, claimMailAPI, sendAdminMailAPI } from '../db.js';
 import * as VFX from './vfx.js';
 import { UI } from './ui.js';
 import { RNG } from './rng.js';
@@ -67,15 +67,41 @@ const elements = {
     updateLogScreen: document.getElementById('update-log-screen'),
     leaderboardScreen: document.getElementById('leaderboard-screen'),
     gameOverScreen: document.getElementById('game-over-screen'),
-    adminScreen: document.getElementById('admin-screen')
+    adminScreen: document.getElementById('admin-screen'),
+    mailboxScreen: document.getElementById('mailbox-screen')
 };
 
 const bindClick = (id, fn) => { const el = document.getElementById(id); if (el) el.addEventListener('click', (e) => { AudioManager.play('click'); fn(e); }); };
-bindClick('close-inventory-btn', closeInventory); bindClick('close-shop-btn', closeShop); bindClick('close-chest-btn', closeChest); bindClick('resume-button', togglePause); bindClick('quit-button', quitToMenu);
-bindClick('close-log-btn', () => { elements.updateLogScreen.style.display = 'none'; gameState = 'MENU'; });
-bindClick('close-leaderboard-btn', () => { elements.leaderboardScreen.style.display = 'none'; gameState = 'MENU'; });
-bindClick('close-admin-btn', () => { elements.adminScreen.style.display = 'none'; gameState = 'MENU'; });
+
+bindClick('close-inventory-btn', closeInventory); 
+bindClick('close-shop-btn', closeShop); 
+bindClick('close-chest-btn', closeChest); 
+bindClick('resume-button', togglePause); 
+bindClick('quit-button', quitToMenu);
+
+bindClick('close-log-btn', () => { const scr = document.getElementById('update-log-screen'); if(scr) scr.style.display = 'none'; gameState = 'MENU'; });
+bindClick('close-leaderboard-btn', () => { const scr = document.getElementById('leaderboard-screen'); if(scr) scr.style.display = 'none'; gameState = 'MENU'; });
+bindClick('close-admin-btn', () => { const scr = document.getElementById('admin-screen'); if(scr) scr.style.display = 'none'; gameState = 'MENU'; });
 bindClick('restart-button', () => { enterFullscreen(); restartGame(true, gameMode); });
+
+window.openMailbox = () => {
+    if (gameState !== 'MENU') return;
+    AudioManager.play('click');
+    gameState = 'MAILBOX'; 
+    const scr = document.getElementById('mailbox-screen');
+    if (scr) {
+        scr.style.display = 'flex';
+        window.renderMailbox();
+    }
+};
+
+window.closeMailbox = () => {
+    AudioManager.play('click');
+    const scr = document.getElementById('mailbox-screen');
+    if (scr) scr.style.display = 'none';
+    gameState = 'MENU';
+};
+
 bindClick('pause-fullscreen-btn', () => {
     if (!document.fullscreenElement) {
         if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(e => {});
@@ -131,6 +157,96 @@ window.saveAdmin = (id) => {
     updatePlayerAdmin(id, { gold: g, souls: s, bestWave: w }).then(() => { btn.textContent = 'ĐÃ LƯU'; btn.style.background = '#2ecc71'; setTimeout(() => { btn.textContent = 'LƯU'; btn.style.background = ''; }, 2000); });
 };
 
+window.renderMailbox = async () => {
+    try {
+        const mc = document.getElementById('mailbox-content');
+        if (!mc) return;
+        mc.innerHTML = '<div style="text-align:center; margin-top:50px;">Đang tải dữ liệu từ máy chủ...</div>';
+        const mails = await getMailboxAPI();
+        if (!mails || mails.length === 0) {
+            mc.innerHTML = '<div style="text-align:center; color:#bdc3c7; margin-top:50px;">Hòm thư của bạn hiện đang trống!</div>';
+            return;
+        }
+        let html = '';
+        mails.sort((a,b) => b.timestamp - a.timestamp).forEach(m => {
+            const date = new Date(m.timestamp).toLocaleString('vi-VN');
+            html += `
+            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; border:1px solid ${m.claimed ? '#7f8c8d' : '#f1c40f'}; position:relative;">
+                <h4 style="margin:0 0 8px 0; color:${m.claimed ? '#95a5a6' : '#f1c40f'}; font-size:18px;">✉️ ${m.title}</h4>
+                <div style="font-size:12px; color:#7f8c8d; margin-bottom:10px;">${date}</div>
+                <p style="margin:0 0 15px 0; font-size:15px; color:#ecf0f1; line-height:1.4;">${m.content.replace(/\n/g, '<br>')}</p>
+                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px;">
+                    <span style="font-size:15px; font-weight:bold;">
+                        Quà đính kèm: <span style="color:#f1c40f;">${m.gold} 💰</span> | <span style="color:#00d8d6;">${m.souls} 👻</span>
+                    </span>
+                    ${m.claimed 
+                        ? `<button disabled style="padding:8px 15px; background:#7f8c8d; border:none; border-radius:6px; color:#fff; font-weight:bold;">Đã Nhận</button>`
+                        : `<button onclick="window.claimMail('${m.id}')" style="padding:8px 15px; background:#2ecc71; border:none; border-radius:6px; color:#fff; cursor:pointer; font-weight:bold; box-shadow:0 0 10px rgba(46,204,113,0.4);">Nhận Quà</button>`
+                    }
+                </div>
+            </div>`;
+        });
+        mc.innerHTML = html;
+    } catch (e) {
+        console.error("Lỗi render hòm thư:", e);
+    }
+};
+
+window.claimMail = async (mailId) => {
+    AudioManager.play('click');
+    const btn = event.target;
+    btn.textContent = 'ĐANG NHẬN...'; btn.disabled = true;
+    const res = await claimMailAPI(mailId);
+    if (res.success) {
+        player.gold += res.gold;
+        player.souls += res.souls;
+        saveGameData();
+        UI.updateHud(player);
+        AudioManager.play('coin');
+        window.renderMailbox();
+        window.checkUnreadMails();
+    } else {
+        alert("Lỗi: " + res.error);
+        btn.textContent = 'NHẬN QUÀ'; btn.disabled = false;
+    }
+};
+
+window.sendAdminMail = async () => {
+    const target = document.getElementById('admin-mail-target').value.trim();
+    const title = document.getElementById('admin-mail-title').value.trim();
+    const content = document.getElementById('admin-mail-content').value.trim();
+    const gold = parseInt(document.getElementById('admin-mail-gold').value) || 0;
+    const souls = parseInt(document.getElementById('admin-mail-souls').value) || 0;
+    
+    if (!target || !title) return alert("Vui lòng nhập ID người chơi (hoặc 'all') và Tiêu đề thư!");
+    if (!confirm(`Bạn có chắc muốn gửi thư này đến [${target}]?`)) return;
+
+    AudioManager.play('click');
+    const btn = event.target; 
+    btn.textContent = 'ĐANG GỬI...'; btn.disabled = true; btn.style.background = '#f39c12';
+    
+    const res = await sendAdminMailAPI(target, title, content, gold, souls);
+    if (res.success) {
+        alert("Gửi thư thành công!");
+        document.getElementById('admin-mail-title').value = '';
+        document.getElementById('admin-mail-content').value = '';
+        document.getElementById('admin-mail-gold').value = '0';
+        document.getElementById('admin-mail-souls').value = '0';
+    } else {
+        alert("Lỗi khi gửi thư: " + res.error);
+    }
+    btn.textContent = 'GỬI THƯ NÀY'; btn.disabled = false; btn.style.background = '#2ecc71';
+};
+
+window.checkUnreadMails = async () => {
+    const mails = await getMailboxAPI();
+    const hasUnread = mails && mails.some(m => !m.claimed);
+    const dot = document.getElementById('mailbox-noti-dot');
+    if (dot) dot.style.display = hasUnread ? 'block' : 'none';
+};
+setInterval(() => { if (gameState === 'MENU') window.checkUnreadMails(); }, 30000);
+setTimeout(() => window.checkUnreadMails(), 2000);
+
 window.addEventListener('beforeunload', () => { if (Network.isMultiplayer && Network.socket) Network.socket.emit('leaveMultiplayer'); });
 
 let isGameOver = false, isGameStarted = false, isDataDirty = false;
@@ -150,16 +266,13 @@ let camera = new Camera();
 function updateAuthUI() {
     const unlogged = document.getElementById('auth-unlogged');
     const logged = document.getElementById('auth-logged');
-    const floatingBtn = document.getElementById('floating-auth-btn');
     
     if (isLoggedIn()) {
         if (unlogged) unlogged.style.display = 'none';
         if (logged) { logged.style.display = 'flex'; document.getElementById('logged-username').textContent = getPlayerName(); }
-        if (floatingBtn) { floatingBtn.textContent = '👤 ' + getPlayerName(); floatingBtn.classList.remove('moss-btn-danger'); }
     } else {
         if (unlogged) unlogged.style.display = 'flex';
         if (logged) logged.style.display = 'none';
-        if (floatingBtn) { floatingBtn.textContent = '👤 ĐĂNG NHẬP / ĐĂNG KÝ'; floatingBtn.classList.add('moss-btn-danger'); }
     }
 }
 updateAuthUI();
@@ -177,7 +290,6 @@ function openAuthModal(mode) {
 }
 bindClick('btn-show-login', () => openAuthModal('login'));
 bindClick('btn-show-register', () => openAuthModal('register'));
-bindClick('floating-auth-btn', () => openAuthModal('login'));
 bindClick('close-auth-btn', () => document.getElementById('auth-screen').style.display = 'none');
 bindClick('btn-logout', () => { 
     if (confirm("Bạn có chắc muốn đăng xuất? Trò chơi sẽ trở về trạng thái Khách (0 Vàng, 0 Linh hồn).")) { 
@@ -192,9 +304,9 @@ bindClick('btn-logout', () => {
         localStorage.removeItem('vucthamlangquen_equipped_skin');
         player.gold = 0; player.souls = 0; bestWave = 0; 
         player.raceId = 'human';
-        SkinManager.ownedSkins = ['hoàng', 'bocchi'];
-        SkinManager.equippedSkin = 'hoàng';
-        player.setSkin('hoàng', SkinManager.skinImages);
+        SkinManager.ownedSkins = ['hoang', 'bocchi'];
+        SkinManager.equippedSkin = 'hoang';
+        player.setSkin(SkinManager.getEquippedSkin(), SkinManager.skinImages);
         loadSaveData(); 
         UI.updateHud(player); 
     } 
@@ -216,6 +328,7 @@ if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
         if (authMode === 'login') {
             localStorage.removeItem('vucthamlangquen_best_wave'); localStorage.removeItem('vucthamlangquen_gold'); localStorage.removeItem('vucthamlangquen_souls'); localStorage.removeItem('vucthamlangquen_race');
             player.gold = 0; player.souls = 0; bestWave = 0; await loadSaveData();
+            window.checkUnreadMails();
         } else {
             saveGameData(); // Tự động upload dữ liệu đang chơi lên tài khoản mới tạo
         }
@@ -345,7 +458,8 @@ window.onReviveReceived = () => {
         player.deathProcessed = false;
         player.hp = player.maxHp * 0.5;
         player.invulnerableTimer = 3000;
-        if (elements.gameOverScreen) elements.gameOverScreen.style.display = 'none';
+        const scr = document.getElementById('game-over-screen');
+        if (scr) scr.style.display = 'none';
         isGameOver = false; 
         UI.showLoot('Bạn đã được đồng đội chuộc mạng!');
         UI.updateHud(player);
@@ -380,16 +494,20 @@ function saveGameData() {
 
 function setHudVisibility(visible) {
     if (visible && gameState === 'PLAYING') document.body.classList.add('show-joystick'); else document.body.classList.remove('show-joystick');
-    ['hud', 'minimapCanvas'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = visible ? '' : 'none'; });
-    Object.values(elements).forEach(el => { if(el) el.style.display = 'none'; });
+    ['hud', 'minimapCanvas', 'chat-widget'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = visible ? '' : 'none'; });
+    
+    ['interaction-prompt', 'inventory-screen', 'shop-screen', 'chest-screen', 'pause-screen', 'update-log-screen', 'leaderboard-screen', 'game-over-screen', 'admin-screen', 'mailbox-screen'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
     
     const devPanel = document.getElementById('dev-panel');
     if (devPanel) {
         devPanel.style.display = (visible && localStorage.getItem('vucthamlangquen_admin_token') === 'true') ? 'block' : 'none';
     }
-    
-    const floatingBtn = document.getElementById('floating-auth-container');
-    if (floatingBtn) floatingBtn.style.display = (!visible && gameState === 'MENU') ? 'block' : 'none';
+
+    const mailboxBtn = document.getElementById('mailbox-floating-btn');
+    if (mailboxBtn) mailboxBtn.style.display = visible ? 'none' : 'flex';
 }
 
 function findSpawnPosition(map, avoid = null) {
@@ -431,7 +549,6 @@ function spawnWave(count) {
     for (let i = 0; i < enemyCount; i++) { const p = findSpawnPosition(gameMap, { ...avoidTarget, distance: 240 }); enemies.push(new Enemy(p.x, p.y, waveNumber, `enemy_${waveNumber}_${i}`)); }
     if (waveNumber === 1 || waveNumber % 2 === 0) { 
         const p = findSpawnPosition(gameMap, { ...avoidTarget, distance: 300 }); if (!merchant) merchant = new Merchant(p.x, p.y); else { merchant.x = p.x; merchant.y = p.y; } 
-        const p2 = findSpawnPosition(gameMap, { ...avoidTarget, distance: 300 }); if (!alchemyTable) alchemyTable = new AlchemyTable(p2.x, p2.y); else { alchemyTable.x = p2.x; alchemyTable.y = p2.y; } 
     }
     if (waveNumber > 1) createChests(2, gameMap);
     
@@ -442,8 +559,9 @@ function showGameOver() {
     isGameOver = true; const fsv = document.getElementById('final-score-value'); if (fsv) fsv.textContent = waveNumber;
     if (waveNumber > bestWave) bestWave = waveNumber;
     saveGameData(); const bsv = document.getElementById('best-score-value'); if (bsv) bsv.textContent = bestWave;
-    if (elements.gameOverScreen) {
-        elements.gameOverScreen.style.display = 'flex';
+    const scr = document.getElementById('game-over-screen');
+    if (scr) {
+        scr.style.display = 'flex';
         const hint = document.getElementById('spectate-hint');
         let allDead = player.isDead && Network.isMultiplayer && gameMode !== 'pvp' ? Object.values(Network.otherPlayers).every(op => op.isDead) : true;
         if (hint) hint.style.display = (Network.isMultiplayer && gameMode !== 'pvp' && !allDead) ? 'block' : 'none';
@@ -459,7 +577,8 @@ function restartGame(startLoop = true, mode = 'solo') {
         modeEl.style.color = gameMode === 'pvp' ? '#e74c3c' : (gameMode === 'coop' ? '#3498db' : '#2ecc71');
     }
 
-    if (elements.gameOverScreen) elements.gameOverScreen.style.display = 'none';
+    const scr = document.getElementById('game-over-screen');
+    if (scr) scr.style.display = 'none';
     isGameOver = false; isGameStarted = true; gameState = 'PLAYING';
     closeInventory(); setHudVisibility(true);
     projectiles.length = 0; chests.length = 0; VFX.clearAllVFX(); merchant = null; alchemyTable = null;
@@ -516,53 +635,100 @@ function createChests(count, map) {
         const x = c*TILE_SIZE+TILE_SIZE/2-16, y = r*TILE_SIZE+TILE_SIZE/2-16;
         
         if(chests.some(ch => Math.hypot(ch.x-x, ch.y-y)<80)) continue;
-        if(!Network.isMultiplayer && Math.hypot(player.x-x, player.y-y)<80) continue; // Mạng thì không né player để giữ RNG
+        if(!Network.isMultiplayer && Math.hypot(player.x-x, player.y-y)<80) continue; 
         
-        chests.push({ id: `chest_${waveNumber}_${i}`, x, y, width:40, height:40, opened:false, weapon: chests.length===0?Weapon.rollRandomLightning():Weapon.rollRandomWeapon() }); added++;
+        const isMage = player.skin && player.skin.id === 'skeleton_mage';
+        chests.push({ id: `chest_${waveNumber}_${i}`, x, y, width:40, height:40, opened:false, weapon: chests.length===0?Weapon.rollRandomLightning(isMage):Weapon.rollRandomWeapon(isMage) }); added++;
     }
 }
 
-function togglePause() { if (gameState === 'PLAYING') { gameState = 'PAUSED'; if (elements.pauseScreen) elements.pauseScreen.style.display = 'flex'; document.body.classList.remove('show-joystick'); const volSlider = document.getElementById('pause-volume'); if (volSlider) volSlider.value = globalVolume; } else if (gameState === 'PAUSED') { gameState = 'PLAYING'; if (elements.pauseScreen) elements.pauseScreen.style.display = 'none'; document.body.classList.add('show-joystick'); inputManager.mouse.leftJustPressed = false; } }
+function togglePause() { 
+    const pauseScreen = document.getElementById('pause-screen');
+    if (gameState === 'PLAYING') { 
+        gameState = 'PAUSED'; 
+        if (pauseScreen) {
+            pauseScreen.style.display = 'flex';
+            const title = document.querySelector('.pause-box h2');
+            if (title) title.textContent = 'TẠM DỪNG';
+            const resumeBtn = document.getElementById('resume-button');
+            if (resumeBtn) resumeBtn.style.display = 'block';
+            const quitBtn = document.getElementById('quit-button');
+            if (quitBtn) { quitBtn.textContent = 'Thoát ra Menu'; quitBtn.style.background = '#c0392b'; quitBtn.style.borderColor = '#e74c3c'; }
+        }
+        document.body.classList.remove('show-joystick'); 
+        const volSlider = document.getElementById('pause-volume'); 
+        if (volSlider) volSlider.value = globalVolume; 
+    } else if (gameState === 'PAUSED') { 
+        gameState = 'PLAYING'; 
+        if (pauseScreen) pauseScreen.style.display = 'none'; 
+        document.body.classList.add('show-joystick'); 
+        inputManager.mouse.leftJustPressed = false; 
+    } 
+}
 function quitToMenu() { 
-    if (isGameStarted && !isGameOver) {
-        if (!confirm("Bạn có chắc chắn muốn thoát? Quá trình chơi hiện tại sẽ bị mất!")) return;
-    }
     gameState = 'MENU'; isGameStarted = false; setHudVisibility(false); Network.start(false); 
     const modeEl = document.getElementById('current-mode-value');
     if (modeEl) { modeEl.textContent = 'Sảnh Chờ'; modeEl.style.color = '#ecf0f1'; }
 }
-function openInventory() { if(player.isDead) return; gameState = 'INVENTORY'; if (elements.inventoryScreen) elements.inventoryScreen.style.display = 'flex'; document.body.classList.remove('show-joystick'); UI.renderInventory(player); }
-function closeInventory() { gameState = 'PLAYING'; if (elements.inventoryScreen) elements.inventoryScreen.style.display = 'none'; document.body.classList.add('show-joystick'); }
+function openInventory() { 
+    if(player.isDead) return; 
+    gameState = 'INVENTORY'; 
+    const scr = document.getElementById('inventory-screen');
+    if (scr) scr.style.display = 'flex'; 
+    document.body.classList.remove('show-joystick'); 
+    UI.renderInventory(player); 
+}
+function closeInventory() { 
+    gameState = 'PLAYING'; 
+    const scr = document.getElementById('inventory-screen');
+    if (scr) scr.style.display = 'none'; 
+    document.body.classList.add('show-joystick'); 
+}
 function openShop() { 
     if(player.isDead) return; 
-    gameState = 'SHOP'; if (elements.shopScreen) elements.shopScreen.style.display = 'flex'; if (elements.interactionPrompt) elements.interactionPrompt.style.display = 'none'; document.body.classList.remove('show-joystick'); 
+    gameState = 'SHOP'; 
+    const scr = document.getElementById('shop-screen');
+    const prompt = document.getElementById('interaction-prompt');
+    if (scr) scr.style.display = 'flex'; 
+    if (prompt) prompt.style.display = 'none'; 
+    document.body.classList.remove('show-joystick'); 
     const deadPlayers = [];
     if (Network.isMultiplayer && gameMode === 'coop') {
         for (let id in Network.otherPlayers) { if (Network.otherPlayers[id].isDead) deadPlayers.push({ id: id, name: Network.otherPlayers[id].playerName || 'Hiệp sĩ' }); }
     }
     UI.renderShop(player, deadPlayers); 
 }
-function closeShop() { gameState = 'PLAYING'; if (elements.shopScreen) elements.shopScreen.style.display = 'none'; document.body.classList.add('show-joystick'); }
+function closeShop() { 
+    gameState = 'PLAYING'; 
+    const scr = document.getElementById('shop-screen');
+    if (scr) scr.style.display = 'none'; 
+    document.body.classList.add('show-joystick'); 
+}
 
 window.currentOpenChest = null;
 function openChest(chest) {
     if(player.isDead) return;
     gameState = 'CHEST'; window.currentOpenChest = chest;
-    if (elements.chestScreen) elements.chestScreen.style.display = 'flex';
-    if (elements.interactionPrompt) elements.interactionPrompt.style.display = 'none';
-    document.body.classList.remove('show-joystick'); UI.renderChest(chest.weapon);
+    const scr = document.getElementById('chest-screen');
+    const prompt = document.getElementById('interaction-prompt');
+    if (scr) scr.style.display = 'flex';
+    if (prompt) prompt.style.display = 'none';
+    document.body.classList.remove('show-joystick'); 
+    UI.renderChest(chest.weapon);
 }
 function closeChest() { 
     if (gameState !== 'CHEST') return;
     gameState = 'PLAYING'; window.currentOpenChest = null;
-    if (elements.chestScreen) elements.chestScreen.style.display = 'none'; 
+    const scr = document.getElementById('chest-screen');
+    if (scr) scr.style.display = 'none'; 
     document.body.classList.add('show-joystick'); 
 }
 
 function openAlchemy() {
     if(player.isDead) return;
     gameState = 'ALCHEMY';
-    if (elements.interactionPrompt) elements.interactionPrompt.style.display = 'none';
+    const prompt = document.getElementById('interaction-prompt');
+    if (prompt) prompt.style.display = 'none';
     document.body.classList.remove('show-joystick');
     AlchemySystem.open();
 }
@@ -596,14 +762,53 @@ function gameLoop(time) {
     let dt = Math.min(time - lastFrameTime, 50); lastFrameTime = time;
 
     if (gameState === 'MENU') {
-        if (isGameStarted && inputManager.isActionJustPressed('escape') && !isGameOver) { gameState = 'PLAYING'; setHudVisibility(true); inputManager.update(); if (loopId) cancelAnimationFrame(loopId); loopId = requestAnimationFrame(gameLoop); return; }
+        if (isGameStarted && inputManager.isActionJustPressed('escape') && !isGameOver) { 
+            if (menu.currentScreen !== 'MAIN') {
+                menu.currentScreen = 'MAIN';
+                menu.skinPage = 0;
+            } else {
+                gameState = 'PLAYING'; setHudVisibility(true); 
+                player.setSkin(SkinManager.getEquippedSkin(), SkinManager.skinImages); 
+                const pt = document.getElementById('player-portrait'); if (pt) pt.style.backgroundColor = player.color;
+            }
+            inputManager.update(); if (loopId) cancelAnimationFrame(loopId); loopId = requestAnimationFrame(gameLoop); return; 
+        }
         menu.update(dt, inputManager, player, 
             (mode) => { enterFullscreen(); if (!isGameStarted) restartGame(false, mode); else { gameState = 'PLAYING'; inputManager.mouse.leftJustPressed = false; player.setSkin(SkinManager.getEquippedSkin(), SkinManager.skinImages); const pt = document.getElementById('player-portrait'); if (pt) pt.style.backgroundColor = player.color; setHudVisibility(true); } },
             () => { isDataDirty = true; }, 
-            () => { gameState = 'UPDATE_LOG'; if (elements.updateLogScreen) elements.updateLogScreen.style.display = 'flex'; },
-            () => { checkAndPromptPlayerName(); gameState = 'LEADERBOARD'; if (elements.leaderboardScreen) { elements.leaderboardScreen.style.display = 'flex'; const lc = document.getElementById('leaderboard-content'); if(lc) lc.innerHTML = '<div style="text-align:center;margin-top:50px;">Đang tải Dữ liệu Máy chủ...</div>'; getTopPlayers().then(ps => renderLeaderboard(ps)); } },
-            (v) => { applyAudioSettings(v, globalMuted); }, (m) => { applyAudioSettings(globalVolume, m); }, () => playNextTrack(), () => { changePlayerName(); if (Network.socket) Network.socket.emit('registerName', getPlayerName()); },
-            () => { gameState = 'ADMIN'; if (elements.adminScreen) { elements.adminScreen.style.display = 'flex'; const ac = document.getElementById('admin-content'); if (ac) ac.innerHTML = '<div style="text-align: center; margin-top: 50px;">Đang tải dữ liệu...</div>'; getAllPlayersAdmin().then(ps => { let h=''; ps.forEach(p => { h+=`<div class="admin-player-card"><div style="flex:1; min-width: 120px; color:#f1c40f"><strong>${p.playerName||'Ẩn danh'}</strong><br><small style="color:#bdc3c7">${p.id}</small></div><div>Vàng: <input type="number" id="adm-g-${p.id}" value="${p.gold||0}"></div><div>Linh hồn: <input type="number" id="adm-s-${p.id}" value="${p.souls||0}"></div><div>Tầng: <input type="number" id="adm-w-${p.id}" value="${p.bestWave||0}"></div><button class="admin-btn" onclick="window.saveAdmin('${p.id}')">LƯU</button></div>`; }); if(ac) ac.innerHTML = h||'<div style="text-align:center;">Không có dữ liệu</div>'; }); } },
+            () => { 
+                gameState = 'UPDATE_LOG'; 
+                const scr = document.getElementById('update-log-screen');
+                if (scr) scr.style.display = 'flex'; 
+            },
+            () => { 
+                checkAndPromptPlayerName(); 
+                gameState = 'LEADERBOARD'; 
+                const scr = document.getElementById('leaderboard-screen');
+                if (scr) { 
+                    scr.style.display = 'flex'; 
+                    const lc = document.getElementById('leaderboard-content'); 
+                    if(lc) lc.innerHTML = '<div style="text-align:center;margin-top:50px;">Đang tải Dữ liệu Máy chủ...</div>'; 
+                    getTopPlayers().then(ps => renderLeaderboard(ps)); 
+                } 
+            },
+            (v) => { applyAudioSettings(v, globalMuted); }, 
+            (m) => { applyAudioSettings(globalVolume, m); }, 
+            () => playNextTrack(), 
+            () => { changePlayerName(); if (Network.socket) Network.socket.emit('registerName', getPlayerName()); },
+            () => { 
+                gameState = 'ADMIN'; 
+                const scr = document.getElementById('admin-screen');
+                if (scr) { 
+                    scr.style.display = 'flex'; 
+                    const ac = document.getElementById('admin-content'); 
+                    if (ac) ac.innerHTML = '<div style="text-align: center; margin-top: 50px;">Đang tải dữ liệu...</div>'; 
+                    getAllPlayersAdmin().then(ps => { 
+                        let h=''; (ps || []).forEach(p => { h+=`<div class="admin-player-card"><div style="flex:1; min-width: 120px; color:#f1c40f"><strong>${p.playerName||'Ẩn danh'}</strong><br><small style="color:#3498db; user-select:text; -webkit-user-select:text; cursor:pointer; text-decoration:underline;" title="Bấm vào để tự động điền ID lên ô Gửi Thư" onclick="document.getElementById('admin-mail-target').value='${p.id}'; document.getElementById('admin-panel').scrollTo({top:0, behavior:'smooth'});">${p.id} 📋</small></div><div>Vàng: <input type="number" id="adm-g-${p.id}" value="${p.gold||0}"></div><div>Linh hồn: <input type="number" id="adm-s-${p.id}" value="${p.souls||0}"></div><div>Tầng: <input type="number" id="adm-w-${p.id}" value="${p.bestWave||0}"></div><button class="admin-btn" onclick="window.saveAdmin('${p.id}')">LƯU</button></div>`; }); 
+                        if(ac) ac.innerHTML = h||'<div style="text-align:center;">Không có dữ liệu</div>'; 
+                    }); 
+                } 
+            },
             () => {
                 if (!document.fullscreenElement) {
                     if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(e => {});
@@ -612,14 +817,31 @@ function gameLoop(time) {
                     if (document.exitFullscreen) document.exitFullscreen();
                     else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
                 }
+            },
+            () => {
+                if (isLoggedIn()) {
+                    const btnLogout = document.getElementById('btn-logout');
+                    if (btnLogout) btnLogout.click();
+                } else {
+                    openAuthModal('login');
+                }
             }
         );
         menu.draw(ctx, GAME_VERSION, player.gold, musicError ? '⚠️ Lỗi nhạc!' : (isMusicPlaying ? playlist[currentTrackIndex].name : 'Chưa phát')); inputManager.update(); if (loopId) cancelAnimationFrame(loopId); loopId = requestAnimationFrame(gameLoop); return;
     }
 
-    if (['UPDATE_LOG', 'LEADERBOARD', 'ADMIN'].includes(gameState)) {
+    if (['UPDATE_LOG', 'LEADERBOARD', 'ADMIN', 'MAILBOX'].includes(gameState)) {
+        menu.clouds.forEach(c => { c.x += c.speed * (dt / 1000); if (c.x > CANVAS_WIDTH + 100) { c.x = -100; c.y = Math.random() * (CANVAS_HEIGHT / 2.5); } });
         menu.draw(ctx, GAME_VERSION, player.gold, isMusicPlaying ? playlist[currentTrackIndex].name : 'Chưa phát');
-        if (inputManager.isActionJustPressed('escape')) { Object.values(elements).forEach(el => { if(el) el.style.display = 'none'; }); document.getElementById('auth-screen').style.display = 'none'; gameState = 'MENU'; }
+        if (inputManager.isActionJustPressed('escape')) { 
+            ['update-log-screen', 'leaderboard-screen', 'admin-screen', 'mailbox-screen'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
+            const authScr = document.getElementById('auth-screen');
+            if (authScr) authScr.style.display = 'none'; 
+            gameState = 'MENU'; 
+        }
         inputManager.update(); if (loopId) cancelAnimationFrame(loopId); loopId = requestAnimationFrame(gameLoop); return;
     }
 
@@ -637,6 +859,89 @@ function gameLoop(time) {
 
     player.update(dt, inputManager, gameMap, camera, projectiles);
     
+    // Xử lý Cơ chế Triệu hồi Pháp Sư Xương
+    if (player.wantsToSummon) {
+        player.wantsToSummon = false;
+        
+        const isMage = player.skin && player.skin.id === 'skeleton_mage';
+        const runes = player.runes || [];
+        
+        let maxShadows = 3;
+        if (runes.some(r => r.runeId === 'undead_tide')) maxShadows = 5;
+        if (runes.some(r => r.runeId === 'goliath')) maxShadows = 1;
+
+        let currentShadows = enemies.filter(e => e.isAlly).length;
+
+        // SWARM KEYSTONE
+        let swarmCount = runes.filter(r => r.branch === 'SWARM').length;
+        if (swarmCount >= 3 && currentShadows >= maxShadows - 1) {
+            player.invulnerableTimer = 5000;
+            VFX.spawnFloatingText(player.x + player.width/2, player.y - 30, 'BẤT TỬ LÂM THỜI!', '#f1c40f');
+            enemies.forEach(e => { if (e.isAlly) { e.isTaunting = true; e.color = '#f1c40f'; } });
+        }
+
+        if (currentShadows < maxShadows) {
+            const shadows = ['beru', 'igris', 'bellion'];
+            const selectedShadow = shadows[Math.floor(Math.random() * shadows.length)];
+            let shadowName = '';
+            
+            const minion = new Enemy(player.x + (Math.random()-0.5)*80, player.y + (Math.random()-0.5)*80, player.level, `ally_${Math.random()}`);
+            minion.isAlly = true;
+            minion.shadowType = selectedShadow;
+            minion.color = '#3498db';
+            minion.lifespan = 30000; // 30s tuổi thọ
+                
+            let hpMult = 1, dmgMult = 1, speedMult = 1, sizeMult = 1;
+
+            if (runes.some(r => r.runeId === 'undead_tide')) { hpMult *= 0.75; dmgMult *= 0.75; }
+            if (runes.some(r => r.runeId === 'undead_legion')) { hpMult *= 1.2; }
+            if (runes.some(r => r.runeId === 'mass_frenzy')) {
+                const count = Math.min(15, currentShadows + 1);
+                speedMult *= (1 + 0.02 * count); minion.attackSpeedMult = (1 + 0.04 * count);
+            }
+            if (runes.some(r => r.runeId === 'withering')) { dmgMult *= 0.7; minion.applyWithering = true; }
+            if (runes.some(r => r.runeId === 'bone_burst')) { minion.lifespan = 15000; minion.boneBurst = true; }
+            if (runes.some(r => r.runeId === 'goliath')) { sizeMult *= 2; hpMult *= 4; dmgMult *= 3; minion.isGoliath = true; minion.cleaveAttack = true; }
+            if (runes.some(r => r.runeId === 'absolute_power')) { minion.attackSpeedMult = (minion.attackSpeedMult || 1) + 0.5; }
+            if (runes.some(r => r.runeId === 'parasite')) { minion.isParasite = true; }
+            if (runes.some(r => r.runeId === 'soul_absorb')) { 
+                // Rút máu trực tiếp, không gọi hàm takeDamage để tránh buff thời gian bất tử (i-frames)
+                player.hp -= 5; if (player.hp <= 0 && !player.isDead) player.die();
+                minion.soulAbsorb = true; 
+            }
+            
+            if (selectedShadow === 'beru') {
+                shadowName = 'BERU';
+                minion.width = 24 * sizeMult; minion.height = 24 * sizeMult; minion.baseSpeed *= 3.5 * speedMult;
+                minion.hp *= 2 * hpMult; minion.maxHp = minion.hp; minion.damage = Math.floor(minion.damage * 0.5 * dmgMult);
+                minion.skillCooldown = 5000 / (minion.attackSpeedMult || 1);
+            } else if (selectedShadow === 'igris') {
+                shadowName = 'IGRIS';
+                minion.width = 24 * sizeMult; minion.height = 28 * sizeMult; minion.baseSpeed *= 1.2 * speedMult;
+                minion.hp *= 3 * hpMult; minion.maxHp = minion.hp; minion.damage = Math.floor(minion.damage * 0.8 * dmgMult);
+                minion.skillCooldown = 6000 / (minion.attackSpeedMult || 1);
+            } else if (selectedShadow === 'bellion') {
+                shadowName = 'BELLION';
+                minion.width = 30 * sizeMult; minion.height = 36 * sizeMult; minion.baseSpeed *= 0.9 * speedMult;
+                minion.hp *= 8 * hpMult; minion.maxHp = minion.hp; minion.damage = Math.floor(minion.damage * 1.2 * dmgMult);
+                minion.skillCooldown = 10000 / (minion.attackSpeedMult || 1);
+            }
+            minion.speed = minion.baseSpeed;
+            
+            // TITAN KEYSTONE
+            let titanCount = runes.filter(r => r.branch === 'TITAN').length;
+            if (titanCount >= 3 && minion.isGoliath) { player.mergedTarget = minion; }
+
+            enemies.push(minion);
+            VFX.spawnImpactEffect(player.x + player.width/2, player.y + player.height/2, 'singularity');
+            VFX.spawnFloatingText(player.x + player.width/2, player.y - 20, `HÃY TRỖI DẬY, ${shadowName}!`, '#3498db');
+            AudioManager.play('chest');
+        } else {
+            VFX.spawnFloatingText(player.x + player.width/2, player.y - 20, 'Đã đạt giới hạn!', '#e74c3c');
+            AudioManager.play('error');
+        }
+    }
+
     // Kỹ năng: Thiên Thạch (Meteor)
     if (player.hasMeteor && !player.isDead) {
         player.meteorTimer -= dt;
@@ -706,12 +1011,13 @@ function gameLoop(time) {
         }
     }
 
-    if (elements.interactionPrompt) { 
-        elements.interactionPrompt.style.display = canInteract ? 'block' : 'none'; 
+    const prompt = document.getElementById('interaction-prompt');
+    if (prompt) { 
+        prompt.style.display = canInteract ? 'block' : 'none'; 
         if (canInteract) {
-            if (interactType === 'merchant') elements.interactionPrompt.textContent = 'Nhấn [ F ] để Giao dịch';
-            else if (interactType === 'alchemy') elements.interactionPrompt.textContent = 'Nhấn [ F ] để Luyện Kim';
-            else elements.interactionPrompt.textContent = 'Nhấn [ F ] để Mở Rương';
+            if (interactType === 'merchant') prompt.textContent = 'Nhấn [ F ] để Giao dịch';
+            else if (interactType === 'alchemy') prompt.textContent = 'Nhấn [ F ] để Luyện Kim';
+            else prompt.textContent = 'Nhấn [ F ] để Mở Rương';
         }
     }
 
@@ -730,17 +1036,54 @@ function gameLoop(time) {
     }
 
     const allPlayers = [player, ...Object.values(Network.otherPlayers)];
+    let hasParasite = false;
     if (gameMode !== 'pvp') {
         enemies.forEach(e => e.update(dt, allPlayers, gameMap, enemies));
         for (let i = enemies.length - 1; i >= 0; i--) {
             const e = enemies[i];
             
+            if (e.isAlly && e.isParasite) {
+                hasParasite = true;
+                if (player.hp < player.maxHp * 0.15) { e.hp = 0; e.die(); }
+            }
+            if (e.isAlly && e.lifespan !== undefined) {
+                e.lifespan -= dt;
+                if (e.lifespan <= 0 && !e.isDead) { e.hp = 0; e.die(); }
+            }
+            
             // Nhận tín hiệu quái chết từ mạng
             if (Network.isMultiplayer && Network.sharedKilledEnemies.has(e.id) && !e.isDead) { e.hp = 0; e.die(); }
 
             if (enemies[i].isDead) {
+                if (e.isAlly) {
+                    if (e.isGoliath) {
+                        player.stunTimer = 3000;
+                        player.summonTimer = Math.max(player.summonTimer || 0, 10000);
+                        VFX.spawnFloatingText(player.x, player.y, "CỰ THẦN GỤC NGÃ!", "#e74c3c");
+                        player.mergedTarget = null;
+                    }
+                    if (e.boneBurst) {
+                        VFX.spawnImpactEffect(e.x + e.width/2, e.y + e.height/2, 'meteor');
+                        const dmg = Math.floor(e.maxHp * 0.25);
+                        enemies.forEach(en => {
+                            if (!en.isDead && !en.isAlly && Math.hypot(en.x + en.width/2 - (e.x + e.width/2), en.y + en.height/2 - (e.y + e.height/2)) < 150) {
+                                en.takeDamage(dmg); en.applyStatusEffect('ice', 3000, 0.4); 
+                            }
+                        });
+                        const runes = player.runes || [];
+                        if (runes.filter(r => r.branch === 'SACRIFICE').length >= 3) {
+                            player.hp = Math.min(player.maxHp, player.hp + player.maxHp * 0.05);
+                            player.summonTimer = Math.max(0, (player.summonTimer || 0) - 1000);
+                        }
+                    }
+                    if (e.soulAbsorb) {
+                        player.hp = Math.min(player.maxHp, player.hp + player.maxHp * 0.05);
+                        VFX.spawnFloatingText(player.x, player.y, "+ Máu", "#2ecc71");
+                    }
+                }
+
                 Network.markEnemyKilled(e.id);
-                if (!enemies[i].expGranted) {
+                if (!enemies[i].expGranted && !enemies[i].isAlly) {
                     VFX.spawnExpOrbs(enemies[i].x+enemies[i].width/2, enemies[i].y+enemies[i].height/2, enemies[i].expValue);
                     if (Math.random() < 0.4 || enemies[i].isBoss) VFX.spawnGoldCoins(enemies[i].x+enemies[i].width/2, enemies[i].y+enemies[i].height/2, enemies[i].isBoss ? Math.floor(Math.random()*50)+waveNumber*25 : Math.floor(Math.random()*10)+waveNumber*5);
                     if (Math.random() < 0.3 || enemies[i].isBoss) VFX.spawnSoulDrops(enemies[i].x+enemies[i].width/2, enemies[i].y+enemies[i].height/2, enemies[i].isBoss ? 10+waveNumber*3 : 1+Math.floor(Math.random()*2));
@@ -750,7 +1093,7 @@ function gameLoop(time) {
             }
         }
 
-        if (enemies.length === 0 && !isGameOver) { 
+        if (enemies.filter(e => !e.isAlly).length === 0 && !isGameOver) { 
             waveClearTimer -= dt; 
             if (waveClearTimer <= 0) { 
                 waveNumber++; Network.clearWaveData(); 
@@ -769,6 +1112,12 @@ function gameLoop(time) {
                 });
             } 
         } else waveClearTimer = 1200;
+        
+        if (hasParasite) {
+            // Rút máu liên tục, không gọi hàm takeDamage để không kích hoạt bất tử và tiếng kêu liên tục
+            player.hp -= player.maxHp * 0.03 * (dt / 1000);
+            if (player.hp <= 0 && !player.isDead) player.die();
+        }
     } else {
         // PvP Mode: Liên tục thả rương tiếp tế
         waveClearTimer -= dt;
@@ -782,7 +1131,7 @@ function gameLoop(time) {
         p.update(dt, gameMap); if (p.markedForDeletion) return;
         if (!p.isEnemyProjectile) {
             for (const e of enemies) {
-                if (e.isDead) continue;
+                if (e.isDead || e.isAlly) continue;
                 if (Math.hypot(p.x-(e.x+e.width/2), p.y-(e.y+e.height/2)) < p.radius + Math.max(e.width, e.height)/2) {
                     if (p.hitEnemies && p.hitEnemies.has(e)) continue; e.takeDamage(p.damage); VFX.spawnFloatingText(e.x+e.width/2, e.y, p.damage); if (p.hitEnemies) p.hitEnemies.add(e); p.pierceCount--; if (p.pierceCount <= 0) p.markedForDeletion = true;
                     if (p.effectType === 'lightning' && !p.spawnedImpact) { VFX.spawnLightningChainEffect(e, p.damage*0.55, enemies); p.spawnedImpact = true; } else if (p.effectType === 'fire') e.applyStatusEffect('fire', 3000, Math.max(1, Math.floor(p.damage*0.3))); else if (p.effectType === 'ice') e.applyStatusEffect('ice', 2000, 0.4);
