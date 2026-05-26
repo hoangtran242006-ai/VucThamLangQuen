@@ -1,8 +1,9 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const fs = require('fs');
 const path = require('path');
+const { Pool } = require('pg');
+const bcrypt = require('bcrypt');
 
 const app = express();
 const server = http.createServer(app);
@@ -27,32 +28,46 @@ app.use((req, res, next) => {
 // Phục vụ trực tiếp các file game (HTML, CSS, JS, Hình ảnh) thay cho Live Server
 app.use(express.static(__dirname));
 
-// --- HỆ THỐNG DATABASE CỤC BỘ ---
-const dbFile = path.join(__dirname, 'database.json'); // Đưa file data ra thư mục gốc
-let dbData = { players: {} };
+// --- HỆ THỐNG DATABASE SUPABASE (POSTGRESQL) ---
+const connectionString = process.env.DATABASE_URL;
 
-// Tải dữ liệu từ file lên RAM khi khởi động Server
-if (fs.existsSync(dbFile)) {
-    try { dbData = JSON.parse(fs.readFileSync(dbFile, 'utf8')); } catch(e) { console.error("Lỗi đọc Database:", e); }
+const pool = new Pool({
+    connectionString: connectionString,
+    ssl: { rejectUnauthorized: false } // Bắt buộc khi kết nối với Supabase
+});
+
+// Khởi tạo bảng nếu chưa có
+async function initDB() {
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS accounts (
+                username VARCHAR PRIMARY KEY,
+                password VARCHAR NOT NULL,
+                player_id VARCHAR NOT NULL
+            );
+        `);
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS players (
+                id VARCHAR PRIMARY KEY,
+                data JSONB NOT NULL
+            );
+        `);
+        console.log('✅ Đã kết nối thành công tới Supabase PostgreSQL!');
+    } catch (err) {
+        console.error('❌ Lỗi kết nối Database:', err);
+    }
 }
-
-// Đảm bảo cấu trúc dữ liệu luôn tồn tại sau khi đọc file
-if (!dbData.accounts) dbData.accounts = {};
-if (!dbData.players) dbData.players = {};
-
-// Hàm lưu dữ liệu xuống ổ cứng
-function saveDatabase() {
-    fs.writeFile(dbFile, JSON.stringify(dbData, null, 2), (err) => {
-        if (err) console.error("Lỗi lưu Database:", err);
-    });
-}
+initDB();
 
 // Lấy danh sách Top 10 Bảng Xếp Hạng
-function getLeaderboard() {
-    return Object.values(dbData.players)
-        .filter(p => p.bestWave > 0)
-        .sort((a, b) => b.bestWave - a.bestWave)
-        .slice(0, 10);
+async function getLeaderboard() {
+    try {
+        const res = await pool.query(`SELECT data FROM players WHERE (data->>'bestWave')::int > 0 ORDER BY (data->>'bestWave')::int DESC LIMIT 10`);
+        return res.rows.map(row => row.data);
+    } catch (err) {
+        console.error("Lỗi getLeaderboard:", err);
+        return [];
+    }
 }
 
 let players = {}; 
@@ -144,99 +159,167 @@ io.on('connection', (socket) => {
 });
 
 // --- CÁC CỔNG API LƯU/TẢI DỮ LIỆU ---
-app.post('/api/save', (req, res) => {
+app.post('/api/save', async (req, res) => {
     const { id, data } = req.body;
     if (!id) return res.status(400).json({ error: "Missing ID" });
     
-    dbData.players[id] = { ...dbData.players[id], ...data, id: id };
-    saveDatabase();
-    
-    // Gửi thông báo cho toàn Server cập nhật BXH ngay lập tức
-    io.emit('leaderboardUpdated', getLeaderboard());
-    io.emit('playerDataUpdated', { id: id, data: dbData.players[id] });
-    res.json({ success: true });
+    try {
+        const curr = await pool.query('SELECT data FROM players WHERE id = $1', [id]);
+        let playerData = curr.rows.length > 0 ? curr.rows[0].data : {};
+        playerData = { ...playerData, ...data, id: id };
+        
+        await pool.query(`
+            INSERT INTO players (id, data) VALUES ($1, $2) 
+            ON CONFLICT (id) DO UPDATE SET data = $2
+        `, [id, playerData]);
+        
+        // Gửi thông báo cho toàn Server cập nhật BXH ngay lập tức
+        io.emit('leaderboardUpdated', await getLeaderboard());
+        io.emit('playerDataUpdated', { id: id, data: playerData });
+        res.json({ success: true });
+    } catch (err) {
+        console.error("Lỗi /api/save:", err);
+        res.status(500).json({ error: "Lỗi Server Database" });
+    }
 });
 
-app.get('/api/load/:id', (req, res) => {
-    const player = dbData.players[req.params.id] || null;
-    res.json(player);
+app.get('/api/load/:id', async (req, res) => {
+    try {
+        const curr = await pool.query('SELECT data FROM players WHERE id = $1', [req.params.id]);
+        const player = curr.rows.length > 0 ? curr.rows[0].data : null;
+        res.json(player);
+    } catch (err) {
+        console.error("Lỗi /api/load:", err);
+        res.status(500).json({ error: "Lỗi Server Database" });
+    }
 });
 
-app.get('/api/leaderboard', (req, res) => {
-    res.json(getLeaderboard());
+app.get('/api/leaderboard', async (req, res) => {
+    res.json(await getLeaderboard());
 });
 
-app.get('/api/admin/players', (req, res) => {
-    const allPlayers = Object.values(dbData.players)
-        .sort((a, b) => (b.bestWave || 0) - (a.bestWave || 0))
-        .slice(0, 50);
-    res.json(allPlayers);
+app.get('/api/admin/players', async (req, res) => {
+    try {
+        const result = await pool.query(`SELECT data FROM players ORDER BY (data->>'bestWave')::int DESC NULLS LAST LIMIT 50`);
+        res.json(result.rows.map(r => r.data));
+    } catch (err) {
+        console.error("Lỗi /api/admin/players:", err);
+        res.status(500).json({ error: "Lỗi Server Database" });
+    }
 });
 
 // --- HỆ THỐNG HÒM THƯ (MAILBOX) ---
-app.get('/api/mail/:id', (req, res) => {
-    const player = dbData.players[req.params.id];
-    if (!player) return res.json([]);
-    res.json(player.mailbox || []);
+app.get('/api/mail/:id', async (req, res) => {
+    try {
+        const curr = await pool.query('SELECT data FROM players WHERE id = $1', [req.params.id]);
+        if (curr.rows.length === 0) return res.json([]);
+        res.json(curr.rows[0].data.mailbox || []);
+    } catch (err) {
+        res.status(500).json({ error: "Lỗi Server Database" });
+    }
 });
 
-app.post('/api/mail/claim', (req, res) => {
+app.post('/api/mail/claim', async (req, res) => {
     const { playerId, mailId } = req.body;
-    const player = dbData.players[playerId];
-    if (!player || !player.mailbox) return res.status(400).json({ error: 'Không tìm thấy thông tin người chơi!' });
-    
-    const mail = player.mailbox.find(m => m.id === mailId);
-    if (!mail) return res.status(400).json({ error: 'Thư không tồn tại!' });
-    if (mail.claimed) return res.status(400).json({ error: 'Đã nhận quà thư này rồi!' });
-    
-    mail.claimed = true;
-    saveDatabase();
-    res.json({ success: true, gold: mail.gold || 0, souls: mail.souls || 0 });
+    try {
+        const curr = await pool.query('SELECT data FROM players WHERE id = $1', [playerId]);
+        if (curr.rows.length === 0) return res.status(400).json({ error: 'Không tìm thấy thông tin người chơi!' });
+        
+        let player = curr.rows[0].data;
+        if (!player.mailbox) return res.status(400).json({ error: 'Thư không tồn tại!' });
+        
+        const mail = player.mailbox.find(m => m.id === mailId);
+        if (!mail) return res.status(400).json({ error: 'Thư không tồn tại!' });
+        if (mail.claimed) return res.status(400).json({ error: 'Đã nhận quà thư này rồi!' });
+        
+        mail.claimed = true;
+        await pool.query('UPDATE players SET data = $1 WHERE id = $2', [player, playerId]);
+        
+        res.json({ success: true, gold: mail.gold || 0, souls: mail.souls || 0 });
+    } catch (err) {
+        res.status(500).json({ error: "Lỗi Server Database" });
+    }
 });
 
-app.post('/api/admin/mail', (req, res) => {
+app.post('/api/admin/mail', async (req, res) => {
     const { target, title, content, gold, souls } = req.body;
     const mail = {
         id: 'mail_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
         title, content, gold, souls, claimed: false, timestamp: Date.now()
     };
 
-    if (target === 'all') {
-        for (let id in dbData.players) {
-            if (!dbData.players[id].mailbox) dbData.players[id].mailbox = [];
-            dbData.players[id].mailbox.push({ ...mail });
+    try {
+        if (target === 'all') {
+            const all = await pool.query('SELECT id, data FROM players');
+            for (let row of all.rows) {
+                let p = row.data;
+                if (!p.mailbox) p.mailbox = [];
+                p.mailbox.push({ ...mail });
+                await pool.query('UPDATE players SET data = $1 WHERE id = $2', [p, row.id]);
+            }
+        } else {
+            const curr = await pool.query('SELECT data FROM players WHERE id = $1', [target]);
+            if (curr.rows.length === 0) return res.status(400).json({ error: 'Người chơi không tồn tại!' });
+            
+            let p = curr.rows[0].data;
+            if (!p.mailbox) p.mailbox = [];
+            p.mailbox.push(mail);
+            await pool.query('UPDATE players SET data = $1 WHERE id = $2', [p, target]);
         }
-    } else {
-        if (!dbData.players[target]) return res.status(400).json({ error: 'Người chơi không tồn tại!' });
-        if (!dbData.players[target].mailbox) dbData.players[target].mailbox = [];
-        dbData.players[target].mailbox.push(mail);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: "Lỗi Server Database" });
     }
-    saveDatabase();
-    res.json({ success: true });
 });
 
 // --- HỆ THỐNG ĐĂNG KÝ / ĐĂNG NHẬP CỤC BỘ ---
-app.post('/api/register', (req, res) => {
+app.post('/api/register', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ error: "Thiếu thông tin đăng ký!" });
-    if (dbData.accounts[username]) return res.status(400).json({ error: "Tên tài khoản này đã có người sử dụng!" });
-    
-    const id = 'player_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
-    dbData.accounts[username] = { password, id };
-    dbData.players[id] = { id, playerName: username, bestWave: 0, gold: 0, souls: 0 };
-    saveDatabase();
-    
-    res.json({ success: true, id, username });
+
+    try {
+        const acc = await pool.query('SELECT * FROM accounts WHERE username = $1', [username]);
+        if (acc.rows.length > 0) return res.status(400).json({ error: "Tên tài khoản này đã có người sử dụng!" });
+
+        // --- BẢO MẬT: MÃ HÓA MẬT KHẨU TRƯỚC KHI LƯU ---
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        const id = 'player_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+        await pool.query('INSERT INTO accounts (username, password, player_id) VALUES ($1, $2, $3)', [username, hashedPassword, id]);
+
+        const newPlayer = { id, playerName: username, bestWave: 0, gold: 0, souls: 0 };
+        await pool.query('INSERT INTO players (id, data) VALUES ($1, $2)', [id, newPlayer]);
+
+        res.json({ success: true, id, username });
+    } catch (err) {
+        console.error("Lỗi /api/register:", err);
+        res.status(500).json({ error: "Lỗi Server Database" });
+    }
 });
 
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
-    const acc = dbData.accounts[username];
-    if (!acc || acc.password !== password) return res.status(400).json({ error: "Sai tên tài khoản hoặc mật khẩu!" });
-    
-    res.json({ success: true, id: acc.id, username });
+    try {
+        const acc = await pool.query('SELECT * FROM accounts WHERE username = $1', [username]);
+        if (acc.rows.length === 0) {
+            return res.status(400).json({ error: "Sai tên tài khoản hoặc mật khẩu!" });
+        }
+
+        // --- BẢO MẬT: SO SÁNH MẬT KHẨU ĐÃ MÃ HÓA ---
+        const match = await bcrypt.compare(password, acc.rows[0].password);
+        if (!match) {
+            return res.status(400).json({ error: "Sai tên tài khoản hoặc mật khẩu!" });
+        }
+
+        res.json({ success: true, id: acc.rows[0].player_id, username });
+    } catch (err) {
+        console.error("Lỗi /api/login:", err);
+        res.status(500).json({ error: "Lỗi Server Database" });
+    }
 });
 
-server.listen(3000, '0.0.0.0', () => {
-    console.log('Server Game đang chạy tại cổng 3000');
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server Game đang chạy tại cổng ${PORT}`);
 });
