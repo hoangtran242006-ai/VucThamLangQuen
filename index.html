@@ -332,7 +332,66 @@
         <button id="dev-btn-wave" style="width:100%; margin-bottom:6px; background:linear-gradient(to bottom, #9b59b6, #8e44ad); color:white; border:1px solid #8e44ad; padding:6px; font-weight:bold; cursor:pointer; border-radius:4px;">Dọn Quái Tầng</button>
         <button id="dev-btn-wpn" style="width:100%; background:linear-gradient(to bottom, #ff4757, #ff6b81); color:white; border:1px solid #c0392b; padding:6px; font-weight:bold; cursor:pointer; border-radius:4px;">Full Set Thần Thoại</button>
     </div>
+<!-- Nút mở Mục Lục bên góc phải màn hình -->
+<div id="index-toggle-btn" class="ui-icon-btn" onclick="window.openIndex()">
+    <div class="icon-bg blue-bg"></div>
+    <div style="font-size: 28px; z-index: 2; position: relative;">📖</div>
+    <span style="z-index: 2; position: relative;">INDEX</span>
+</div>
 
+<!-- Popup Mục Lục (Chỉ số vũ khí) -->
+<div id="index-modal" class="modal-overlay hidden">
+    <div class="index-container">
+        <!-- Header -->
+        <div class="index-header">
+            <h2>Chỉ số vũ khí</h2>
+            <button id="close-index-btn" class="close-btn" onclick="window.closeIndex()">X</button>
+        </div>
+
+        <!-- Body -->
+        <div class="index-body">
+            <!-- Cột trái: Lưới vũ khí & Tiến độ -->
+            <div class="index-left">
+                <!-- Tabs độ hiếm -->
+                <div class="rarity-tabs" id="rarity-tabs">
+                    <button class="r-tab active" onclick="window.IndexSystem.switchTab(1)">Thường</button>
+                    <button class="r-tab" onclick="window.IndexSystem.switchTab(2)">Khá</button>
+                    <button class="r-tab" onclick="window.IndexSystem.switchTab(3)">Hiếm</button>
+                    <button class="r-tab" onclick="window.IndexSystem.switchTab(4)">Sử thi</button>
+                    <button class="r-tab" onclick="window.IndexSystem.switchTab(5)">Huyền thoại</button>
+                    <button class="r-tab" onclick="window.IndexSystem.switchTab(6)">Thần thoại</button>
+                </div>
+                
+                <!-- Lưới hiển thị -->
+                <div class="weapon-grid" id="weapon-index-grid">
+                    <!-- JS sẽ render các ô vũ khí vào đây -->
+                </div>
+
+                <!-- Thanh tiến độ tổng -->
+                <div class="progress-section">
+                    <span>Cần mở khóa:</span>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="index-progress-fill">0/0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cột phải: Chi tiết & Phần thưởng -->
+            <div class="index-right">
+                <div class="details-panel" id="weapon-details-panel">
+                    <!-- Ảnh to và chỉ số sẽ hiển thị ở đây -->
+                    <div class="placeholder-text">Chọn một vũ khí để xem</div>
+                </div>
+
+                <div class="reward-panel">
+                    <h3 style="margin-bottom: 5px;">Thưởng Bộ Sưu Tập</h3>
+                    <p style="font-size: 13px; color: #bdc3c7;" id="index-reward-desc">Chọn một vật phẩm đã mở khóa để xem chi tiết và nhận thưởng.</p>
+                    <button id="claim-index-reward-btn" class="claim-btn disabled" onclick="window.IndexSystem.claimReward()">NHẬN THƯỞNG</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script type="module" src="js/main.js"></script>
 </body>

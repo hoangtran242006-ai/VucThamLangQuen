@@ -672,3 +672,165 @@ body.touch-device #interaction-prompt { display: none !important; } /* Ẩn ch�
 }
 #restart-button:hover { background: linear-gradient(180deg, #ff7675, #e74c3c); transform: translateY(-3px); box-shadow: 0 8px 20px rgba(231, 76, 60, 0.6); }
 #restart-button:active { transform: translateY(1px); box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+/* Nút Mục Lục ngoài màn hình */
+.ui-icon-btn {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    font-family: 'Arial Black', sans-serif;
+    color: white;
+    text-shadow: 2px 2px 0 #000;
+    z-index: 900;
+}
+.ui-icon-btn img { width: 50px; height: 50px; z-index: 2; }
+.icon-bg.blue-bg {
+    position: absolute;
+    width: 60px; height: 60px;
+    background: #2196F3;
+    border: 3px solid #000;
+    border-radius: 10px;
+    top: -5px; z-index: 1;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 1000;
+}
+.hidden { display: none !important; }
+
+/* Main Container */
+.index-container {
+    width: 800px; height: 500px;
+    background: #1a1a1c;
+    border: 5px solid #111;
+    border-radius: 15px;
+    display: flex; flex-direction: column;
+    color: white; font-family: 'Arial Black', sans-serif;
+}
+
+/* Header */
+.index-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 20px;
+    border-bottom: 4px solid #111;
+    position: relative;
+}
+.index-header h2 { margin: 0; text-shadow: 2px 2px 0 #000; font-size: 24px; }
+
+/* Body */
+.index-body { display: flex; flex: 1; overflow: hidden; }
+
+/* Cột Trái */
+.index-left {
+    flex: 2; display: flex; flex-direction: column;
+    padding: 15px; border-right: 4px solid #111;
+}
+.rarity-tabs { display: flex; gap: 10px; margin-bottom: 10px; }
+.r-tab {
+    flex: 1; padding: 8px 4px; background: #333; color: white;
+    border: 3px solid #000; border-radius: 8px; cursor: pointer; font-weight: bold;
+    font-size: 11px; white-space: nowrap; text-align: center;
+}
+.r-tab.active { background: #4CAF50; }
+
+.weapon-grid {
+    flex: 1; display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 10px; overflow-y: auto; padding-right: 5px; touch-action: pan-y;
+}
+.w-slot {
+    background: #2a2a2d; border: 3px solid #111; border-radius: 10px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; height: 100px; position: relative; transition: transform 0.1s;
+}
+.w-slot:hover { transform: scale(1.05); border-color: #4CAF50; }
+.w-slot img { width: 60px; height: 60px; object-fit: contain; }
+.w-slot span { font-size: 10px; margin-top: 5px; text-shadow: 1px 1px 0 #000; text-align: center; line-height: 1.2;}
+
+/* Hiệu ứng bóng đen cho đồ chưa mở khóa */
+.w-slot.locked img { filter: brightness(0) invert(0.3); opacity: 0.5; }
+.w-slot.locked { border-color: #111 !important; cursor: not-allowed; }
+.w-slot.locked span { color: #555; }
+
+/* Thanh tiến độ */
+.progress-section { margin-top: 15px; display: flex; align-items: center; gap: 10px; }
+.progress-bar-bg {
+    flex: 1; height: 30px; background: #111; border: 3px solid #000;
+    border-radius: 15px; overflow: hidden; position: relative;
+}
+.progress-bar-fill {
+    height: 100%; background: #00bcd4; width: 0%;
+    display: flex; align-items: center; justify-content: center;
+    white-space: nowrap; color: white; text-shadow: 1px 1px 0 #000;
+}
+
+/* Cột Phải */
+.index-right {
+    flex: 1; display: flex; flex-direction: column; padding: 15px;
+    background: #222225;
+}
+.details-panel { flex: 1; display: flex; flex-direction: column; align-items: center; }
+.details-panel img { width: 120px; height: 120px; margin-bottom: 15px; filter: drop-shadow(0 0 20px rgba(255,255,255,0.4)); }
+.details-panel h3 { margin: 0 0 5px 0; font-size: 22px; text-align: center; }
+.stats-row { display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: #ffeb3b; width: 100%; align-items: center; }
+.lore-text { margin-top: 20px; font-size: 14px; color: #ccc; text-align: center; font-family: 'Segoe UI', sans-serif; line-height: 1.4; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;}
+.item-icon-large { font-size: 80px; text-shadow: 0 0 20px rgba(255,255,255,0.5); margin-bottom: 15px; }
+
+/* Nút Nhận Thưởng */
+.reward-panel { margin-top: auto; border-top: 3px solid #111; padding-top: 10px; text-align: center; }
+.reward-items { display: flex; justify-content: center; gap: 15px; margin-bottom: 10px; }
+.reward-box { background: #333; border: 2px solid #000; padding: 5px 10px; border-radius: 5px; display: flex; align-items: center; gap: 5px; }
+.reward-box img { width: 20px; height: 20px; }
+.claim-btn {
+    width: 100%; padding: 15px; font-size: 20px; font-weight: bold; color: white;
+    background: linear-gradient(to bottom, #4CAF50, #2E7D32);
+    border: 3px solid #000; border-radius: 10px; cursor: pointer;
+}
+.claim-btn.disabled {
+    background: #555; color: #888; cursor: not-allowed;
+}
+
+/* --- TỐI ƯU HÓA MOBILE CHO BẢNG MỤC LỤC --- */
+@media (max-width: 950px), (max-height: 500px) {
+    /* Thu nhỏ nút Index và đưa lên phía trên các nút thao tác nhanh */
+    .ui-icon-btn { top: auto; bottom: 200px; transform: scale(0.65); transform-origin: right bottom; right: 20px; }
+    
+    /* Thu nhỏ toàn bộ khung Mục Lục */
+    .index-container { width: 95%; height: 95%; border-width: 3px; border-radius: 8px; }
+    .index-header { padding: 6px 12px; border-bottom-width: 2px; }
+    .index-header h2 { font-size: 18px; }
+    
+    .index-left { padding: 10px; border-right-width: 2px; }
+    .rarity-tabs { gap: 5px; margin-bottom: 5px; }
+    .r-tab { padding: 6px 2px; font-size: 9px; border-width: 2px; }
+    
+    /* Tăng lên 5 cột để tận dụng chiều ngang của điện thoại (Landscape) */
+    .weapon-grid { grid-template-columns: repeat(5, 1fr); gap: 5px; padding-right: 3px; }
+    .w-slot { height: 65px; border-width: 2px; border-radius: 6px; }
+    .w-slot img { width: 30px; height: 30px; }
+    .w-slot span { font-size: 8px; margin-top: 3px; }
+    .w-slot.locked { border-width: 2px !important; }
+    
+    .progress-section { margin-top: 8px; font-size: 11px; }
+    .progress-bar-bg { height: 18px; border-width: 2px; border-radius: 9px; }
+    .progress-bar-fill { font-size: 10px; }
+    
+    .index-right { padding: 10px; }
+    .details-panel img { width: 70px; height: 70px; margin-bottom: 8px; }
+    .item-icon-large { font-size: 45px; margin-bottom: 8px; }
+    .details-panel h3 { font-size: 16px; margin-bottom: 4px; }
+    .stats-row { font-size: 11px; gap: 3px; }
+    .lore-text { font-size: 10px; margin-top: 8px; padding: 5px; border-radius: 6px; }
+    
+    .reward-panel { padding-top: 8px; border-top-width: 2px; }
+    .reward-panel h3 { font-size: 14px; margin-bottom: 4px; }
+    #index-reward-desc { font-size: 10px !important; margin-bottom: 6px !important; line-height: 1.3; }
+    .claim-btn { padding: 8px; font-size: 14px; border-width: 2px; border-radius: 8px; }
+}

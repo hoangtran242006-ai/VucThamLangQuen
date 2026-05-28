@@ -18,6 +18,7 @@ import { ChatSystem } from './chat.js';
 import { AlchemySystem } from './alchemy.js';
 import { AudioManager } from './audio.js';
 import { SkillManager } from './skills.js';
+import { IndexSystem } from './indexSystem.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -100,6 +101,29 @@ window.closeMailbox = () => {
     const scr = document.getElementById('mailbox-screen');
     if (scr) scr.style.display = 'none';
     gameState = 'MENU';
+};
+
+// --- HỆ THỐNG MỤC LỤC (INDEX) ---
+window.openIndex = () => {
+    if (gameState !== 'MENU' && gameState !== 'PLAYING') return;
+    AudioManager.play('click');
+    if (gameState === 'PLAYING') {
+        gameState = 'INDEX';
+        document.body.classList.remove('show-joystick');
+    }
+    const overlay = document.getElementById('index-modal') || document.querySelector('.modal-overlay');
+    if (overlay) overlay.classList.remove('hidden');
+    IndexSystem.open();
+};
+
+window.closeIndex = () => {
+    AudioManager.play('click');
+    const overlay = document.getElementById('index-modal') || document.querySelector('.modal-overlay');
+    if (overlay) overlay.classList.add('hidden');
+    if (gameState === 'INDEX') {
+        gameState = 'PLAYING';
+        document.body.classList.add('show-joystick');
+    }
 };
 
 bindClick('pause-fullscreen-btn', () => {
@@ -394,6 +418,7 @@ UI.init({
         AudioManager.play('chest');
         c.opened = true;
         Network.markChestOpened(c.id);
+        IndexSystem.unlock(c.weapon.baseName, c.weapon.rarity.id); // Ghi nhận vào mục lục
         if (player.inventory.length < 27) player.inventory.push(c.weapon);
         if (equip) player.equipItem(c.weapon);
         player.maxHp += 10; player.hp = Math.min(player.maxHp, player.hp + 20);
@@ -491,6 +516,7 @@ function saveGameData() {
     try { localStorage.setItem('vucthamlangquen_best_wave', bestWave); localStorage.setItem('vucthamlangquen_gold', player.gold); localStorage.setItem('vucthamlangquen_souls', player.souls); localStorage.setItem('vucthamlangquen_race', player.raceId); } catch (e) {}
     clearTimeout(window.cloudSyncTimeout); window.cloudSyncTimeout = setTimeout(() => { syncDataToCloud({ bestWave, gold: player.gold, souls: player.souls, raceId: player.raceId, ownedSkins: SkinManager.ownedSkins, equippedSkin: SkinManager.equippedSkin, lastUpdated: new Date().toISOString() }); }, 2000);
 }
+window.saveGameData = saveGameData;
 
 function setHudVisibility(visible) {
     if (visible && gameState === 'PLAYING') document.body.classList.add('show-joystick'); else document.body.classList.remove('show-joystick');
@@ -588,7 +614,9 @@ function restartGame(startLoop = true, mode = 'solo') {
     player.hasMagneticField = false;
     player.canBlink = false;
     player.hasSingularity = false;
-    player.damageMultiplier = 1;
+    player.bonusMaxHp = 0;
+    player.bonusSpeedMult = 1;
+    player.bonusDamageMult = 0;
     player.hasLifesteal = false;
     player.hasThorns = false;
     player.dodgeChance = 0;
@@ -599,6 +627,7 @@ function restartGame(startLoop = true, mode = 'solo') {
     player.setSkin(SkinManager.getEquippedSkin(), SkinManager.skinImages); 
     const pt = document.getElementById('player-portrait'); if (pt) pt.style.backgroundColor = player.color;
     player.currentWeapon = new Weapon({ name:'Cung Gỗ Tập Sự', baseName:'Cung Gỗ', type:'ranged', rarity:RARITY.COMMON, baseDmg:10, baseSpeed:350, fireRate:400, range:300, color:'#f1c40f', effectType:'standard', imgSrc: 'img/weapon/wodden-bow.png' }); player.inventory.push(player.currentWeapon); 
+    IndexSystem.unlock(player.currentWeapon.baseName, player.currentWeapon.rarity.id); // Mở khóa Cung gỗ
     
     Network.start(gameMode !== 'solo', gameMode);
     if (Network.isMultiplayer) { checkAndPromptPlayerName(); RNG.beginSync(0); }
@@ -848,6 +877,7 @@ function gameLoop(time) {
     if (gameState === 'PAUSED') { if (inputManager.isActionJustPressed('escape')) togglePause(); inputManager.update(); if (loopId) cancelAnimationFrame(loopId); loopId = requestAnimationFrame(gameLoop); return; }
     if (gameState === 'INVENTORY') { if (inputManager.isActionJustPressed('inventory') || inputManager.isActionJustPressed('escape')) closeInventory(); inputManager.update(); if (loopId) cancelAnimationFrame(loopId); loopId = requestAnimationFrame(gameLoop); return; }
     if (gameState === 'SHOP') { if (inputManager.isActionJustPressed('interact') || inputManager.isActionJustPressed('inventory') || inputManager.isActionJustPressed('escape')) closeShop(); inputManager.update(); if (loopId) cancelAnimationFrame(loopId); loopId = requestAnimationFrame(gameLoop); return; }
+    if (gameState === 'INDEX') { if (inputManager.isActionJustPressed('escape')) window.closeIndex(); inputManager.update(); if (loopId) cancelAnimationFrame(loopId); loopId = requestAnimationFrame(gameLoop); return; }
     if (gameState === 'CHEST') { if (inputManager.isActionJustPressed('interact') || inputManager.isActionJustPressed('inventory') || inputManager.isActionJustPressed('escape')) closeChest(); inputManager.update(); if (loopId) cancelAnimationFrame(loopId); loopId = requestAnimationFrame(gameLoop); return; }
     if (gameState === 'ALCHEMY') { if (inputManager.isActionJustPressed('interact') || inputManager.isActionJustPressed('inventory') || inputManager.isActionJustPressed('escape')) AlchemySystem.close(); inputManager.update(); if (loopId) cancelAnimationFrame(loopId); loopId = requestAnimationFrame(gameLoop); return; }
     if (gameState === 'SKILL_SELECT') { inputManager.update(); if (loopId) cancelAnimationFrame(loopId); loopId = requestAnimationFrame(gameLoop); return; }
@@ -1133,8 +1163,19 @@ function gameLoop(time) {
             for (const e of enemies) {
                 if (e.isDead || e.isAlly) continue;
                 if (Math.hypot(p.x-(e.x+e.width/2), p.y-(e.y+e.height/2)) < p.radius + Math.max(e.width, e.height)/2) {
-                    if (p.hitEnemies && p.hitEnemies.has(e)) continue; e.takeDamage(p.damage); VFX.spawnFloatingText(e.x+e.width/2, e.y, p.damage); if (p.hitEnemies) p.hitEnemies.add(e); p.pierceCount--; if (p.pierceCount <= 0) p.markedForDeletion = true;
-                    if (p.effectType === 'lightning' && !p.spawnedImpact) { VFX.spawnLightningChainEffect(e, p.damage*0.55, enemies); p.spawnedImpact = true; } else if (p.effectType === 'fire') e.applyStatusEffect('fire', 3000, Math.max(1, Math.floor(p.damage*0.3))); else if (p.effectType === 'ice') e.applyStatusEffect('ice', 2000, 0.4);
+                    if (p.hitEnemies && p.hitEnemies.has(e)) continue; 
+                    
+                    let finalDmg = p.damage;
+                    let isCrit = false;
+                    if (Math.random() < player.critRate) {
+                        finalDmg = Math.floor(finalDmg * player.critDamage);
+                        isCrit = true;
+                    }
+                    
+                    e.takeDamage(finalDmg); 
+                    VFX.spawnFloatingText(e.x+e.width/2, e.y, isCrit ? finalDmg + '!' : finalDmg, isCrit ? '#f1c40f' : '#ffffff'); 
+                    if (p.hitEnemies) p.hitEnemies.add(e); p.pierceCount--; if (p.pierceCount <= 0) p.markedForDeletion = true;
+                    if (p.effectType === 'lightning' && !p.spawnedImpact) { VFX.spawnLightningChainEffect(e, finalDmg*0.55, enemies); p.spawnedImpact = true; } else if (p.effectType === 'fire') e.applyStatusEffect('fire', 3000, Math.max(1, Math.floor(finalDmg*0.3))); else if (p.effectType === 'ice') e.applyStatusEffect('ice', 2000, 0.4);
                     if (player.hasSingularity && player.singularityTimer <= 0) {
                         player.singularityTimer = player.singularityMaxCooldown;
                         VFX.spawnImpactEffect(e.x + e.width/2, e.y + e.height/2, 'singularity');
@@ -1151,7 +1192,17 @@ function gameLoop(time) {
                 for (const op of Object.values(Network.otherPlayers)) {
                     if (op.isDead) continue;
                     if (Math.hypot(p.x-(op.x+op.width/2), p.y-(op.y+op.height/2)) < p.radius + Math.max(op.width, op.height)/2) {
-                        if (p.hitEnemies && p.hitEnemies.has(op)) continue; VFX.spawnFloatingText(op.x+op.width/2, op.y, p.damage, '#e74c3c'); if (p.hitEnemies) p.hitEnemies.add(op); p.pierceCount--; if (p.pierceCount <= 0) p.markedForDeletion = true;
+                        if (p.hitEnemies && p.hitEnemies.has(op)) continue; 
+                        
+                        let finalDmg = p.damage;
+                        let isCrit = false;
+                        if (Math.random() < player.critRate) {
+                            finalDmg = Math.floor(finalDmg * player.critDamage);
+                            isCrit = true;
+                        }
+                        
+                        VFX.spawnFloatingText(op.x+op.width/2, op.y, isCrit ? finalDmg + '!' : finalDmg, isCrit ? '#e67e22' : '#e74c3c'); 
+                        if (p.hitEnemies) p.hitEnemies.add(op); p.pierceCount--; if (p.pierceCount <= 0) p.markedForDeletion = true;
                         if (p.markedForDeletion) break;
                     }
                 }

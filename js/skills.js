@@ -90,8 +90,8 @@ export const SKILL_POOL = [
         icon: '❤️', // Có thể thay bằng đường dẫn ảnh sau này
         repeatable: true,
         apply: (player) => {
-            player.maxHp += 20;
-            player.hp += 20;
+            player.bonusMaxHp = (player.bonusMaxHp || 0) + 20;
+            player.hp += 20; // Hồi luôn 20 máu khi cộng max HP
         }
     },
     {
@@ -101,7 +101,7 @@ export const SKILL_POOL = [
         icon: '👢',
         repeatable: true,
         apply: (player) => {
-            player.speed *= 1.1;
+            player.bonusSpeedMult = (player.bonusSpeedMult || 1) + 0.1; // Cộng dồn 10%
         }
     },
     {
@@ -111,7 +111,7 @@ export const SKILL_POOL = [
         icon: '⚔️',
         repeatable: true,
         apply: (player) => {
-            player.damageMultiplier = (player.damageMultiplier || 1) + 0.15;
+            player.bonusDamageMult = (player.bonusDamageMult || 0) + 0.15; // Cộng dồn 15% sát thương
         }
     },
     {

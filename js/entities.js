@@ -5,6 +5,7 @@ import { SpriteRenderer } from './sprite.js';
 import { AudioManager } from './audio.js';
 import { RaceManager } from './races.js';
 import * as VFX from './vfx.js';
+import { IndexSystem } from './indexSystem.js';
 
 export class Entity {
     constructor(x, y, width, height, maxHp, speed) {
@@ -67,6 +68,12 @@ export class Player extends Entity {
         this.animTimer = 0; // Bộ đếm thời gian lật frame
         this.animState = 'idle';
         this.isAttackingAnim = false;
+        this.critRate = 0.05; // Mặc định 5%
+        this.critDamage = 1.5; // Mặc định 150%
+        this.luck = 0; // Mặc định 0
+        this.bonusMaxHp = 0; // Kỹ năng cộng Máu
+        this.bonusSpeedMult = 1; // Kỹ năng cộng Tốc độ (Hệ số)
+        this.bonusDamageMult = 0; // Kỹ năng cộng Sát thương (Hệ số)
     }
 
     recalculateStats() {
@@ -80,7 +87,18 @@ export class Player extends Entity {
         baseMaxHp += race.stats.hp;
         baseMaxShield += race.stats.shield;
         baseSpeed += race.stats.speed;
-        this.damageMult = race.stats.dmgMult * (this.damageMultiplier || 1);
+        
+        // --- HỆ THỐNG TÍNH BUFF CHUẨN XÁC ---
+        // 1. Chỉ số Chí Mạng (Gốc + Sổ Mục Lục)
+        this.critRate = 0.05 + (IndexSystem.bonusStats ? IndexSystem.bonusStats.critRate : 0);
+        this.critDamage = 1.5 + (IndexSystem.bonusStats ? IndexSystem.bonusStats.critDamage : 0);
+        
+        // 2. Tổng Sát Thương (Gốc của Tộc + Kỹ năng + Mục lục)
+        let skillDmg = this.bonusDamageMult || 0;
+        let indexDmg = IndexSystem.bonusStats ? IndexSystem.bonusStats.baseDamageMult : 0;
+        this.damageMult = race.stats.dmgMult + skillDmg + indexDmg;
+        
+        if (isHoang) this.damageMult *= 2; // Hoàng Thức Tỉnh được x2 tổng sát thương
 
         let bonusHp = 0, bonusShield = 0, bonusSpeed = 0;
         for (let key in this.equipment) {
@@ -91,6 +109,11 @@ export class Player extends Entity {
                 if (item.speedBonus) bonusSpeed += item.speedBonus * item.rarity.statMultiplier;
             }
         }
+        
+        // 3. Tính toán Máu, Giáp, Tốc chạy (Gộp với Kỹ Năng)
+        let finalMaxHp = baseMaxHp + bonusHp + (this.bonusMaxHp || 0);
+        let finalMaxShield = baseMaxShield + bonusShield;
+        let finalSpeed = (baseSpeed + bonusSpeed) * (this.bonusSpeedMult || 1);
         
         this.runes = [this.equipment.rune1, this.equipment.rune2, this.equipment.rune3].filter(Boolean);
         let runeHpMult = 1; let runeSpeedMult = 1; this.damageTakenMult = 1;
@@ -103,7 +126,7 @@ export class Player extends Entity {
             if (this.runes.some(r => r.runeId === 'parasite')) { bonusShield += baseMaxHp; }
         }
 
-        this.maxHp = Math.floor((baseMaxHp + bonusHp) * runeHpMult); this.maxShield = Math.floor(baseMaxShield + bonusShield); this.speed = Math.floor((baseSpeed + bonusSpeed) * runeSpeedMult);
+        this.maxHp = Math.floor(finalMaxHp * runeHpMult); this.maxShield = Math.floor(finalMaxShield); this.speed = Math.floor(finalSpeed * runeSpeedMult);
         if (this.hp > this.maxHp) this.hp = this.maxHp; if (this.shield > this.maxShield) this.shield = this.maxShield;
     }
 
@@ -353,7 +376,6 @@ export class Player extends Entity {
                     proj.maxRange = 50; 
                     proj.pierceCount = 999;
                     proj.speed = 800; 
-                    proj.damage *= 2; // Gấp đôi sát thương cho Hoàng
                 }
                 
                 gameProjectiles.push(proj);

@@ -1,6 +1,7 @@
 // js/alchemy.js
 import { AudioManager } from './audio.js';
 import { Weapon, RARITY } from './weapons.js';
+import { IndexSystem } from './indexSystem.js';
 
 export const AlchemySystem = {
     els: {},
@@ -122,6 +123,7 @@ export const AlchemySystem = {
             AudioManager.play('chest'); 
             this.slots.forEach(item => { const idx = this.playerRef.inventory.indexOf(item); if (idx > -1) this.playerRef.inventory.splice(idx, 1); });
             this.playerRef.inventory.push(upgraded);
+            IndexSystem.unlock(upgraded.baseName, upgraded.rarity.id);
             
             let iconHtml = upgraded.imgSrc 
                 ? `<img src="${upgraded.imgSrc}" style="width:48px; height:48px; object-fit:contain; filter:drop-shadow(0 0 15px ${upgraded.rarity.color}); transform:translateY(-8px);">` 

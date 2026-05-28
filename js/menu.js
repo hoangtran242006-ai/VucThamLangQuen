@@ -218,7 +218,7 @@ export class Menu {
 
             const sliderWidth = 300;
             const sliderX = CANVAS_WIDTH / 2 - sliderWidth / 2;
-            const sliderY = CANVAS_HEIGHT / 2 - 70;
+            const sliderY = CANVAS_HEIGHT / 2 - 60;
             
             if (inputManager.mouse.leftDown && mx >= sliderX - 30 && mx <= sliderX + sliderWidth + 30 && my >= sliderY - 40 && my <= sliderY + 40) {
                 let vol = (mx - sliderX) / sliderWidth;
@@ -229,7 +229,7 @@ export class Menu {
             }
 
             const muteBtnX = CANVAS_WIDTH / 2 - 140;
-            const btnY = CANVAS_HEIGHT / 2 - 20;
+            const btnY = CANVAS_HEIGHT / 2 - 10;
             if (mx >= muteBtnX - 10 && mx <= muteBtnX + 140 && my >= btnY - 10 && my <= btnY + 55) {
                 this.hoveredButton = 'mute';
                 if (inputManager.mouse.leftJustPressed) {
@@ -249,7 +249,7 @@ export class Menu {
             }
             
             const renameBtnX = CANVAS_WIDTH / 2 - 140;
-            const renameBtnY = CANVAS_HEIGHT / 2 + 40;
+            const renameBtnY = CANVAS_HEIGHT / 2 + 50;
             if (mx >= renameBtnX - 10 && mx <= renameBtnX + 290 && my >= renameBtnY - 10 && my <= renameBtnY + 55) {
                 this.hoveredButton = 'rename';
                 if (inputManager.mouse.leftJustPressed) {
@@ -258,7 +258,7 @@ export class Menu {
             }
 
             const fullscreenBtnX = CANVAS_WIDTH / 2 - 140;
-            const fullscreenBtnY = CANVAS_HEIGHT / 2 + 100;
+            const fullscreenBtnY = CANVAS_HEIGHT / 2 + 110;
             if (mx >= fullscreenBtnX - 10 && mx <= fullscreenBtnX + 290 && my >= fullscreenBtnY - 10 && my <= fullscreenBtnY + 55) {
                 this.hoveredButton = 'fullscreen';
                 if (inputManager.mouse.leftJustPressed) {
@@ -267,7 +267,7 @@ export class Menu {
             }
 
             const authBtnX = CANVAS_WIDTH / 2 - 140;
-            const authBtnY = CANVAS_HEIGHT / 2 + 160;
+            const authBtnY = CANVAS_HEIGHT / 2 + 170;
             if (mx >= authBtnX - 10 && mx <= authBtnX + 290 && my >= authBtnY - 10 && my <= authBtnY + 55) {
                 this.hoveredButton = 'auth';
                 if (inputManager.mouse.leftJustPressed) {
@@ -608,17 +608,40 @@ export class Menu {
             ctx.fillStyle = '#2c3e50';
             ctx.strokeStyle = '#3498db';
             ctx.lineWidth = 4;
-            ctx.beginPath(); ctx.roundRect(CANVAS_WIDTH/2 - 250, CANVAS_HEIGHT/2 - 220, 500, 460, 16); ctx.fill(); ctx.stroke();
+            // Tăng chiều cao bảng Cài đặt
+            ctx.beginPath(); ctx.roundRect(CANVAS_WIDTH/2 - 250, CANVAS_HEIGHT/2 - 260, 500, 520, 16); ctx.fill(); ctx.stroke();
 
             ctx.fillStyle = '#3498db'; ctx.font = 'bold 36px "Segoe UI"';
-            ctx.fillText('CÀI ĐẶT', CANVAS_WIDTH / 2, CANVAS_HEIGHT/2 - 160);
+            ctx.fillText('CÀI ĐẶT', CANVAS_WIDTH / 2, CANVAS_HEIGHT/2 - 210);
+
+            // Vẽ bảng hiển thị Tổng Chỉ số
+            const p = window.playerRef;
+            const critRate = p ? p.critRate * 100 : 5;
+            const critDmg = p ? p.critDamage * 100 : 150;
+            const dmgMult = p ? p.damageMult * 100 : 100;
+            const maxHp = p ? p.maxHp : 100;
+            const speed = p ? p.speed : 200;
+            const luck = p ? (p.luck || 0) : 0;
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+            ctx.beginPath(); ctx.roundRect(CANVAS_WIDTH/2 - 240, CANVAS_HEIGHT/2 - 175, 480, 70, 8); ctx.fill();
+            ctx.fillStyle = '#f1c40f'; ctx.font = 'bold 14px "Segoe UI"';
+            ctx.fillText(`🛡️ CHỈ SỐ TỔNG HỢP (TỘC, KỸ NĂNG, MỤC LỤC) 🛡️`, CANVAS_WIDTH / 2, CANVAS_HEIGHT/2 - 158);
+            
+            ctx.fillStyle = '#ecf0f1'; ctx.font = '13px "Segoe UI"';
+            ctx.fillText(`Tỉ lệ Crit: ${critRate.toFixed(1)}%`, CANVAS_WIDTH / 2 - 140, CANVAS_HEIGHT/2 - 135);
+            ctx.fillText(`ST Crit: ${critDmg.toFixed(1)}%`, CANVAS_WIDTH / 2, CANVAS_HEIGHT/2 - 135);
+            ctx.fillText(`Sát Thương: ${dmgMult.toFixed(1)}%`, CANVAS_WIDTH / 2 + 140, CANVAS_HEIGHT/2 - 135);
+            ctx.fillText(`Máu Tối Đa: ${maxHp}`, CANVAS_WIDTH / 2 - 140, CANVAS_HEIGHT/2 - 115);
+            ctx.fillText(`Tốc Độ: ${Math.round(speed)}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT/2 - 115);
+            ctx.fillText(`May Mắn: ${luck}`, CANVAS_WIDTH / 2 + 140, CANVAS_HEIGHT/2 - 115);
 
             ctx.fillStyle = '#fff'; ctx.font = 'bold 20px "Segoe UI"';
-            ctx.fillText(`Âm lượng Nhạc nền: ${Math.round(this.bgmVolume * 100)}%`, CANVAS_WIDTH / 2, CANVAS_HEIGHT/2 - 110);
+            ctx.fillText(`Âm lượng Nhạc nền: ${Math.round(this.bgmVolume * 100)}%`, CANVAS_WIDTH / 2, CANVAS_HEIGHT/2 - 90);
             
             const sliderWidth = 300;
             const sliderX = CANVAS_WIDTH / 2 - sliderWidth / 2;
-            const sliderY = CANVAS_HEIGHT / 2 - 70;
+            const sliderY = CANVAS_HEIGHT / 2 - 60;
             
             ctx.fillStyle = '#1a252f'; ctx.beginPath(); ctx.roundRect(sliderX, sliderY, sliderWidth, 12, 6); ctx.fill();
             ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.roundRect(sliderX, sliderY, sliderWidth * this.bgmVolume, 12, 6); ctx.fill();
@@ -626,7 +649,7 @@ export class Menu {
             ctx.strokeStyle = '#f39c12'; ctx.lineWidth = 3; ctx.stroke();
 
             const muteBtnX = CANVAS_WIDTH / 2 - 140;
-            const btnY = CANVAS_HEIGHT / 2 - 20;
+            const btnY = CANVAS_HEIGHT / 2 - 10;
             const isMuteHovered = this.hoveredButton === 'mute';
             ctx.fillStyle = isMuteHovered ? '#34495e' : '#2c3e50';
             ctx.strokeStyle = this.isMusicMuted ? '#e74c3c' : '#2ecc71';
@@ -642,19 +665,19 @@ export class Menu {
             ctx.fillStyle = '#fff'; ctx.font = 'bold 16px "Segoe UI"'; ctx.fillText('▶ Phát / Đổi', nextBtnX + 65, btnY + 22.5);
 
             const renameBtnX = CANVAS_WIDTH / 2 - 140;
-            const renameBtnY = CANVAS_HEIGHT / 2 + 40;
+            const renameBtnY = CANVAS_HEIGHT / 2 + 50;
             const isRenameHovered = this.hoveredButton === 'rename';
             ctx.fillStyle = isRenameHovered ? '#d35400' : '#e67e22'; ctx.strokeStyle = '#f1c40f'; ctx.beginPath(); ctx.roundRect(renameBtnX, renameBtnY, 280, 45, 6); ctx.fill(); ctx.stroke();
             ctx.fillStyle = '#fff'; ctx.font = 'bold 16px "Segoe UI"'; ctx.fillText('✏️ Đổi Tên Hiệp Sĩ', CANVAS_WIDTH / 2, renameBtnY + 22.5);
 
             const fullscreenBtnX = CANVAS_WIDTH / 2 - 140;
-            const fullscreenBtnY = CANVAS_HEIGHT / 2 + 100;
+            const fullscreenBtnY = CANVAS_HEIGHT / 2 + 110;
             const isFullscreenHovered = this.hoveredButton === 'fullscreen';
             ctx.fillStyle = isFullscreenHovered ? '#27ae60' : '#2ecc71'; ctx.strokeStyle = '#f1c40f'; ctx.beginPath(); ctx.roundRect(fullscreenBtnX, fullscreenBtnY, 280, 45, 6); ctx.fill(); ctx.stroke();
             ctx.fillStyle = '#fff'; ctx.font = 'bold 16px "Segoe UI"'; ctx.fillText(document.fullscreenElement ? '🔳 Thu Nhỏ Màn Hình' : '🔲 Toàn Màn Hình', CANVAS_WIDTH / 2, fullscreenBtnY + 22.5);
 
             const authBtnX = CANVAS_WIDTH / 2 - 140;
-            const authBtnY = CANVAS_HEIGHT / 2 + 160;
+            const authBtnY = CANVAS_HEIGHT / 2 + 170;
             const isAuthHovered = this.hoveredButton === 'auth';
             ctx.fillStyle = isAuthHovered ? '#8e44ad' : '#9b59b6'; ctx.strokeStyle = '#f1c40f'; ctx.beginPath(); ctx.roundRect(authBtnX, authBtnY, 280, 45, 6); ctx.fill(); ctx.stroke();
             ctx.fillStyle = '#fff'; ctx.font = 'bold 16px "Segoe UI"'; 
@@ -663,7 +686,7 @@ export class Menu {
 
             ctx.fillStyle = '#f1c40f';
             ctx.font = 'italic 18px "Segoe UI"';
-            ctx.fillText(`🎵 Tình trạng: ${currentTrackName || 'Chưa rõ'}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 230);
+            ctx.fillText(`🎵 Tình trạng: ${currentTrackName || 'Chưa rõ'}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 235);
 
             ctx.restore();
         }
