@@ -186,7 +186,7 @@ export const IndexSystem = {
         if (!this.selectedItemKey || !rarityId) {
             btn.className = 'claim-btn disabled';
             btn.textContent = 'CHƯA CHỌN';
-            desc.innerHTML = `Vào Cài đặt để xem Tổng Buff.<br>Chọn một vật phẩm để nhận thưởng!`;
+            desc.innerHTML = `Chọn một vật phẩm đã mở khóa để nhận thưởng!`;
             return;
         }
 
@@ -201,9 +201,7 @@ export const IndexSystem = {
 
         const goldBonus = rarityId * 100;
         
-        desc.innerHTML = `Thưởng Mở Khóa:<br>
-        ${buffText} <br>
-        <span style="color:#f1c40f">+${goldBonus} Vàng 💰</span>`;
+        desc.innerHTML = `<span style="color:#fff">Thưởng:</span> ${buffText} <span style="color:#7f8c8d; margin: 0 5px;">|</span> <span style="color:#f1c40f">+${goldBonus} Vàng 💰</span>`;
 
         if (isClaimed) {
             btn.className = 'claim-btn disabled';

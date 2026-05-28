@@ -16,6 +16,26 @@ body {
     box-shadow: inset 0 0 100px rgba(0,0,0,0.9); /* Làm viền tối mờ đi ở các mép màn hình */
 }
 
+/* --- TÙY CHỈNH THANH CUỘN (SCROLLBAR DARK THEME) --- */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #57606f #1a1c20;
+}
+::-webkit-scrollbar {
+    width: 6px; height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #1a1c20;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+    background: #57606f;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #f1c40f;
+}
+
 /* --- MÀN HÌNH YÊU CẦU XOAY NGANG --- */
 #rotate-screen {
     position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -773,10 +793,10 @@ body.touch-device #interaction-prompt { display: none !important; } /* Ẩn ch�
 
 /* Cột Phải */
 .index-right {
-    flex: 1; display: flex; flex-direction: column; padding: 15px;
-    background: #222225;
+    flex: 1; display: flex; flex-direction: column; padding: 15px 15px 10px 15px;
+    background: #222225; min-height: 0;
 }
-.details-panel { flex: 1; display: flex; flex-direction: column; align-items: center; }
+.details-panel { flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; overflow-y: auto; touch-action: pan-y; min-height: 0; padding-right: 5px; margin-bottom: 10px; }
 .details-panel img { width: 120px; height: 120px; margin-bottom: 15px; filter: drop-shadow(0 0 20px rgba(255,255,255,0.4)); }
 .details-panel h3 { margin: 0 0 5px 0; font-size: 22px; text-align: center; }
 .stats-row { display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: #ffeb3b; width: 100%; align-items: center; }
@@ -784,14 +804,14 @@ body.touch-device #interaction-prompt { display: none !important; } /* Ẩn ch�
 .item-icon-large { font-size: 80px; text-shadow: 0 0 20px rgba(255,255,255,0.5); margin-bottom: 15px; }
 
 /* Nút Nhận Thưởng */
-.reward-panel { margin-top: auto; border-top: 3px solid #111; padding-top: 10px; text-align: center; }
+.reward-panel { flex: 0 0 auto; margin-top: auto; border-top: 3px solid #111; padding-top: 10px; text-align: center; }
 .reward-items { display: flex; justify-content: center; gap: 15px; margin-bottom: 10px; }
 .reward-box { background: #333; border: 2px solid #000; padding: 5px 10px; border-radius: 5px; display: flex; align-items: center; gap: 5px; }
 .reward-box img { width: 20px; height: 20px; }
 .claim-btn {
-    width: 100%; padding: 15px; font-size: 20px; font-weight: bold; color: white;
+    width: 100%; padding: 12px; font-size: 18px; font-weight: bold; color: white;
     background: linear-gradient(to bottom, #4CAF50, #2E7D32);
-    border: 3px solid #000; border-radius: 10px; cursor: pointer;
+    border: 3px solid #000; border-radius: 8px; cursor: pointer;
 }
 .claim-btn.disabled {
     background: #555; color: #888; cursor: not-allowed;
@@ -829,8 +849,8 @@ body.touch-device #interaction-prompt { display: none !important; } /* Ẩn ch�
     .stats-row { font-size: 11px; gap: 3px; }
     .lore-text { font-size: 10px; margin-top: 8px; padding: 5px; border-radius: 6px; }
     
-    .reward-panel { padding-top: 8px; border-top-width: 2px; }
+    .reward-panel { padding-top: 6px; border-top-width: 2px; }
     .reward-panel h3 { font-size: 14px; margin-bottom: 4px; }
-    #index-reward-desc { font-size: 10px !important; margin-bottom: 6px !important; line-height: 1.3; }
-    .claim-btn { padding: 8px; font-size: 14px; border-width: 2px; border-radius: 8px; }
+    #index-reward-desc { font-size: 11px !important; margin-bottom: 6px !important; line-height: 1.3; }
+    .claim-btn { padding: 8px; font-size: 14px; border-width: 2px; border-radius: 6px; }
 }
