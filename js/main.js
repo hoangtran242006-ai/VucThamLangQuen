@@ -326,10 +326,15 @@ bindClick('btn-logout', () => {
         localStorage.removeItem('vucthamlangquen_race');
         localStorage.removeItem('vucthamlangquen_owned_skins');
         localStorage.removeItem('vucthamlangquen_equipped_skin');
+        localStorage.removeItem('vucthamlangquen_index_unlocked');
+        localStorage.removeItem('vucthamlangquen_index_claimed');
         player.gold = 0; player.souls = 0; bestWave = 0; 
         player.raceId = 'human';
         SkinManager.ownedSkins = ['hoang', 'bocchi'];
         SkinManager.equippedSkin = 'hoang';
+        IndexSystem.unlockedItems = [];
+        IndexSystem.claimedItems = [];
+        IndexSystem.calculateBonuses();
         player.setSkin(SkinManager.getEquippedSkin(), SkinManager.skinImages);
         loadSaveData(); 
         UI.updateHud(player); 
@@ -504,6 +509,7 @@ async function loadSaveData() {
         if (cloudData.raceId) player.raceId = cloudData.raceId;
         if (cloudData.ownedSkins) SkinManager.ownedSkins = cloudData.ownedSkins;
         if (cloudData.equippedSkin) SkinManager.equippedSkin = cloudData.equippedSkin;
+        if (cloudData.indexData) IndexSystem.setIndexData(cloudData.indexData);
         SkinManager.saveSkinData();
         player.recalculateStats();
         try { localStorage.setItem('vucthamlangquen_best_wave', bestWave); localStorage.setItem('vucthamlangquen_gold', player.gold); localStorage.setItem('vucthamlangquen_souls', player.souls); localStorage.setItem('vucthamlangquen_race', player.raceId); } catch (e) {}
@@ -514,7 +520,8 @@ loadSaveData();
 
 function saveGameData() {
     try { localStorage.setItem('vucthamlangquen_best_wave', bestWave); localStorage.setItem('vucthamlangquen_gold', player.gold); localStorage.setItem('vucthamlangquen_souls', player.souls); localStorage.setItem('vucthamlangquen_race', player.raceId); } catch (e) {}
-    clearTimeout(window.cloudSyncTimeout); window.cloudSyncTimeout = setTimeout(() => { syncDataToCloud({ bestWave, gold: player.gold, souls: player.souls, raceId: player.raceId, ownedSkins: SkinManager.ownedSkins, equippedSkin: SkinManager.equippedSkin, lastUpdated: new Date().toISOString() }); }, 2000);
+    const indexData = { unlocked: IndexSystem.unlockedItems, claimed: IndexSystem.claimedItems };
+    clearTimeout(window.cloudSyncTimeout); window.cloudSyncTimeout = setTimeout(() => { syncDataToCloud({ bestWave, gold: player.gold, souls: player.souls, raceId: player.raceId, ownedSkins: SkinManager.ownedSkins, equippedSkin: SkinManager.equippedSkin, indexData: indexData, lastUpdated: new Date().toISOString() }); }, 2000);
 }
 window.saveGameData = saveGameData;
 

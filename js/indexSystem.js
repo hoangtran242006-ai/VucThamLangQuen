@@ -28,6 +28,17 @@ export const IndexSystem = {
     save() {
         localStorage.setItem('vucthamlangquen_index_unlocked', JSON.stringify(this.unlockedItems));
         localStorage.setItem('vucthamlangquen_index_claimed', JSON.stringify(this.claimedItems));
+        // Tự động gọi lệnh lưu đám mây
+        if (window.saveGameData) window.saveGameData();
+    },
+
+    setIndexData(data) {
+        if (data) {
+            if (data.unlocked) this.unlockedItems = data.unlocked;
+            if (data.claimed) this.claimedItems = data.claimed;
+            this.calculateBonuses();
+            this.save();
+        }
     },
 
     getBuffTypeForWeapon(baseName) {

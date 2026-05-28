@@ -139,8 +139,8 @@ app.post('/api/save', async (req, res) => {
     try {
         await db.query(`
             UPDATE players 
-            SET best_wave = $1, gold = $2, souls = $3, race_id = $4, owned_skins = $5, equipped_skin = $6, mailbox = $7, last_updated = NOW()
-            WHERE id = $8
+            SET best_wave = $1, gold = $2, souls = $3, race_id = $4, owned_skins = $5, equipped_skin = $6, mailbox = $7, index_data = $8, last_updated = NOW()
+            WHERE id = $9
         `, [
             data.bestWave || 1, 
             data.gold || 0, 
@@ -149,6 +149,7 @@ app.post('/api/save', async (req, res) => {
             JSON.stringify(data.ownedSkins || []), 
             data.equippedSkin || 'blue',
             JSON.stringify(data.mailbox || []), 
+            JSON.stringify(data.indexData || {}),
             id
         ]);
 
@@ -179,7 +180,8 @@ app.get('/api/load/:id', async (req, res) => {
             raceId: p.race_id,
             ownedSkins: p.owned_skins,
             equippedSkin: p.equipped_skin,
-            mailbox: p.mailbox
+            mailbox: p.mailbox,
+            indexData: p.index_data
         });
     } catch (error) {
         console.error("Lỗi tải dữ liệu:", error);
