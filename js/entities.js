@@ -112,8 +112,9 @@ export class Player extends Entity {
         
         // 3. Tính toán Máu, Giáp, Tốc chạy (Gộp với Kỹ Năng)
         let finalMaxHp = baseMaxHp + bonusHp + (this.bonusMaxHp || 0);
-        let finalMaxShield = baseMaxShield + bonusShield;
+        let finalMaxShield = baseMaxShield + bonusShield + (this.bonusMaxShield || 0);
         let finalSpeed = (baseSpeed + bonusSpeed) * (this.bonusSpeedMult || 1);
+        this.attackSpeedMult = 1 + (this.bonusAttackSpeedMult || 0);
         
         this.runes = [this.equipment.rune1, this.equipment.rune2, this.equipment.rune3].filter(Boolean);
         let runeHpMult = 1; let runeSpeedMult = 1; this.damageTakenMult = 1;
@@ -166,7 +167,12 @@ export class Player extends Entity {
         return (this.y + this.height / 2) - (drawHeight / 2);
     }
 
-    gainExp(amount) { this.exp += amount * (this.expMultiplier || 1); if (this.exp >= this.expToNextLevel) this.levelUp(); }
+    gainExp(amount) { 
+        this.exp += amount * (this.expMultiplier || 1); 
+        while (this.exp >= this.expToNextLevel) {
+            this.levelUp(); 
+        }
+    }
 
     levelUp() {
         this.level++; this.exp -= this.expToNextLevel; this.expToNextLevel = Math.floor(this.expToNextLevel * 1.5);
@@ -229,7 +235,7 @@ export class Player extends Entity {
         }
     }
 
-    update(deltaTime, inputManager, map, camera, gameProjectiles) {
+    update(deltaTime, inputManager, map, camera, gameProjectiles, enemiesArray) {
         if (this.stunTimer > 0) {
             this.stunTimer -= deltaTime;
             this.isMoving = false;
@@ -326,6 +332,52 @@ export class Player extends Entity {
             }
         }
 
+        // Tinh linh hỗ trợ
+        if (this.hasFairy) {
+            if (this.fairyX === undefined) this.fairyX = this.x + this.width / 2;
+            if (this.fairyY === undefined) this.fairyY = this.y + this.height / 2;
+
+            // Hướng sau lưng
+            let backX = -this.facing.x;
+            let backY = -this.facing.y;
+            
+            let targetX = this.x + this.width / 2 + backX * 35;
+            let targetY = this.y + this.height / 2 + backY * 35 - 10; // Bay lệch lên cao một chút
+
+            // Lerp mượt mà
+            this.fairyX += (targetX - this.fairyX) * 0.08;
+            this.fairyY += (targetY - this.fairyY) * 0.08;
+            
+            if (this.fairyShootTimer === undefined) this.fairyShootTimer = 0;
+            this.fairyShootTimer -= deltaTime;
+            
+            if (this.fairyShootTimer <= 0 && enemiesArray && enemiesArray.length > 0) {
+                let target = null;
+                let minDist = 400; // Tầm bắn của tinh linh
+                for (let e of enemiesArray) {
+                    if (!e.isDead && !e.isAlly) {
+                        let dist = Math.hypot(e.x + e.width/2 - this.fairyX, e.y + e.height/2 - this.fairyY);
+                        if (dist < minDist) {
+                            minDist = dist;
+                            target = e;
+                        }
+                    }
+                }
+                
+                if (target) {
+                    this.fairyShootTimer = 1500; // Bắn chậm mỗi 1.5s
+                    
+                    let angle = Math.atan2(target.y + target.height/2 - this.fairyY, target.x + target.width/2 - this.fairyX);
+                    
+                    let fairyWeapon = new Weapon({ name: 'Đạn Tinh Linh', type: 'magic', rarity: RARITY.COMMON, baseDmg: 5 + (this.level || 1), baseSpeed: 300, fireRate: 1500, range: 400, color: '#a29bfe', effectType: 'standard' });
+                    let proj = new Projectile(this.fairyX, this.fairyY, Math.cos(angle), Math.sin(angle), fairyWeapon, false);
+                    proj.damage = fairyWeapon.damage;
+                    proj.radius = 4;
+                    if (gameProjectiles) gameProjectiles.push(proj);
+                }
+            }
+        }
+
         if (this.isMoving) {
             const moveX = moveVec.x * this.speed * (deltaTime / 1000);
             const moveY = moveVec.y * this.speed * (deltaTime / 1000);
@@ -356,7 +408,8 @@ export class Player extends Entity {
     fireWeapon(gameProjectiles, currentTime, isEnemy = false) {
         if (this.skin && this.skin.id === 'skeleton_mage') return;
         if (!this.currentWeapon) return;
-        if ((currentTime - (this.currentWeapon.lastFiredTime || 0)) >= this.currentWeapon.fireRate) {
+        const effectiveFireRate = this.currentWeapon.fireRate / (this.attackSpeedMult || 1);
+        if ((currentTime - (this.currentWeapon.lastFiredTime || 0)) >= effectiveFireRate) {
             const count = this.currentWeapon.projectilesPerShot || 1;
             const spread = this.currentWeapon.spreadAngle || 0;
             const baseAngle = Math.atan2(this.facing.y, this.facing.x);
@@ -769,6 +822,28 @@ export class Player extends Entity {
             ctx.fillStyle = '#ffdfc4'; ctx.beginPath(); ctx.roundRect(this.x + 4, this.y + breath + 2, 16, 12, 4); ctx.fill();
             ctx.fillStyle = '#2c3e50'; ctx.fillRect(this.x + 7 + this.facing.x * 2.5, this.y + breath + 5 + this.facing.y * 2.5, 3, 5); ctx.fillRect(this.x + 14 + this.facing.x * 2.5, this.y + breath + 5 + this.facing.y * 2.5, 3, 5);
             ctx.fillStyle = '#ffdfc4'; ctx.beginPath(); ctx.arc(this.x + 4, this.y + 16 + breath, 3.5, 0, Math.PI * 2); ctx.fill();
+        }
+
+        if (this.hasFairy) {
+            ctx.save();
+            let fx = this.fairyX !== undefined ? this.fairyX : this.x + this.width/2;
+            let fy = this.fairyY !== undefined ? this.fairyY : this.y + this.height/2;
+            const time = performance.now();
+            const wingFlap = Math.sin(time * 0.02) * 4;
+            const bobbing = Math.sin(time * 0.005) * 3;
+            
+            fy += bobbing; // Tinh linh nhấp nhô nhẹ
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            // Math.max để chống crash game khi bán kính cánh rơi xuống số âm
+            ctx.beginPath(); ctx.ellipse(fx - 4, fy - 2, 6, Math.max(0.1, 3 + wingFlap), Math.PI / 4, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(fx + 4, fy - 2, 6, Math.max(0.1, 3 + wingFlap), -Math.PI / 4, 0, Math.PI * 2); ctx.fill();
+            ctx.shadowBlur = 10; ctx.shadowColor = '#a29bfe';
+            ctx.fillStyle = '#a29bfe';
+            ctx.beginPath(); ctx.arc(fx, fy, 4, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath(); ctx.arc(fx, fy, 2, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
         }
 
         if (this.hasMagneticField) {

@@ -50,10 +50,11 @@ export const SKILL_POOL = [
     {
         id: 'vampiric_strike',
         name: 'Huyết Kiếm',
-        description: 'Đòn tấn công trúng đích có 10% tỷ lệ hồi 2 Máu.',
+        description: 'Đòn đánh có thêm 10% tỷ lệ hồi 2 Máu.',
         icon: '🦇',
+        repeatable: true,
         apply: (player) => {
-            player.hasLifesteal = true;
+            player.lifestealChance = (player.lifestealChance || 0) + 0.10;
         }
     },
     {
@@ -68,10 +69,11 @@ export const SKILL_POOL = [
     {
         id: 'evasion',
         name: 'Bóng Ma',
-        description: 'Có 15% tỷ lệ né tránh hoàn toàn sát thương nhận vào.',
+        description: 'Tăng 10% tỷ lệ né tránh sát thương.',
         icon: '👻',
+        repeatable: true,
         apply: (player) => {
-            player.dodgeChance = (player.dodgeChance || 0) + 0.15;
+            player.dodgeChance = (player.dodgeChance || 0) + 0.10;
         }
     },
     {
@@ -79,6 +81,7 @@ export const SKILL_POOL = [
         name: 'Học Giả',
         description: 'Tăng 25% lượng Kinh nghiệm nhận được.',
         icon: '📚',
+        repeatable: true,
         apply: (player) => {
             player.expMultiplier = (player.expMultiplier || 1) + 0.25;
         }
@@ -115,12 +118,42 @@ export const SKILL_POOL = [
         }
     },
     {
+        id: 'damage_boost_small',
+        name: 'Sắc Bén',
+        description: 'Tăng 7% sát thương.',
+        icon: '🗡️',
+        repeatable: true,
+        apply: (player) => {
+            player.bonusDamageMult = (player.bonusDamageMult || 0) + 0.07;
+        }
+    },
+    {
+        id: 'attack_speed_boost',
+        name: 'Cuồng Phong',
+        description: 'Tăng 5% tốc độ đánh.',
+        icon: '🏹',
+        repeatable: true,
+        apply: (player) => {
+            player.bonusAttackSpeedMult = (player.bonusAttackSpeedMult || 0) + 0.05;
+        }
+    },
+    {
+        id: 'fairy_companion',
+        name: 'Tinh Linh Hỗ Trợ',
+        description: 'Triệu hồi tinh linh theo sau bắn đạn ma thuật hỗ trợ.',
+        icon: '🧚',
+        apply: (player) => {
+            player.hasFairy = true;
+        }
+    },
+    {
         id: 'shield_boost',
         name: 'Khiên Phép',
-        description: 'Nhận thêm 30 Giáp ảo ngay lập tức.',
+        description: 'Tăng 30 Giáp ảo tối đa và hồi lại 30 Giáp.',
         icon: '🛡️',
         repeatable: true,
         apply: (player) => {
+            player.bonusMaxShield = (player.bonusMaxShield || 0) + 30;
             if(player.shield !== undefined) player.shield += 30;
         }
     },

@@ -151,7 +151,7 @@ bindClick('dev-btn-god', () => {
     if(btn) btn.style.background = window.isGodMode ? '#2ecc71' : '#e74c3c';
     UI.showLoot(window.isGodMode ? "BẬT BẤT TỬ" : "TẮT BẤT TỬ");
 });
-bindClick('dev-btn-wave', () => { enemies.forEach(e => e.hp = 0); waveClearTimer = 0; UI.showLoot("DỌN QUÁI THÀNH CÔNG"); });
+bindClick('dev-btn-wave', () => { enemies.forEach(e => { if(!e.isAlly) { e.hp = 0; e.die(); } }); waveClearTimer = 0; UI.showLoot("DỌN QUÁI THÀNH CÔNG"); });
 bindClick('dev-btn-wpn', () => {
     WEAPON_TYPES.forEach(baseConfig => {
         if (player.inventory.length >= 27) return;
@@ -622,13 +622,16 @@ function restartGame(startLoop = true, mode = 'solo') {
     player.canBlink = false;
     player.hasSingularity = false;
     player.bonusMaxHp = 0;
+    player.bonusMaxShield = 0;
     player.bonusSpeedMult = 1;
     player.bonusDamageMult = 0;
-    player.hasLifesteal = false;
+    player.bonusAttackSpeedMult = 0;
+    player.lifestealChance = 0;
     player.hasThorns = false;
     player.dodgeChance = 0;
     player.expMultiplier = 1;
     player.hasMeteor = false;
+    player.hasFairy = false;
     skillManager.acquiredSkills = [];
     
     player.setSkin(SkinManager.getEquippedSkin(), SkinManager.skinImages); 
@@ -894,7 +897,7 @@ function gameLoop(time) {
 
     gameMap.solidEntities = [alchemyTable, merchant];
 
-    player.update(dt, inputManager, gameMap, camera, projectiles);
+    player.update(dt, inputManager, gameMap, camera, projectiles, enemies);
     
     // Xử lý Cơ chế Triệu hồi Pháp Sư Xương
     if (player.wantsToSummon) {
@@ -1187,7 +1190,7 @@ function gameLoop(time) {
                         player.singularityTimer = player.singularityMaxCooldown;
                         VFX.spawnImpactEffect(e.x + e.width/2, e.y + e.height/2, 'singularity');
                     }
-                    if (player.hasLifesteal && Math.random() < 0.1) {
+                    if (player.lifestealChance && Math.random() < player.lifestealChance) {
                         player.hp = Math.min(player.maxHp, player.hp + 2);
                         VFX.spawnFloatingText(player.x + player.width/2, player.y, '+2', '#2ecc71');
                     }

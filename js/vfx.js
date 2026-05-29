@@ -18,9 +18,11 @@ export function clearAllVFX() {
 
 // --- TIỀN VÀNG ---
 export function spawnGoldCoins(x, y, amount) {
-    const numCoins = Math.min(8, Math.max(1, Math.floor(amount / 2)));
+    // Gom giá trị vàng vào số lượng hạt ít hơn để tránh rác màn hình
+    const numCoins = Math.min(4, Math.max(1, Math.floor(amount / 5)));
     const goldPerCoin = Math.ceil(amount / numCoins);
     for (let i = 0; i < numCoins; i++) {
+        if (goldCoins.length > 50) break; // Khóa an toàn chống tràn RAM
         const angle = Math.random() * Math.PI * 2;
         const speed = 100 + Math.random() * 150;
         goldCoins.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, value: goldPerCoin, radius: 4 });
@@ -50,16 +52,21 @@ export function updateGoldCoins(deltaTime, player, saveGameData) {
 }
 export function drawGoldCoins(ctx) {
     goldCoins.forEach(coin => {
-        ctx.save(); ctx.shadowBlur = 10; ctx.shadowColor = '#f39c12'; ctx.fillStyle = '#f1c40f';
+        // Giảm shadowBlur từ 10 xuống 5 để tối ưu hóa FPS
+        ctx.save(); ctx.shadowBlur = 5; ctx.shadowColor = '#f39c12'; ctx.fillStyle = '#f1c40f';
         ctx.beginPath(); ctx.arc(coin.x, coin.y, coin.radius, 0, Math.PI * 2); ctx.fill(); ctx.restore();
     });
 }
 
 // --- LINH HỒN ---
 export function spawnSoulDrops(x, y, amount) {
-    for (let i = 0; i < amount; i++) {
+    // Giới hạn hạt sinh ra và truyền lượng linh hồn vào từng hạt
+    const numSouls = Math.min(4, amount);
+    const soulPerDrop = Math.ceil(amount / numSouls);
+    for (let i = 0; i < numSouls; i++) {
+        if (soulDrops.length > 40) break;
         const angle = Math.random() * Math.PI * 2; const speed = 80 + Math.random() * 100;
-        soulDrops.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, radius: 4 + Math.random() * 2 });
+        soulDrops.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, radius: 4 + Math.random() * 2, value: soulPerDrop });
     }
 }
 export function updateSoulDrops(deltaTime, player, saveGameData) {
@@ -77,7 +84,7 @@ export function updateSoulDrops(deltaTime, player, saveGameData) {
         }
         soul.x += soul.vx * (deltaTime / 1000); soul.y += soul.vy * (deltaTime / 1000);
         if (dist < player.width / 2 + soul.radius) {
-            player.souls += 1;
+            player.souls += (soul.value || 1);
             AudioManager.play('coin');
             saveGameData();
             soulDrops.splice(i, 1);
@@ -86,7 +93,7 @@ export function updateSoulDrops(deltaTime, player, saveGameData) {
 }
 export function drawSoulDrops(ctx) {
     soulDrops.forEach(soul => {
-        ctx.save(); ctx.shadowBlur = 12; ctx.shadowColor = '#00d8d6'; ctx.fillStyle = '#00d8d6';
+        ctx.save(); ctx.shadowBlur = 6; ctx.shadowColor = '#00d8d6'; ctx.fillStyle = '#00d8d6';
         ctx.beginPath(); ctx.arc(soul.x, soul.y, soul.radius, 0, Math.PI); ctx.lineTo(soul.x, soul.y - soul.radius * 2.5); ctx.closePath(); ctx.fill();
         ctx.fillStyle = '#e0ffff'; ctx.beginPath(); ctx.arc(soul.x, soul.y, soul.radius * 0.4, 0, Math.PI * 2); ctx.fill(); ctx.restore();
     });
@@ -94,9 +101,10 @@ export function drawSoulDrops(ctx) {
 
 // --- KINH NGHIỆM ---
 export function spawnExpOrbs(x, y, totalExp) {
-    const numOrbs = Math.min(12, Math.max(3, Math.floor(totalExp / 5)));
+    const numOrbs = Math.min(5, Math.max(2, Math.floor(totalExp / 15)));
     const expPerOrb = totalExp / numOrbs;
     for (let i = 0; i < numOrbs; i++) {
+        if (expOrbs.length > 60) break;
         const angle = Math.random() * Math.PI * 2; const speed = 100 + Math.random() * 200;
         expOrbs.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, value: expPerOrb, radius: 3 + Math.random() * 2 });
     }
@@ -125,7 +133,7 @@ export function updateExpOrbs(deltaTime, player) {
 }
 export function drawExpOrbs(ctx) {
     expOrbs.forEach(orb => {
-        ctx.save(); ctx.shadowBlur = 8; ctx.shadowColor = '#9b59b6'; ctx.fillStyle = '#8e44ad';
+        ctx.save(); ctx.shadowBlur = 4; ctx.shadowColor = '#9b59b6'; ctx.fillStyle = '#8e44ad';
         ctx.beginPath(); ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = '#d2b4de'; ctx.beginPath(); ctx.arc(orb.x - orb.radius * 0.3, orb.y - orb.radius * 0.3, orb.radius * 0.4, 0, Math.PI * 2); ctx.fill(); ctx.restore();
     });
