@@ -143,8 +143,8 @@ document.addEventListener('fullscreenchange', () => {
     }
 });
 
-bindClick('dev-btn-gold', () => { player.gold += 10000; isDataDirty = true; UI.updateHud(player); });
-bindClick('dev-btn-soul', () => { player.souls += 1000; isDataDirty = true; UI.updateHud(player); });
+bindClick('dev-btn-gold', () => { player.gold += 10000; saveGameData(); UI.updateHud(player); });
+bindClick('dev-btn-soul', () => { player.souls += 1000; saveGameData(); UI.updateHud(player); });
 bindClick('dev-btn-god', () => { 
     window.isGodMode = !window.isGodMode; 
     const btn = document.getElementById('dev-btn-god');
@@ -271,7 +271,15 @@ window.checkUnreadMails = async () => {
 setInterval(() => { if (gameState === 'MENU') window.checkUnreadMails(); }, 30000);
 setTimeout(() => window.checkUnreadMails(), 2000);
 
-window.addEventListener('beforeunload', () => { if (Network.isMultiplayer && Network.socket) Network.socket.emit('leaveMultiplayer'); });
+window.addEventListener('beforeunload', () => { 
+    if (Network.isMultiplayer && Network.socket) Network.socket.emit('leaveMultiplayer'); 
+    // Ép lưu mạng ngay lập tức trước khi trình duyệt kịp tắt (Nút F5)
+    if (window.cloudSyncTimeout) {
+        clearTimeout(window.cloudSyncTimeout);
+        const indexData = { unlocked: IndexSystem.unlockedItems, claimed: IndexSystem.claimedItems };
+        syncDataToCloud({ bestWave, gold: player.gold, souls: player.souls, raceId: player.raceId, ownedSkins: SkinManager.ownedSkins, equippedSkin: SkinManager.equippedSkin, indexData: indexData, lastUpdated: new Date().toISOString() });
+    }
+});
 
 let isGameOver = false, isGameStarted = false, isDataDirty = false;
 let gameState = 'MENU', bestWave = 0, waveNumber = 1, waveClearTimer = 1200, gameMode = 'solo';
@@ -414,9 +422,9 @@ setTimeout(() => {
 UI.init({
     onEquip: (w) => { AudioManager.play('click'); player.equipItem(w); UI.updateHud(player); UI.renderInventory(player); },
     onUnequip: (slot) => { AudioManager.play('click'); player.unequipItem(slot); UI.updateHud(player); UI.renderInventory(player); },
-    onUpgDmg: (w, cost) => { if (player.souls >= cost) { AudioManager.play('chest'); player.souls -= cost; w.damage += Math.max(1, Math.floor(w.damage*0.15)); w.upgradeDmgLevel++; isDataDirty = true; UI.renderShop(player); UI.updateHud(player); UI.showLoot(`+ Sát thương`); } else AudioManager.play('error'); },
-    onUpgSpd: (w, cost) => { if (player.souls >= cost) { AudioManager.play('chest'); player.souls -= cost; w.fireRate = Math.max(50, w.fireRate-15); w.upgradeSpeedLevel++; isDataDirty = true; UI.renderShop(player); UI.updateHud(player); UI.showLoot(`+ Tốc độ bắn`); } else AudioManager.play('error'); },
-    onBuyHp: () => { if (player.gold >= 50 && player.hp < player.maxHp) { AudioManager.play('chest'); player.gold -= 50; player.hp = Math.min(player.maxHp, player.hp + 50); isDataDirty = true; UI.renderShop(player); UI.updateHud(player); UI.showLoot(`Hồi phục HP`); } else AudioManager.play('error'); },
+    onUpgDmg: (w, cost) => { if (player.souls >= cost) { AudioManager.play('chest'); player.souls -= cost; w.damage += Math.max(1, Math.floor(w.damage*0.15)); w.upgradeDmgLevel++; saveGameData(); UI.renderShop(player); UI.updateHud(player); UI.showLoot(`+ Sát thương`); } else AudioManager.play('error'); },
+    onUpgSpd: (w, cost) => { if (player.souls >= cost) { AudioManager.play('chest'); player.souls -= cost; w.fireRate = Math.max(50, w.fireRate-15); w.upgradeSpeedLevel++; saveGameData(); UI.renderShop(player); UI.updateHud(player); UI.showLoot(`+ Tốc độ bắn`); } else AudioManager.play('error'); },
+    onBuyHp: () => { if (player.gold >= 50 && player.hp < player.maxHp) { AudioManager.play('chest'); player.gold -= 50; player.hp = Math.min(player.maxHp, player.hp + 50); saveGameData(); UI.renderShop(player); UI.updateHud(player); UI.showLoot(`Hồi phục HP`); } else AudioManager.play('error'); },
     onTakeChestItem: (equip) => {
         if (!window.currentOpenChest) return;
         const c = window.currentOpenChest;
@@ -428,6 +436,7 @@ UI.init({
         if (equip) player.equipItem(c.weapon);
         player.maxHp += 10; player.hp = Math.min(player.maxHp, player.hp + 20);
         UI.showLoot(`Nhận được: ${c.weapon.name}`);
+        saveGameData();
         UI.updateHud(player);
         closeChest();
     },
@@ -435,7 +444,7 @@ UI.init({
         if (player.souls >= cost) {
             AudioManager.play('chest');
             player.souls -= cost;
-            isDataDirty = true;
+            saveGameData();
             Network.sendRevive(targetId);
             UI.showLoot('Đã trả 50 Linh hồn để chuộc mạng đồng đội!');
             const btn = document.getElementById(`revive-btn-${targetId}`); if (btn) btn.disabled = true;
@@ -817,7 +826,7 @@ function gameLoop(time) {
         }
         menu.update(dt, inputManager, player, 
             (mode) => { enterFullscreen(); if (!isGameStarted) restartGame(false, mode); else { gameState = 'PLAYING'; inputManager.mouse.leftJustPressed = false; player.setSkin(SkinManager.getEquippedSkin(), SkinManager.skinImages); const pt = document.getElementById('player-portrait'); if (pt) pt.style.backgroundColor = player.color; setHudVisibility(true); } },
-            () => { isDataDirty = true; }, 
+            () => { saveGameData(); }, 
             () => { 
                 gameState = 'UPDATE_LOG'; 
                 const scr = document.getElementById('update-log-screen');
@@ -1151,7 +1160,7 @@ function gameLoop(time) {
                     document.body.classList.add('show-joystick');
                     spawnWave(waveNumber + 1);
                     waveClearTimer = 1200;
-                    isDataDirty = true;
+                    saveGameData();
                 });
             } 
         } else waveClearTimer = 1200;

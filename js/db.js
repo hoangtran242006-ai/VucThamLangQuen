@@ -40,7 +40,8 @@ export async function syncDataToCloud(data) {
         await fetch(`${SERVER_URL}/api/save`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: playerId, data: data })
+            body: JSON.stringify({ id: playerId, data: data }),
+            keepalive: true // Đảm bảo tín hiệu được truyền đi kể cả khi tắt tab / ấn F5
         });
     } catch (e) {
         console.error("⚠️ Lỗi đồng bộ Server:", e);
