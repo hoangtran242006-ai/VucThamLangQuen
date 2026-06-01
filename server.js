@@ -138,10 +138,13 @@ app.post('/api/save', async (req, res) => {
     
     try {
         await db.query(`
-            UPDATE players 
-            SET best_wave = $1, gold = $2, souls = $3, race_id = $4, owned_skins = $5, equipped_skin = $6, mailbox = $7, index_data = $8, last_updated = NOW()
-            WHERE id = $9
+            INSERT INTO players (id, player_name, best_wave, gold, souls, race_id, owned_skins, equipped_skin, mailbox, index_data)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            ON CONFLICT (id) DO UPDATE SET 
+                player_name = EXCLUDED.player_name, best_wave = EXCLUDED.best_wave, gold = EXCLUDED.gold, souls = EXCLUDED.souls, race_id = EXCLUDED.race_id, owned_skins = EXCLUDED.owned_skins, equipped_skin = EXCLUDED.equipped_skin, mailbox = EXCLUDED.mailbox, index_data = EXCLUDED.index_data, last_updated = NOW()
         `, [
+            id,
+            data.playerName || 'Ẩn danh',
             data.bestWave || 1, 
             data.gold || 0, 
             data.souls || 0, 
@@ -149,8 +152,7 @@ app.post('/api/save', async (req, res) => {
             JSON.stringify(data.ownedSkins || []), 
             data.equippedSkin || 'blue',
             JSON.stringify(data.mailbox || []), 
-            JSON.stringify(data.indexData || {}),
-            id
+            JSON.stringify(data.indexData || {})
         ]);
 
         // Thông báo cập nhật Leaderboard cho mọi người

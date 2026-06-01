@@ -513,6 +513,9 @@ async function loadSaveData() {
         SkinManager.saveSkinData();
         player.recalculateStats();
         try { localStorage.setItem('vucthamlangquen_best_wave', bestWave); localStorage.setItem('vucthamlangquen_gold', player.gold); localStorage.setItem('vucthamlangquen_souls', player.souls); localStorage.setItem('vucthamlangquen_race', player.raceId); } catch (e) {}
+    } else {
+        // KHÔI PHỤC TỰ ĐỘNG: Nếu dữ liệu trên mây bị trống, lập tức bơm ngược dữ liệu từ máy người chơi lên lại!
+        saveGameData();
     }
     window.bestWave = bestWave; // Lưu vào biến toàn cục cho network truy cập
 }

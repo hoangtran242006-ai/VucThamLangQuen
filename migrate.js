@@ -11,23 +11,25 @@ const pool = new Pool({
 async function migrateGameData() {
     try {
         // 1. Đọc file JSON cũ dưới máy
-        console.log('⏳ Đang đọc file database.json...');
-        const rawData = fs.readFileSync('./database.json', 'utf8');
-        const dbOld = JSON.parse(rawData);
+        let dbOld = { accounts: {}, players: {} };
+        try {
+            console.log('⏳ Đang tìm và đọc file database.json...');
+            const rawData = fs.readFileSync('./database.json', 'utf8');
+            dbOld = JSON.parse(rawData);
+        } catch (err) {
+            console.log('⚠️ Không tìm thấy file database.json cục bộ. Sẽ bỏ qua bước bơm dữ liệu cũ và chỉ tạo bảng trống!');
+        }
 
         // 2. Tự động đập bảng cũ đi, xây lại bảng mới chuẩn xác 100% với cấu trúc game Vực Thẳm
         console.log('⏳ Đang thiết lập cấu trúc Server Supabase...');
         await pool.query(`
-            DROP TABLE IF EXISTS players CASCADE;
-            DROP TABLE IF EXISTS accounts CASCADE;
-
-            CREATE TABLE accounts (
+            CREATE TABLE IF NOT EXISTS accounts (
                 username TEXT PRIMARY KEY,
                 password TEXT NOT NULL,
                 player_id TEXT UNIQUE NOT NULL
             );
 
-            CREATE TABLE players (
+            CREATE TABLE IF NOT EXISTS players (
                 id TEXT PRIMARY KEY,
                 player_name TEXT,
                 best_wave INTEGER DEFAULT 1,
@@ -37,14 +39,18 @@ async function migrateGameData() {
                 owned_skins JSONB DEFAULT '[]'::jsonb,
                 equipped_skin TEXT,
                 mailbox JSONB DEFAULT '[]'::jsonb,
+                index_data JSONB DEFAULT '{}'::jsonb,
                 last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW()
             );
+            
+            -- Tự động cập nhật cột mới nếu bảng cũ đã tồn tại mà chưa có cột này
+            ALTER TABLE players ADD COLUMN IF NOT EXISTS index_data JSONB DEFAULT '{}'::jsonb;
         `);
         console.log('✅ Thiết lập cấu trúc mây thành công!');
 
         // 3. Bơm dữ liệu Tài khoản (Accounts)
         let accCount = 0;
-        for (const [username, accData] of Object.entries(dbOld.accounts)) {
+        for (const [username, accData] of Object.entries(dbOld.accounts || {})) {
             await pool.query(
                 'INSERT INTO accounts (username, password, player_id) VALUES ($1, $2, $3)',
                 [username, accData.password, accData.id]
@@ -55,11 +61,11 @@ async function migrateGameData() {
 
         // 4. Bơm dữ liệu Nhân vật & Trang bị (Players)
         let playerCount = 0;
-        for (const [playerId, pData] of Object.entries(dbOld.players)) {
+        for (const [playerId, pData] of Object.entries(dbOld.players || {})) {
             await pool.query(
                 `INSERT INTO players 
-                (id, player_name, best_wave, gold, souls, race_id, owned_skins, equipped_skin, mailbox) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+                (id, player_name, best_wave, gold, souls, race_id, owned_skins, equipped_skin, mailbox, index_data) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
                 [
                     playerId,
                     pData.playerName || 'Ẩn danh',
@@ -69,7 +75,8 @@ async function migrateGameData() {
                     pData.raceId || 'human',
                     JSON.stringify(pData.ownedSkins || []),
                     pData.equippedSkin || 'blue',
-                    JSON.stringify(pData.mailbox || [])
+                    JSON.stringify(pData.mailbox || []),
+                    JSON.stringify(pData.indexData || {})
                 ]
             );
             playerCount++;
