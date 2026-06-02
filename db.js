@@ -10,7 +10,7 @@ export function isLoggedIn() {
 export async function registerAccount(username, password) {
     try {
         const res = await fetch(`${SERVER_URL}/api/register`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password })
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password, playerId: getDeviceId() })
         });
         const data = await res.json();
         if (data.success) {
