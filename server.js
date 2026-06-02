@@ -271,22 +271,24 @@ app.post('/api/admin/mail', async (req, res) => {
 
 // --- HỆ THỐNG ĐĂNG KÝ / ĐĂNG NHẬP (Chuẩn SQL) ---
 app.post('/api/register', async (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) return res.status(400).json({ error: "Thiếu thông tin đăng ký!" });
+    const { username, password, playerId } = req.body;
+    if (!username || !password || !playerId) return res.status(400).json({ error: "Thiếu thông tin đăng ký!" });
     
     try {
         const check = await db.query('SELECT * FROM accounts WHERE username = $1', [username]);
         if (check.rows.length > 0) return res.status(400).json({ error: "Tên tài khoản này đã có người sử dụng!" });
 
-        const id = 'player_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+        // Kiểm tra xem ID thiết bị (Khách) này đã được gắn với tài khoản nào chưa
+        const checkId = await db.query('SELECT * FROM accounts WHERE player_id = $1', [playerId]);
+        if (checkId.rows.length > 0) return res.status(400).json({ error: "Dữ liệu trên máy này đã được liên kết với một tài khoản khác! Vui lòng đăng xuất." });
         
-        // Lưu thông tin đăng nhập
-        await db.query('INSERT INTO accounts (username, password, player_id) VALUES ($1, $2, $3)', [username, password, id]);
+        // Lưu thông tin đăng nhập, liên kết trực tiếp với ID Khách hiện tại
+        await db.query('INSERT INTO accounts (username, password, player_id) VALUES ($1, $2, $3)', [username, password, playerId]);
         
-        // Khởi tạo hồ sơ nhân vật
-        await db.query('INSERT INTO players (id, player_name, best_wave, gold, souls) VALUES ($1, $2, 0, 0, 0)', [id, username]);
+        // Không cần INSERT dòng mới có vàng = 0 vào bảng players nữa, 
+        // vì ngay sau khi đăng ký, Client sẽ gọi saveGameData() để UPSERT toàn bộ dữ liệu cày cuốc lên đúng ID này.
         
-        res.json({ success: true, id, username });
+        res.json({ success: true, id: playerId, username });
     } catch (error) {
         console.error("Lỗi đăng ký:", error);
         res.status(500).json({ error: "Lỗi hệ thống đăng ký" });

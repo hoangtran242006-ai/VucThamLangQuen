@@ -89,3 +89,42 @@ export async function updatePlayerAdmin(playerId, data) {
         console.error("⚠️ Lỗi cập nhật Admin:", e);
     }
 }
+
+export async function registerAccount(username, password) {
+    try {
+        const response = await fetch(`${SERVER_URL}/api/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            // BẮT BUỘC GỬI ID KHÁCH LÊN ĐỂ CHUYỂN THÀNH ID CHÍNH THỨC
+            body: JSON.stringify({ username, password, playerId: getDeviceId() }) 
+        });
+        const data = await response.json();
+        if (data.success) {
+            localStorage.setItem('vucthamlangquen_player_name', data.username);
+            return { success: true };
+        }
+        return { success: false, error: data.error };
+    } catch (e) {
+        return { success: false, error: "Không thể kết nối máy chủ" };
+    }
+}
+
+export async function loginAccount(username, password) {
+    try {
+        const response = await fetch(`${SERVER_URL}/api/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        const data = await response.json();
+        if (data.success) {
+            localStorage.setItem('vucthamlangquen_player_name', data.username);
+            // CỰC KỲ QUAN TRỌNG: Ghi đè ID Khách bằng ID Tài khoản lấy từ trên mây về
+            localStorage.setItem('vucthamlangquen_device_id', data.id); 
+            return { success: true, id: data.id };
+        }
+        return { success: false, error: data.error };
+    } catch (e) {
+        return { success: false, error: "Không thể kết nối máy chủ" };
+    }
+}

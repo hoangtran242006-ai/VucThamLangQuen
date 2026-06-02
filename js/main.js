@@ -324,28 +324,34 @@ bindClick('btn-show-login', () => openAuthModal('login'));
 bindClick('btn-show-register', () => openAuthModal('register'));
 bindClick('close-auth-btn', () => document.getElementById('auth-screen').style.display = 'none');
 bindClick('btn-logout', () => { 
-    if (confirm("Bạn có chắc muốn đăng xuất? Trò chơi sẽ trở về trạng thái Khách (0 Vàng, 0 Linh hồn).")) { 
+    if (confirm("Bạn có muốn GIỮ LẠI dữ liệu cày cuốc hiện tại (Vàng, Linh hồn, Skin...) trên máy này không?\n\n- Chọn [OK] để GIỮ LẠI (Dùng để Đăng ký lại tài khoản bị mất).\n- Chọn [Cancel] để XÓA TRẮNG.")) { 
         logoutAccount(); 
         updateAuthUI(); 
-        alert("Đã đăng xuất. Bạn đang chơi dưới quyền Khách."); 
-        localStorage.removeItem('vucthamlangquen_best_wave');
-        localStorage.removeItem('vucthamlangquen_gold');
-        localStorage.removeItem('vucthamlangquen_souls');
-        localStorage.removeItem('vucthamlangquen_race');
-        localStorage.removeItem('vucthamlangquen_owned_skins');
-        localStorage.removeItem('vucthamlangquen_equipped_skin');
-        localStorage.removeItem('vucthamlangquen_index_unlocked');
-        localStorage.removeItem('vucthamlangquen_index_claimed');
-        player.gold = 0; player.souls = 0; bestWave = 0; 
-        player.raceId = 'human';
-        SkinManager.ownedSkins = ['hoang', 'bocchi'];
-        SkinManager.equippedSkin = 'hoang';
-        IndexSystem.unlockedItems = [];
-        IndexSystem.claimedItems = [];
-        IndexSystem.calculateBonuses();
-        player.setSkin(SkinManager.getEquippedSkin(), SkinManager.skinImages);
-        loadSaveData(); 
-        UI.updateHud(player); 
+        alert("Đã đăng xuất! Dữ liệu của bạn đã được giữ lại.\nHãy vào mục ĐĂNG KÝ để tạo lại tài khoản và liên kết dữ liệu này nhé."); 
+    } else {
+        if (confirm("CẢNH BÁO: Toàn bộ dữ liệu trên máy này sẽ bị xóa sạch về 0. Bạn có chắc chắn?")) {
+            logoutAccount(); 
+            updateAuthUI(); 
+            localStorage.removeItem('vucthamlangquen_best_wave');
+            localStorage.removeItem('vucthamlangquen_gold');
+            localStorage.removeItem('vucthamlangquen_souls');
+            localStorage.removeItem('vucthamlangquen_race');
+            localStorage.removeItem('vucthamlangquen_owned_skins');
+            localStorage.removeItem('vucthamlangquen_equipped_skin');
+            localStorage.removeItem('vucthamlangquen_index_unlocked');
+            localStorage.removeItem('vucthamlangquen_index_claimed');
+            player.gold = 0; player.souls = 0; bestWave = 0; 
+            player.raceId = 'human';
+            SkinManager.ownedSkins = ['blue'];
+            SkinManager.equippedSkin = 'blue';
+            IndexSystem.unlockedItems = [];
+            IndexSystem.claimedItems = [];
+            IndexSystem.calculateBonuses();
+            player.setSkin(SkinManager.getEquippedSkin(), SkinManager.skinImages);
+            loadSaveData(); 
+            UI.updateHud(player); 
+            alert("Đã đăng xuất và xóa sạch dữ liệu.");
+        }
     } 
 });
 
